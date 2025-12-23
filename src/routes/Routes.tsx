@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App";
 import Login from "@/pages/Auth/Login";
 import Signup from "@/pages/Auth/Signup";
@@ -8,7 +8,6 @@ import { publicRoutes } from "./PublicRoutes";
 import NotFound from "@/pages/NotFound";
 import { routesGenerator } from "@/utils/Generator/RoutesGenerator";
 import DashboardLayout from "@/Layout/DashboardLayout/DashboardLayout";
-import AdminDashboard from "@/pages/Admin/Dashboard/AdminDashboard";
 
 const routes = createBrowserRouter([
   {
@@ -36,7 +35,7 @@ const routes = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <AdminDashboard />,
+        element: <Navigate to="dashboard" replace />,
       },
       ...routesGenerator(adminRoutes),
     ],

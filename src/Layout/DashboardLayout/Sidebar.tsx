@@ -45,7 +45,9 @@ const NavItem = ({
         className={`${itemClasses} cursor-pointer whitespace-nowrap`}
       >
         {item.icon}
-        <span className="flex-1 uppercase no-underline!">{item.label}</span>
+        <span className="flex-1 text-sm font-medium uppercase no-underline!">
+          {item.label}
+        </span>
         {hasChildren && (
           <span
             className={`text-[10px] transition-transform duration-200 ${
@@ -109,7 +111,7 @@ const Sidebar = () => {
             <p className="px-3 mb-2 text-[10px] font-bold uppercase text-gray-400 tracking-widest">
               {group}
             </p>
-            <div className="space-y-1">
+            <div className="space-y-4">
               {items.map((item) => (
                 <NavItem
                   key={item.label + item.path}
