@@ -16,14 +16,10 @@ const DashboardLayout = () => {
 
         <main className="p-6 overflow-y-auto">
           {/* Breadcrumbs (Optional) */}
-          <div className="mb-6">
+          <div className="">
             <div className="flex items-center gap-2 space-y-2">
               <Breadcrumbs config={adminRoutes} basePath="/admin" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-800">Overview</h1>
-            <p className="text-sm text-gray-500">
-              Welcome back to your reseller dashboard.
-            </p>
           </div>
           <Outlet />
         </main>
