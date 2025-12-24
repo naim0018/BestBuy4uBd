@@ -10,14 +10,14 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_URL,
-  prepareHeaders: (headers, { getState }) => {
-    const state = getState() as any;
-    const token = state.auth.user?.accessToken;
-    if (token) {
-      headers.set("Authorization", `${token}`);
-    }
-    return headers;
-  },
+  // prepareHeaders: (headers, { getState }) => {
+  //   const state = getState() as any;
+  //   const token = state.auth.user?.accessToken;
+  //   if (token) {
+  //     headers.set("Authorization", `${token}`);
+  //   }
+  //   return headers;
+  // },
 });
 
 const baseQueryWithReauth: BaseQueryFn<

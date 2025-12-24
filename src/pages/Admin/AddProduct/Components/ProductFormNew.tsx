@@ -16,7 +16,7 @@ import {
   SpecificationsField,
 } from "./NestedArrayFields";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 
 type Props = {
   defaultValues?: Partial<ProductFormValues>;
@@ -24,9 +24,9 @@ type Props = {
 };
 
 // ============================================
-// 🎨 Collapsible Section Component
+// 🎨 Collapsible Section Component (Memoized)
 // ============================================
-function CollapsibleSection({
+const CollapsibleSection = memo(({
   title,
   children,
   defaultOpen = true,
@@ -34,14 +34,18 @@ function CollapsibleSection({
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
-}) {
+}) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  const toggleOpen = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
 
   return (
     <div className="border border-border rounded-xl overflow-hidden bg-white shadow-sm">
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleOpen}
         className="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-blue/5 to-transparent hover:from-primary-blue/10 transition-colors"
       >
         <h2 className="text-xl font-bold text-gray-800">{title}</h2>
@@ -54,12 +58,14 @@ function CollapsibleSection({
       {isOpen && <div className="p-6">{children}</div>}
     </div>
   );
-}
+});
+
+CollapsibleSection.displayName = "CollapsibleSection";
 
 // ============================================
-// 🎨 Field Renderer for Simple Fields
+// 🎨 Field Renderer for Simple Fields (Memoized)
 // ============================================
-function renderField(field: any, register: any, errors: any, watch: any) {
+const FieldRenderer = memo(({ field, register, errors, watch }: any) => {
   const error = errors[field.name.split(".")[0]]?.[field.name.split(".")[1]];
   const errorMessage = error?.message as string | undefined;
 
@@ -261,7 +267,9 @@ function renderField(field: any, register: any, errors: any, watch: any) {
     default:
       return null;
   }
-}
+});
+
+FieldRenderer.displayName = "FieldRenderer";
 
 // ============================================
 // 📝 Main Product Form Component
@@ -270,7 +278,12 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(ProductFormSchema),
     defaultValues: defaultValues ?? {
-      basicInfo: { keyFeatures: [], addDeliveryCharge: false },
+      basicInfo: { 
+        keyFeatures: [], 
+        addDeliveryCharge: false,
+        deliveryChargeInsideDhaka: 0,
+        deliveryChargeOutsideDhaka: 0,
+      },
       price: {},
       stockStatus: "In Stock",
       sold: 0,
@@ -299,22 +312,45 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
     formState: { errors, isSubmitting },
   } = form;
 
+  // Memoize field groups to prevent re-renders
+  const basicInfoFieldsSlice1 = useMemo(() => basicInfoFields.slice(0, 6), []);
+  const basicInfoFieldsSlice2 = useMemo(() => basicInfoFields.slice(7), []);
+  const shippingFieldsSlice1 = useMemo(() => shippingFields.slice(0, 4), []);
+  const shippingFieldsSlice2 = useMemo(() => shippingFields.slice(4), []);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full mx-auto p-6 space-y-6">
       {/* Basic Information */}
       <CollapsibleSection title="📋 Basic Information" defaultOpen={true}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {basicInfoFields
-            .slice(0, 6)
-            .map((field) => renderField(field, register, errors, watch))}
+          {basicInfoFieldsSlice1.map((field) => (
+            <FieldRenderer 
+              key={field.name}
+              field={field} 
+              register={register} 
+              errors={errors} 
+              watch={watch} 
+            />
+          ))}
         </div>
         <div className="mt-4">
-          {renderField(basicInfoFields[6], register, errors, watch)}
+          <FieldRenderer 
+            field={basicInfoFields[6]} 
+            register={register} 
+            errors={errors} 
+            watch={watch} 
+          />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          {basicInfoFields
-            .slice(7)
-            .map((field) => renderField(field, register, errors, watch))}
+          {basicInfoFieldsSlice2.map((field) => (
+            <FieldRenderer 
+              key={field.name}
+              field={field} 
+              register={register} 
+              errors={errors} 
+              watch={watch} 
+            />
+          ))}
         </div>
         <div className="mt-6">
           <KeyFeaturesField control={control} register={register} />
@@ -329,9 +365,15 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       {/* Price & Stock */}
       <CollapsibleSection title="💰 Price & Inventory" defaultOpen={true}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {priceStockFields.map((field) =>
-            renderField(field, register, errors, watch)
-          )}
+          {priceStockFields.map((field) => (
+            <FieldRenderer 
+              key={field.name}
+              field={field} 
+              register={register} 
+              errors={errors} 
+              watch={watch} 
+            />
+          ))}
         </div>
       </CollapsibleSection>
 
@@ -352,41 +394,71 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       {/* Shipping Details */}
       <CollapsibleSection title="📦 Shipping Details" defaultOpen={true}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {shippingFields
-            .slice(0, 4)
-            .map((field) => renderField(field, register, errors, watch))}
+          {shippingFieldsSlice1.map((field) => (
+            <FieldRenderer 
+              key={field.name}
+              field={field} 
+              register={register} 
+              errors={errors} 
+              watch={watch} 
+            />
+          ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          {shippingFields
-            .slice(4)
-            .map((field) => renderField(field, register, errors, watch))}
+          {shippingFieldsSlice2.map((field) => (
+            <FieldRenderer 
+              key={field.name}
+              field={field} 
+              register={register} 
+              errors={errors} 
+              watch={watch} 
+            />
+          ))}
         </div>
       </CollapsibleSection>
 
       {/* Additional Info */}
       <CollapsibleSection title="ℹ️ Additional Information" defaultOpen={false}>
         <div className="space-y-4">
-          {additionalInfoFields.map((field) =>
-            renderField(field, register, errors, watch)
-          )}
+          {additionalInfoFields.map((field) => (
+            <FieldRenderer 
+              key={field.name}
+              field={field} 
+              register={register} 
+              errors={errors} 
+              watch={watch} 
+            />
+          ))}
         </div>
       </CollapsibleSection>
 
       {/* SEO */}
       <CollapsibleSection title="🔍 SEO Settings" defaultOpen={false}>
         <div className="space-y-4">
-          {seoFields.map((field) =>
-            renderField(field, register, errors, watch)
-          )}
+          {seoFields.map((field) => (
+            <FieldRenderer 
+              key={field.name}
+              field={field} 
+              register={register} 
+              errors={errors} 
+              watch={watch} 
+            />
+          ))}
         </div>
       </CollapsibleSection>
 
       {/* Tags */}
       <CollapsibleSection title="🏷️ Tags" defaultOpen={false}>
         <div className="space-y-4">
-          {tagsField.map((field) =>
-            renderField(field, register, errors, watch)
-          )}
+          {tagsField.map((field) => (
+            <FieldRenderer 
+              key={field.name}
+              field={field} 
+              register={register} 
+              errors={errors} 
+              watch={watch} 
+            />
+          ))}
         </div>
       </CollapsibleSection>
 

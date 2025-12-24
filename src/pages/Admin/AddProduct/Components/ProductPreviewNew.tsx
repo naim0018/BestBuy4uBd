@@ -9,12 +9,13 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
+import { memo, useMemo } from "react";
 
 interface ProductPreviewProps {
   data: ProductFormValues;
 }
 
-export default function ProductPreviewNew({ data }: ProductPreviewProps) {
+const ProductPreviewNew = memo(({ data }: ProductPreviewProps) => {
   const {
     basicInfo,
     price,
@@ -29,13 +30,15 @@ export default function ProductPreviewNew({ data }: ProductPreviewProps) {
     seo,
   } = data;
 
-  // Calculate savings
-  const savings = price.discounted
-    ? price.regular - price.discounted
-    : 0;
-  const savingsPercentage = savings
-    ? Math.round((savings / price.regular) * 100)
-    : 0;
+  // Calculate savings - memoized to prevent recalculation
+  const savingsPercentage = useMemo(() => {
+    const savingsAmount = price.discounted
+      ? price.regular - price.discounted
+      : 0;
+    return savingsAmount
+      ? Math.round((savingsAmount / price.regular) * 100)
+      : 0;
+  }, [price.regular, price.discounted]);
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -400,4 +403,8 @@ export default function ProductPreviewNew({ data }: ProductPreviewProps) {
       </div>
     </div>
   );
-}
+});
+
+ProductPreviewNew.displayName = "ProductPreviewNew";
+
+export default ProductPreviewNew;

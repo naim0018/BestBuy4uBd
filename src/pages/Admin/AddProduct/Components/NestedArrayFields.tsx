@@ -6,6 +6,7 @@ import {
 } from "react-hook-form";
 import { ProductFormValues } from "./Product";
 import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import { memo } from "react";
 
 // ============================================
 // 🖼️ Images Array Component
@@ -16,7 +17,7 @@ interface ImagesFieldProps {
   errors: FieldErrors<ProductFormValues>;
 }
 
-export function ImagesField({ control, register, errors }: ImagesFieldProps) {
+export const ImagesField = memo(({ control, register, errors }: ImagesFieldProps) => {
   const { fields, append, remove } = useFieldArray({
     control,
     name: "images",
@@ -107,7 +108,9 @@ export function ImagesField({ control, register, errors }: ImagesFieldProps) {
       )}
     </div>
   );
-}
+});
+
+ImagesField.displayName = "ImagesField";
 
 // ============================================
 // 🔑 Key Features Array Component
@@ -117,11 +120,15 @@ interface KeyFeaturesFieldProps {
   register: UseFormRegister<ProductFormValues>;
 }
 
-export function KeyFeaturesField({ control, register }: KeyFeaturesFieldProps) {
+export const KeyFeaturesField = memo(({ control, register }: KeyFeaturesFieldProps) => {
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "basicInfo.keyFeatures",
+    name: "basicInfo.keyFeatures" as any,
   });
+
+  const handleAppend = () => {
+    append("" as any);
+  };
 
   return (
     <div className="space-y-4">
@@ -129,7 +136,7 @@ export function KeyFeaturesField({ control, register }: KeyFeaturesFieldProps) {
         <h3 className="text-lg font-semibold text-gray-800">Key Features</h3>
         <button
           type="button"
-          onClick={() => append("")}
+          onClick={handleAppend}
           className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -144,7 +151,7 @@ export function KeyFeaturesField({ control, register }: KeyFeaturesFieldProps) {
               {index + 1}
             </span>
             <input
-              {...register(`basicInfo.keyFeatures.${index}`)}
+              {...register(`basicInfo.keyFeatures.${index}` as const)}
               type="text"
               placeholder="Enter a key feature"
               className="flex-1 p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
@@ -162,7 +169,9 @@ export function KeyFeaturesField({ control, register }: KeyFeaturesFieldProps) {
       </div>
     </div>
   );
-}
+});
+
+KeyFeaturesField.displayName = "KeyFeaturesField";
 
 // ============================================
 // 🎨 Variants Array Component
@@ -173,11 +182,11 @@ interface VariantsFieldProps {
   errors: FieldErrors<ProductFormValues>;
 }
 
-export function VariantsField({
+export const VariantsField = memo(({
   control,
   register,
   errors,
-}: VariantsFieldProps) {
+}: VariantsFieldProps) => {
   const { fields, append, remove } = useFieldArray({
     control,
     name: "variants",
@@ -215,7 +224,9 @@ export function VariantsField({
       </div>
     </div>
   );
-}
+});
+
+VariantsField.displayName = "VariantsField";
 
 // Variant Group Component
 function VariantGroup({
@@ -346,11 +357,11 @@ interface SpecificationsFieldProps {
   errors: FieldErrors<ProductFormValues>;
 }
 
-export function SpecificationsField({
+export const SpecificationsField = memo(({
   control,
   register,
   errors,
-}: SpecificationsFieldProps) {
+}: SpecificationsFieldProps) => {
   const { fields, append, remove } = useFieldArray({
     control,
     name: "specifications",
@@ -386,7 +397,9 @@ export function SpecificationsField({
       </div>
     </div>
   );
-}
+});
+
+SpecificationsField.displayName = "SpecificationsField";
 
 // Specification Group Component
 function SpecificationGroup({

@@ -48,6 +48,146 @@ function ArraySection<T>({
   );
 }
 
+// Component for individual variant item (fixes hooks violation)
+function VariantItem({
+  vIdx,
+  control,
+  register,
+  errors,
+  removeVariant,
+}: {
+  vIdx: number;
+  control: any;
+  register: any;
+  errors: any;
+  removeVariant: (index: number) => void;
+}) {
+  const {
+    fields: items,
+    append: appendItem,
+    remove: removeItem,
+  } = useFieldArray({
+    control,
+    name: `variants.${vIdx}.items`,
+  });
+
+  return (
+    <div className="border p-2 mb-2 rounded">
+      <Input
+        register={register}
+        name={`variants.${vIdx}.group`}
+        label="Variant Group"
+        error={errors.variants?.[vIdx]?.group?.message}
+      />
+      {items.map((_, iIdx) => (
+        <div key={iIdx} className="ml-4 grid grid-cols-3 gap-2 mt-2">
+          <Input
+            register={register}
+            name={`variants.${vIdx}.items.${iIdx}.value`}
+            label="Value"
+            error={errors.variants?.[vIdx]?.items?.[iIdx]?.value?.message}
+          />
+          <Input
+            register={register}
+            name={`variants.${vIdx}.items.${iIdx}.price`}
+            label="Price"
+            type="number"
+            error={errors.variants?.[vIdx]?.items?.[iIdx]?.price?.message}
+          />
+          <Input
+            register={register}
+            name={`variants.${vIdx}.items.${iIdx}.stock`}
+            label="Stock"
+            type="number"
+            error={errors.variants?.[vIdx]?.items?.[iIdx]?.stock?.message}
+          />
+        </div>
+      ))}
+      <FieldArrayButtons
+        append={() => appendItem({ value: "", price: 0, stock: 0 })}
+        remove={removeItem}
+        index={0}
+        length={items.length}
+      />
+      <button
+        type="button"
+        className="mt-2 px-3 py-1 rounded bg-red-500 text-white text-sm"
+        onClick={() => removeVariant(vIdx)}
+      >
+        Remove Variant Group
+      </button>
+    </div>
+  );
+}
+
+// Component for individual specification item (fixes hooks violation)
+function SpecificationItem({
+  sIdx,
+  control,
+  register,
+  errors,
+  removeSpec,
+}: {
+  sIdx: number;
+  control: any;
+  register: any;
+  errors: any;
+  removeSpec: (index: number) => void;
+}) {
+  const {
+    fields: items,
+    append: appendItem,
+    remove: removeItem,
+  } = useFieldArray({
+    control,
+    name: `specifications.${sIdx}.items`,
+  });
+
+  return (
+    <div className="border p-2 mb-2 rounded">
+      <Input
+        register={register}
+        name={`specifications.${sIdx}.group`}
+        label="Spec Group"
+        error={errors.specifications?.[sIdx]?.group?.message}
+      />
+      {items.map((_, iIdx) => (
+        <div key={iIdx} className="ml-4 grid grid-cols-2 gap-2 mt-2">
+          <Input
+            register={register}
+            name={`specifications.${sIdx}.items.${iIdx}.name`}
+            label="Name"
+            error={
+              errors.specifications?.[sIdx]?.items?.[iIdx]?.name?.message
+            }
+          />
+          <Input
+            register={register}
+            name={`specifications.${sIdx}.items.${iIdx}.value`}
+            label="Value"
+            error={
+              errors.specifications?.[sIdx]?.items?.[iIdx]?.value?.message
+            }
+          />
+        </div>
+      ))}
+      <FieldArrayButtons
+        append={() => appendItem({ name: "", value: "" })}
+        remove={removeItem}
+        index={0}
+        length={items.length}
+      />
+      <button
+        type="button"
+        className="mt-2 px-3 py-1 rounded bg-red-500 text-white text-sm"
+        onClick={() => removeSpec(sIdx)}
+      >
+        Remove Spec Group
+      </button>
+    </div>
+  );
+}
+
 export default function ProductForm({ defaultValues, onSubmit }: Props) {
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(ProductFormSchema),
@@ -99,7 +239,7 @@ export default function ProductForm({ defaultValues, onSubmit }: Props) {
     fields: keyFeatureFields,
     append: appendKeyFeature,
     remove: removeKeyFeature,
-  } = useFieldArray({ control, name: "basicInfo.keyFeatures" });
+  } = useFieldArray({ control, name: "basicInfo.keyFeatures" as any });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full mx-auto p-4 space-y-6">
@@ -154,7 +294,7 @@ export default function ProductForm({ defaultValues, onSubmit }: Props) {
         <ArraySection
           label="Key Features"
           fields={keyFeatureFields}
-          append={() => appendKeyFeature("")}
+          append={() => appendKeyFeature("" as any)}
           remove={removeKeyFeature}
           renderItem={(_, idx) => (
             <input
@@ -231,124 +371,48 @@ export default function ProductForm({ defaultValues, onSubmit }: Props) {
       </section>
 
       {/* Variants */}
-      <ArraySection
-        label="Variants"
-        fields={variantFields}
-        append={() => appendVariant({ group: "", items: [] })}
-        remove={removeVariant}
-        renderItem={(_, vIdx) => {
-          const {
-            fields: items,
-            append: appendItem,
-            remove: removeItem,
-          } = useFieldArray({
-            control,
-            name: `variants.${vIdx}.items`,
-          });
-          return (
-            <>
-              <Input
-                register={register}
-                name={`variants.${vIdx}.group`}
-                label="Variant Group"
-                error={errors.variants?.[vIdx]?.group?.message}
-              />
-              {items.map((_, iIdx) => (
-                <div key={iIdx} className="ml-4 grid grid-cols-3 gap-2 mt-2">
-                  <Input
-                    register={register}
-                    name={`variants.${vIdx}.items.${iIdx}.value`}
-                    label="Value"
-                    error={
-                      errors.variants?.[vIdx]?.items?.[iIdx]?.value?.message
-                    }
-                  />
-                  <Input
-                    register={register}
-                    name={`variants.${vIdx}.items.${iIdx}.price`}
-                    label="Price"
-                    type="number"
-                    error={
-                      errors.variants?.[vIdx]?.items?.[iIdx]?.price?.message
-                    }
-                  />
-                  <Input
-                    register={register}
-                    name={`variants.${vIdx}.items.${iIdx}.stock`}
-                    label="Stock"
-                    type="number"
-                    error={
-                      errors.variants?.[vIdx]?.items?.[iIdx]?.stock?.message
-                    }
-                  />
-                </div>
-              ))}
-              <FieldArrayButtons
-                append={() => appendItem({ value: "", price: 0, stock: 0 })}
-                remove={removeItem}
-                index={vIdx}
-                length={items.length}
-              />
-            </>
-          );
-        }}
-      />
+      <section className="border p-4 rounded">
+        <h2 className="text-xl font-bold mb-2">Variants</h2>
+        {variantFields.map((field, vIdx) => (
+          <VariantItem
+            key={field.id}
+            vIdx={vIdx}
+            control={control}
+            register={register}
+            errors={errors}
+            removeVariant={removeVariant}
+          />
+        ))}
+        <button
+          type="button"
+          className="mt-2 px-3 py-1 rounded bg-blue-500 text-white text-sm"
+          onClick={() => appendVariant({ group: "", items: [] })}
+        >
+          Add Variant
+        </button>
+      </section>
 
       {/* Specifications */}
-      <ArraySection
-        label="Specifications"
-        fields={specFields}
-        append={() => appendSpec({ group: "", items: [] })}
-        remove={removeSpec}
-        renderItem={( _, sIdx) => {
-          const {
-            fields: items,
-            append: appendItem,
-            remove: removeItem,
-          } = useFieldArray({
-            control,
-            name: `specifications.${sIdx}.items`,
-          });
-          return (
-            <>
-              <Input
-                register={register}
-                name={`specifications.${sIdx}.group`}
-                label="Spec Group"
-                error={errors.specifications?.[sIdx]?.group?.message}
-              />
-              {items.map((_, iIdx) => (
-                <div key={iIdx} className="ml-4 grid grid-cols-2 gap-2 mt-2">
-                  <Input
-                    register={register}
-                    name={`specifications.${sIdx}.items.${iIdx}.name`}
-                    label="Name"
-                    error={
-                      errors.specifications?.[sIdx]?.items?.[iIdx]?.name
-                        ?.message
-                    }
-                  />
-                  <Input
-                    register={register}
-                    name={`specifications.${sIdx}.items.${iIdx}.value`}
-                    label="Value"
-                    error={
-                      errors.specifications?.[sIdx]?.items?.[iIdx]?.value
-                        ?.message
-                    }
-                  />
-                </div>
-              ))}
-              <FieldArrayButtons
-                append={() => appendItem({ name: "", value: "" })}
-                remove={removeItem}
-                index={sIdx}
-                length={items.length}
-              />
-            </>
-          );
-        }}
-      />
+      <section className="border p-4 rounded">
+        <h2 className="text-xl font-bold mb-2">Specifications</h2>
+        {specFields.map((field, sIdx) => (
+          <SpecificationItem
+            key={field.id}
+            sIdx={sIdx}
+            control={control}
+            register={register}
+            errors={errors}
+            removeSpec={removeSpec}
+          />
+        ))}
+        <button
+          type="button"
+          className="mt-2 px-3 py-1 rounded bg-blue-500 text-white text-sm"
+          onClick={() => appendSpec({ group: "", items: [] })}
+        >
+          Add Specification
+        </button>
+      </section>
 
       {/* Shipping */}
       <section className="border p-4 rounded">

@@ -40,11 +40,100 @@ export default function ProductAdminPage() {
   const handleConfirm = async () => {
     if (!draft) return;
     try {
-      await saveProduct({ id: isAdd ? undefined : id, data: draft }).unwrap();
+      // Transform the form data to match the API payload structure
+      const productData = {
+        basicInfo: {
+          productCode: draft.basicInfo.productCode,
+          title: draft.basicInfo.title,
+          brand: draft.basicInfo.brand,
+          category: draft.basicInfo.category,
+          subcategory: draft.basicInfo.subcategory,
+          description: draft.basicInfo.description,
+          keyFeatures: draft.basicInfo.keyFeatures?.filter(
+            (feature) => feature.trim() !== ""
+          ) || [],
+        },
+        price: {
+          regular: Number(draft.price.regular),
+          discounted: draft.price.discounted
+            ? Number(draft.price.discounted)
+            : undefined,
+          savings: draft.price.savings ? Number(draft.price.savings) : undefined,
+          savingsPercentage: draft.price.savingsPercentage 
+            ? Number(draft.price.savingsPercentage) 
+            : undefined,
+          selectedVariants: draft.price.selectedVariants,
+        },
+        addDeliveryCharge: draft.basicInfo.addDeliveryCharge || false,
+        deliveryChargeInsideDhaka: draft.basicInfo.deliveryChargeInsideDhaka 
+          ? Number(draft.basicInfo.deliveryChargeInsideDhaka) 
+          : 0,
+        deliveryChargeOutsideDhaka: draft.basicInfo.deliveryChargeOutsideDhaka 
+          ? Number(draft.basicInfo.deliveryChargeOutsideDhaka) 
+          : 0,
+        stockStatus: draft.stockStatus,
+        stockQuantity: draft.stockQuantity ? Number(draft.stockQuantity) : 0,
+        sold: draft.sold ? Number(draft.sold) : 0,
+        images: draft.images.filter((image) => image.url.trim() !== ""),
+        variants: draft.variants
+          ?.filter((variant) => variant.group.trim() !== "")
+          .map((variant) => ({
+            group: variant.group,
+            items: variant.items
+              .filter((item) => item.value.trim() !== "")
+              .map((item) => ({
+                value: item.value,
+                price: item.price ? Number(item.price) : 0,
+                stock: item.stock ? Number(item.stock) : 0,
+                image: item.image ? {
+                  url: item.image.url || "",
+                  alt: item.image.alt || "",
+                } : undefined,
+              })),
+          })) || [],
+        specifications: draft.specifications
+          ?.filter((spec) => spec.group.trim() !== "")
+          .map((spec) => ({
+            group: spec.group,
+            items: spec.items
+              .filter(
+                (item) => item.name.trim() !== "" && item.value.trim() !== ""
+              )
+              .map((item) => ({
+                name: item.name,
+                value: item.value,
+              })),
+          })) || [],
+        shippingDetails: {
+          length: Number(draft.shippingDetails.length),
+          width: Number(draft.shippingDetails.width),
+          height: Number(draft.shippingDetails.height),
+          weight: Number(draft.shippingDetails.weight),
+          dimensionUnit: draft.shippingDetails.dimensionUnit,
+          weightUnit: draft.shippingDetails.weightUnit,
+        },
+        additionalInfo: {
+          freeShipping: Boolean(draft.additionalInfo?.freeShipping),
+          isFeatured: Boolean(draft.additionalInfo?.isFeatured),
+          isOnSale: Boolean(draft.additionalInfo?.isOnSale),
+          estimatedDelivery: draft.additionalInfo?.estimatedDelivery,
+          returnPolicy: draft.additionalInfo?.returnPolicy,
+          warranty: draft.additionalInfo?.warranty,
+        },
+        seo: {
+          metaTitle: draft.seo?.metaTitle || undefined,
+          metaDescription: draft.seo?.metaDescription || undefined,
+          slug: draft.seo?.slug || undefined,
+        },
+        tags: draft.tags?.filter((tag) => tag.trim() !== "") || [],
+      };
+
+      console.log("Sending product data:", productData); // Debug log
+      await saveProduct(productData).unwrap();
       alert(isAdd ? "Product created" : "Product updated");
       setPreview(false);
     } catch (err) {
-      console.error(err);
+      console.error("Save product error:", err);
       alert("Failed to save product");
     }
   };
