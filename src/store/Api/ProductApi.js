@@ -1,6 +1,5 @@
-import { baseApi } from "./baseApi";
-
 // Helper function to build query string
+import baseApi from "./BaseApi/BaseApi";
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

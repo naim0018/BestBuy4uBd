@@ -1,4 +1,4 @@
-import { baseApi } from "./baseApi";
+import baseApi from "./BaseApi/BaseApi";
 
 const categoriesApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({

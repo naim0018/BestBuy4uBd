@@ -1,4 +1,4 @@
-import { baseApi } from "./baseApi";
+import baseApi from "./BaseApi/BaseApi";
 
 export const bkashApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
