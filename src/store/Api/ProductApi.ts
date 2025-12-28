@@ -1,42 +1,30 @@
 // Helper function to build query string
+import { Product } from "@/types/Product/Product";
 import baseApi from "./BaseApi/BaseApi";
+import { ApiResponse, QueryOptions } from "@/types/Api/ApiResponse";
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAllProducts: builder.query({
+    getAllProducts: builder.query<ApiResponse<Product[]>, void | QueryOptions>({
       query: (options = {}) => {
         const queryParams = new URLSearchParams();
-        Object.entries(options).forEach(([key, value]) => {
-          if (value !== "" && value !== "undefined" && value !== null) {
-            queryParams.append(key, value);
+        Object.entries(options as QueryOptions).forEach(
+          ([key, value]: [string, string]) => {
+            if (value !== "" && value !== "undefined" && value !== null) {
+              queryParams.append(key, value);
+            }
           }
-        });
+        );
         return {
           url: `/product`,
           method: "GET",
           params: queryParams,
         };
       },
-      transformResponse: (response) => {
-        return {
-          products: response.data,
-          pagination: response.meta,
-        };
-      },
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.products.map(({ _id }) => ({
-                type: "Products",
-                id: _id,
-              })),
-              { type: "Products", id: "LIST" },
-            ]
-          : [{ type: "Products", id: "LIST" }],
-    }),
-    getProductById: builder.query({
-      query: (id) => `/product/${id}`,
       providesTags: ["Product"],
+    }),
+    getProductById: builder.query<ApiResponse<Product>, { id: string }>({
+      query: (id) => `/product/${id}`,
     }),
     addProduct: builder.mutation({
       query: (product) => ({
@@ -52,7 +40,7 @@ export const productApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: product,
       }),
-      invalidatesTags: ["Product", "Products", "Categories"],
+      invalidatesTags: ["Product"],
     }),
     deleteProduct: builder.mutation({
       query: (id) => ({
