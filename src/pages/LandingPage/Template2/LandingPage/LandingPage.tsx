@@ -14,6 +14,7 @@ import { Product } from "@/types/Product/Product";
 import CheckoutSection from "./CheckoutSection";
 import LandingPageProductDetails from "./DecomposedLandingPage Component/LandingPageProductDetails";
 import LandingPageHeroSection from "./DecomposedLandingPage Component/LandingPageHeroSection";
+import RelatedProducts from "../../Components/RelatedProducts";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
@@ -322,6 +323,11 @@ const LandingPage = ({ product }: { product: Product }) => {
             applyCoupon={applyCoupon}
           />
         </div>
+      </div>
+      
+      {/* Related Products */}
+      <div className="container mx-auto px-4 pb-20">
+        <RelatedProducts category={product.basicInfo.category} currentProductId={product._id} />
       </div>
     </div>
   );
