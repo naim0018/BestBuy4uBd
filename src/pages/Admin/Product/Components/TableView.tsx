@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Table,
@@ -46,9 +45,13 @@ const TableView = ({ products }: TableViewProps) => {
   const templateOptions = [
     { value: "template1", label: "Template 1" },
     { value: "template2", label: "Template 2" },
+    { value: "template3", label: "Template 3" },
   ];
 
-  const handleTemplateChange = async (productId: string, newTemplate: string) => {
+  const handleTemplateChange = async (
+    productId: string,
+    newTemplate: string
+  ) => {
     const product = products.find((p) => p._id === productId);
     if (!product) return;
 
@@ -87,7 +90,10 @@ const TableView = ({ products }: TableViewProps) => {
     image: (
       <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
         <img
-          src={product.images[0]?.url || "https://placehold.co/400x400?text=No+Image"}
+          src={
+            product.images[0]?.url ||
+            "https://placehold.co/400x400?text=No+Image"
+          }
           alt={product.images[0]?.alt || product.basicInfo.title}
           className="w-full h-full object-cover"
           onError={(e) => {
@@ -166,7 +172,9 @@ const TableView = ({ products }: TableViewProps) => {
         <Select
           size="sm"
           aria-label="Select template"
-          selectedKeys={[product.additionalInfo?.landingPageTemplate || "template1"]}
+          selectedKeys={[
+            product.additionalInfo?.landingPageTemplate || "template1",
+          ]}
           onChange={(e) => handleTemplateChange(product._id, e.target.value)}
           isDisabled={updatingId === product._id}
           classNames={{
@@ -175,9 +183,7 @@ const TableView = ({ products }: TableViewProps) => {
           startContent={<Layout className="w-3 h-3" />}
         >
           {templateOptions.map((option) => (
-            <SelectItem key={option.value}>
-              {option.label}
-            </SelectItem>
+            <SelectItem key={option.value}>{option.label}</SelectItem>
           ))}
         </Select>
       </div>
@@ -216,10 +222,10 @@ const TableView = ({ products }: TableViewProps) => {
           </Button>
         </Tooltip>
         <Tooltip content="Edit Product">
-          <Button 
-            isIconOnly 
-            size="sm" 
-            variant="light" 
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
             color="primary"
             onPress={() => navigate(`/admin/update-product/${product._id}`)}
           >
@@ -227,12 +233,14 @@ const TableView = ({ products }: TableViewProps) => {
           </Button>
         </Tooltip>
         <Tooltip content="Delete">
-          <Button 
-            isIconOnly 
-            size="sm" 
-            variant="light" 
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
             color="danger"
-            onPress={() => openDeleteModal(product._id, product.basicInfo.title)}
+            onPress={() =>
+              openDeleteModal(product._id, product.basicInfo.title)
+            }
           >
             <Trash2 className="w-4 h-4" />
           </Button>

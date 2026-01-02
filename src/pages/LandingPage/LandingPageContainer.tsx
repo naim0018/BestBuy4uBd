@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useGetProductByIdQuery } from "@/store/Api/ProductApi";
 import Template1LandingPage from "./Template1/LandingPage";
 import Template2LandingPage from "./Template2/LandingPage/LandingPage";
+import Template3LandingPage from "./Template3/LandingPage/LandingPage";
 
 const LandingPageContainer = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +43,8 @@ const LandingPageContainer = () => {
 
   // Dynamic template rendering based on product configuration
   switch (template.toLowerCase()) {
+    case "template3":
+      return <Template3LandingPage product={product} />;
     case "template2":
       return <Template2LandingPage product={product} />;
     case "template1":

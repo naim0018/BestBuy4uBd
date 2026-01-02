@@ -28,6 +28,8 @@
   /* Font Families */
   --font-poppins: "Poppins", sans-serif;
   --font-montserrat: "Montserrat", sans-serif;
+  --font-primary: var(--font-montserrat);
+  --font-secondary: var(--font-poppins);
 }
 
 /* =======================
