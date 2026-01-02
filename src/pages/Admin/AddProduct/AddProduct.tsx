@@ -6,6 +6,7 @@ import ProductPreviewNew from "./Components/ProductPreviewNew";
 import { ProductFormValues } from "./Components/Product";
 import {
   useAddProductMutation,
+  useUpdateProductMutation,
   useGetProductByIdQuery,
 } from "@/store/Api/ProductApi";
 
@@ -26,7 +27,9 @@ export default function ProductAdminPage() {
   });
 
   // RTK Mutation for create/update
-  const [saveProduct, { isLoading: isSaving }] = useAddProductMutation();
+  const [addProduct, { isLoading: isAdding }] = useAddProductMutation();
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const isSaving = isAdding || isUpdating;
 
   // When existing product loads, set it as default values
   useEffect(() => {
@@ -121,6 +124,7 @@ export default function ProductAdminPage() {
           estimatedDelivery: draft.additionalInfo?.estimatedDelivery,
           returnPolicy: draft.additionalInfo?.returnPolicy,
           warranty: draft.additionalInfo?.warranty,
+          landingPageTemplate: draft.additionalInfo?.landingPageTemplate,
         },
         seo: {
           metaTitle: draft.seo?.metaTitle || undefined,
@@ -131,7 +135,13 @@ export default function ProductAdminPage() {
       };
 
       console.log("Sending product data:", productData); // Debug log
-      await saveProduct(productData).unwrap();
+      
+      if (isAdd) {
+        await addProduct(productData).unwrap();
+      } else {
+        await updateProduct({ id: id!, ...productData }).unwrap();
+      }
+
       alert(isAdd ? "Product created" : "Product updated");
       setPreview(false);
     } catch (err) {

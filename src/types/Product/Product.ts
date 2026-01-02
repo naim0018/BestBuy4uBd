@@ -85,6 +85,7 @@ export interface AdditionalInfo {
   estimatedDelivery?: string;
   returnPolicy?: string;
   warranty?: string;
+  landingPageTemplate?: string;
 }
 
 // Product SEO

@@ -27,6 +27,7 @@ export const normalizeProduct = (apiProduct: ApiProduct): ProductDisplay => {
       freeShipping: apiProduct.additionalInfo?.freeShipping || false,
       isFeatured: apiProduct.additionalInfo?.isFeatured || false,
       isOnSale: apiProduct.additionalInfo?.isOnSale || false,
+      landingPageTemplate: apiProduct.additionalInfo?.landingPageTemplate || "template1",
     },
     createdAt: String(apiProduct.createdAt) || "",
     tags: apiProduct.tags || [],

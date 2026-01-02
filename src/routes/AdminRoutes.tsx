@@ -34,4 +34,8 @@ export const adminRoutes = [
     path: "settings",
     element: <Settings />,
   },
+  {
+    path: "update-product/:id",
+    element: <AddProduct />,
+  },
 ];

@@ -82,58 +82,64 @@ const AllProduct = () => {
   return (
     <div className="container mx-auto px-4 py-8">
     {/* Filters and Controls */}
-      <Card className="p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
+      <Card className="p-4 mb-6 shadow-sm border-none bg-gray-50/50">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
           <div className="flex-1">
             <Input
-              placeholder="Search products by name, code, or brand..."
+              placeholder="Search products..."
               startContent={<Search className="w-4 h-4 text-gray-400" />}
               value={searchTerm}
               onChange={handleSearch}
-              size="lg"
+              size="md"
               className="w-full"
+              variant="bordered"
             />
           </div>
 
-          {/* Category Filter */}
-          <div className="w-full md:w-48">
-            <Select
-              label="Category"
-              placeholder="All Categories"
-              selectedKeys={[categoryFilter]}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
-                setPage(1);
-              }}
-              size="lg"
-            >
-              {categories.map((category) => (
-                <SelectItem key={category}>
-                  {category === "all" ? "All Categories" : category}
-                </SelectItem>
-              ))}
-            </Select>
-          </div>
+          <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+            {/* Category Filter */}
+            <div className="w-full sm:w-48">
+              <Select
+                aria-label="Category"
+                placeholder="Category"
+                selectedKeys={[categoryFilter]}
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value);
+                  setPage(1);
+                }}
+                size="md"
+                variant="bordered"
+              >
+                {categories.map((category) => (
+                  <SelectItem key={category} textValue={category}>
+                    {category === "all" ? "All Categories" : category}
+                  </SelectItem>
+                ))}
+              </Select>
+            </div>
 
-          {/* View Toggle */}
-          <div className="flex items-center gap-2">
-            <Button
-              isIconOnly
-              variant={viewMode === "table" ? "solid" : "light"}
-              onClick={() => setViewMode("table")}
-              size="lg"
-            >
-              <List className="w-5 h-5" />
-            </Button>
-            <Button
-              isIconOnly
-              variant={viewMode === "card" ? "solid" : "light"}
-              onClick={() => setViewMode("card")}
-              size="lg"
-            >
-              <Grid className="w-5 h-5" />
-            </Button>
+            {/* View Toggle */}
+            <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-gray-200">
+              <Button
+                isIconOnly
+                variant={viewMode === "table" ? "flat" : "light"}
+                onClick={() => setViewMode("table")}
+                size="sm"
+                color={viewMode === "table" ? "primary" : "default"}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+              <Button
+                isIconOnly
+                variant={viewMode === "card" ? "flat" : "light"}
+                onClick={() => setViewMode("card")}
+                size="sm"
+                color={viewMode === "card" ? "primary" : "default"}
+              >
+                <Grid className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
@@ -199,54 +205,101 @@ const AllProduct = () => {
         </Card>
       </div>
 
-      {/* Products Display */}
-      {viewMode === "table" ? (
-        <TableView products={products} />
-      ) : (
-        <CardView products={products} />
-      )}
-
-      {/* Pagination */}
-      {meta.totalPage > 1 && (
-        <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-8">
+      {/* Top Pagination and Controls */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-500">
+            Total {meta.total} Products
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 font-medium">SHOW:</span>
+            <Select
+              size="sm"
+              className="w-24"
+              selectedKeys={[limit.toString()]}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setPage(1);
+              }}
+              variant="flat"
+            >
+              {[10, 20, 30, 50, 100].map((size) => (
+                <SelectItem key={size} textValue={size.toString()}>
+                  {size} items
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
+        </div>
+        
+        {meta.totalPage > 1 && (
           <Pagination
             total={meta.totalPage}
             page={page}
             onChange={handlePageChange}
             showControls
             color="primary"
+            size="sm"
             classNames={{
               cursor: "bg-primary",
             }}
           />
+        )}
+      </div>
+
+      {/* Products Display */}
+      <div className="min-h-[400px]">
+        {viewMode === "table" ? (
+          <TableView products={products} />
+        ) : (
+          <CardView products={products} />
+        )}
+      </div>
+
+      {/* Bottom Pagination */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="text-sm text-gray-500">
+          Showing {Math.min((page - 1) * limit + 1, meta.total)} to{" "}
+          {Math.min(page * limit, meta.total)} of {meta.total} products
+        </div>
+
+        <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Rows per page:</span>
             <Select
               size="sm"
-              className="w-20"
+              className="w-24"
               selectedKeys={[limit.toString()]}
               onChange={(e) => {
                 setLimit(Number(e.target.value));
                 setPage(1);
               }}
+              variant="flat"
             >
-              {[12, 24, 36, 48].map((size) => (
-                <SelectItem key={size}>
+              {[10, 20, 30, 50, 100].map((size) => (
+                <SelectItem key={size} textValue={size.toString()}>
                   {size}
                 </SelectItem>
               ))}
             </Select>
           </div>
-        </div>
-      )}
 
-      {/* Footer Info */}
-      {products.length > 0 && (
-        <div className="text-center text-sm text-gray-500 mt-6">
-          Showing {Math.min((page - 1) * limit + 1, meta.total)} to{" "}
-          {Math.min(page * limit, meta.total)} of {meta.total} products
+          {meta.totalPage > 1 && (
+            <Pagination
+              total={meta.totalPage}
+              page={page}
+              onChange={handlePageChange}
+              showControls
+              color="primary"
+              size="sm"
+              classNames={{
+                cursor: "bg-primary",
+              }}
+            />
+          )}
         </div>
-      )}
+      </div>
+
 
       {products.length === 0 && (
         <Card className="p-8 text-center">

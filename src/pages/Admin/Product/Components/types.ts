@@ -26,6 +26,7 @@ export interface ProductDisplay {
     freeShipping: boolean;
     isFeatured: boolean;
     isOnSale: boolean;
+    landingPageTemplate?: string;
   };
   createdAt: string;
   tags: string[];

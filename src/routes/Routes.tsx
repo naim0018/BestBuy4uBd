@@ -8,7 +8,7 @@
     import NotFound from "@/pages/NotFound";
     import { routesGenerator } from "@/utils/Generator/RoutesGenerator";
     import DashboardLayout from "@/Layout/DashboardLayout/DashboardLayout";
-import LandingPage from "@/pages/LandingPage/LandingPage";
+import LandingPageContainer from "@/pages/LandingPage/LandingPageContainer";
 
     const routes = createBrowserRouter([
       {
@@ -42,7 +42,7 @@ import LandingPage from "@/pages/LandingPage/LandingPage";
         ],
       },{
         path:"/:id",
-        element:<LandingPage/>
+        element:<LandingPageContainer/>
       },
       {
         path: "*",

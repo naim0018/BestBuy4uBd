@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Chip,
@@ -23,28 +23,14 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useState } from "react";
-import { useGetProductByIdQuery } from "@/store/Api/ProductApi";
+import { Product } from "@/types/Product/Product";
 
-const LandingPage = () => {
-  const { id } = useParams();
+const LandingPage = ({ product }: { product: Product }) => {
   const navigate = useNavigate();
-  const { data, isLoading, isError } = useGetProductByIdQuery(
-    { id: id! },
-    { skip: !id }
-  );
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const product = data?.data;
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green"></div>
-      </div>
-    );
-  }
-
-  if (isError || !product) {
+  if (!product) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4">
         <div className="text-red-500 text-6xl mb-4">⚠️</div>
@@ -118,9 +104,15 @@ const LandingPage = () => {
           <div className="space-y-4">
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group">
               <img
-                src={images?.[selectedImage]?.url || "/placeholder-product.jpg"}
+                src={images?.[selectedImage]?.url || "https://placehold.co/600x600?text=No+Image"}
                 alt={basicInfo?.title}
                 className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  if (target.src !== "https://placehold.co/600x600?text=No+Image") {
+                    target.src = "https://placehold.co/600x600?text=No+Image";
+                  }
+                }}
               />
               {additionalInfo?.isOnSale && discountPercentage > 0 && (
                 <div className="absolute top-4 left-4">
@@ -149,9 +141,15 @@ const LandingPage = () => {
                   }`}
                 >
                   <img
-                    src={img.url}
+                    src={img.url || "https://placehold.co/100x100?text=No+Image"}
                     alt={`${basicInfo?.title} - view ${index + 1}`}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      if (target.src !== "https://placehold.co/100x100?text=No+Image") {
+                        target.src = "https://placehold.co/100x100?text=No+Image";
+                      }
+                    }}
                   />
                 </button>
               ))}

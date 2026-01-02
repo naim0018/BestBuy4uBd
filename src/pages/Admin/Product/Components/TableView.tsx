@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import {
   Table,
   TableHeader,
@@ -10,11 +11,16 @@ import {
   Chip,
   Tooltip,
   Badge,
+  Select,
+  SelectItem,
 } from "@heroui/react";
-import { Eye, Edit, Trash2, Star } from "lucide-react";
+import { Eye, Edit, Trash2, Star, Layout } from "lucide-react";
 import { ProductDisplay } from "./types";
 import { formatPrice, getStatusColor } from "./utils";
 import { useNavigate } from "react-router-dom";
+import { useUpdateProductMutation } from "@/store/Api/ProductApi";
+import { toast } from "react-toastify";
+import DeleteProductModal from "./DeleteProductModal";
 
 interface TableViewProps {
   products: ProductDisplay[];
@@ -22,6 +28,48 @@ interface TableViewProps {
 
 const TableView = ({ products }: TableViewProps) => {
   const navigate = useNavigate();
+  const [updateProduct] = useUpdateProductMutation();
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Delete modal state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  const openDeleteModal = (id: string, name: string) => {
+    setProductToDelete({ id, name });
+    setIsDeleteModalOpen(true);
+  };
+
+  const templateOptions = [
+    { value: "template1", label: "Template 1" },
+    { value: "template2", label: "Template 2" },
+  ];
+
+  const handleTemplateChange = async (productId: string, newTemplate: string) => {
+    const product = products.find((p) => p._id === productId);
+    if (!product) return;
+
+    setUpdatingId(productId);
+    try {
+      await updateProduct({
+        id: productId,
+        additionalInfo: {
+          ...product.additionalInfo,
+          landingPageTemplate: newTemplate,
+        },
+      }).unwrap();
+      toast.success("Template updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update template");
+      console.error("Template update error:", error);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const tableColumns = [
     { key: "image", label: "Product" },
     { key: "title", label: "Name" },
@@ -29,6 +77,7 @@ const TableView = ({ products }: TableViewProps) => {
     { key: "stock", label: "Stock" },
     { key: "sales", label: "Sales" },
     { key: "rating", label: "Rating" },
+    { key: "template", label: "Template" },
     { key: "status", label: "Status" },
     { key: "actions", label: "Actions" },
   ];
@@ -38,17 +87,20 @@ const TableView = ({ products }: TableViewProps) => {
     image: (
       <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
         <img
-          src={product.images[0]?.url || "/placeholder-product.jpg"}
+          src={product.images[0]?.url || "https://placehold.co/400x400?text=No+Image"}
           alt={product.images[0]?.alt || product.basicInfo.title}
           className="w-full h-full object-cover"
           onError={(e) => {
-            e.currentTarget.src = "/placeholder-product.jpg";
+            const target = e.currentTarget as HTMLImageElement;
+            if (target.src !== "https://placehold.co/400x400?text=No+Image") {
+              target.src = "https://placehold.co/400x400?text=No+Image";
+            }
           }}
         />
       </div>
     ),
     title: (
-      <div className="flex flex-col">
+      <div className="flex flex-col min-w-[200px]">
         <p className="font-medium text-sm line-clamp-1">
           {product.basicInfo.title}
         </p>
@@ -57,7 +109,7 @@ const TableView = ({ products }: TableViewProps) => {
       </div>
     ),
     price: (
-      <div className="flex flex-col">
+      <div className="flex flex-col min-w-[120px]">
         <div className="flex items-center gap-1">
           <span className="font-medium">
             {formatPrice(product.price.discounted)}
@@ -76,7 +128,7 @@ const TableView = ({ products }: TableViewProps) => {
       </div>
     ),
     stock: (
-      <div className="flex flex-col">
+      <div className="flex flex-col min-w-[100px]">
         <span className="font-medium">{product.stockQuantity}</span>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
@@ -107,6 +159,27 @@ const TableView = ({ products }: TableViewProps) => {
         <span className="text-xs text-gray-500">
           ({product.rating.count} reviews)
         </span>
+      </div>
+    ),
+    template: (
+      <div className="min-w-[140px]">
+        <Select
+          size="sm"
+          aria-label="Select template"
+          selectedKeys={[product.additionalInfo?.landingPageTemplate || "template1"]}
+          onChange={(e) => handleTemplateChange(product._id, e.target.value)}
+          isDisabled={updatingId === product._id}
+          classNames={{
+            trigger: "min-h-unit-8 h-8",
+          }}
+          startContent={<Layout className="w-3 h-3" />}
+        >
+          {templateOptions.map((option) => (
+            <SelectItem key={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </Select>
       </div>
     ),
     status: (
@@ -143,12 +216,24 @@ const TableView = ({ products }: TableViewProps) => {
           </Button>
         </Tooltip>
         <Tooltip content="Edit Product">
-          <Button isIconOnly size="sm" variant="light" color="primary">
+          <Button 
+            isIconOnly 
+            size="sm" 
+            variant="light" 
+            color="primary"
+            onPress={() => navigate(`/admin/update-product/${product._id}`)}
+          >
             <Edit className="w-4 h-4" />
           </Button>
         </Tooltip>
         <Tooltip content="Delete">
-          <Button isIconOnly size="sm" variant="light" color="danger">
+          <Button 
+            isIconOnly 
+            size="sm" 
+            variant="light" 
+            color="danger"
+            onPress={() => openDeleteModal(product._id, product.basicInfo.title)}
+          >
             <Trash2 className="w-4 h-4" />
           </Button>
         </Tooltip>
@@ -157,7 +242,7 @@ const TableView = ({ products }: TableViewProps) => {
   });
 
   return (
-    <div className="p-0 overflow-hidden border border-gray-100 rounded-lg">
+    <div className="p-0 overflow-x-auto border border-gray-100 rounded-lg bg-white relative">
       <Table
         aria-label="Products table"
         className="w-full"
@@ -183,6 +268,13 @@ const TableView = ({ products }: TableViewProps) => {
           )}
         </TableBody>
       </Table>
+
+      <DeleteProductModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        productId={productToDelete?.id || null}
+        productName={productToDelete?.name || null}
+      />
     </div>
   );
 };

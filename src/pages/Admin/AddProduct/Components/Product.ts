@@ -118,6 +118,7 @@ export const ProductFormSchema = z.object({
       estimatedDelivery: z.string().optional(),
       returnPolicy: z.string().optional(),
       warranty: z.string().optional(),
+      landingPageTemplate: z.string().optional(),
     })
     .optional(),
   seo: ProductSEOSchema.optional(),
