@@ -55,7 +55,6 @@ const Dashboard = () => {
       pollingInterval: 30000,
     }
   );
-  console.log(data.data);
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
