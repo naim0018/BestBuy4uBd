@@ -19,7 +19,7 @@ import { ProductDisplay } from "./types";
 import { formatPrice, getStatusColor } from "./utils";
 import { useNavigate } from "react-router-dom";
 import { useUpdateProductMutation } from "@/store/Api/ProductApi";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import DeleteProductModal from "./DeleteProductModal";
 
 interface TableViewProps {

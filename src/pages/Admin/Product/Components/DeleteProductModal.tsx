@@ -9,7 +9,7 @@ import {
 } from "@heroui/react";
 import { AlertTriangle } from "lucide-react";
 import { useDeleteProductMutation } from "@/store/Api/ProductApi";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 interface DeleteProductModalProps {
   isOpen: boolean;

@@ -2,7 +2,7 @@
 import { useCreateOrderMutation } from "@/store/Api/OrderApi";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { clearCart } from "@/store/Slices/CartSlice";
 
 

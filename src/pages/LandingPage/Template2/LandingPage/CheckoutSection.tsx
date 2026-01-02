@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "sonner";
 
 interface OrderDetails {
   title: string;
@@ -65,8 +66,40 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
     }
   };
 
+  const handleButtonClick = () => {
+    if (!formValid && !isLoading) {
+      const form = document.querySelector('form');
+      if (form) {
+        const nameInput = form.querySelector('input[name="name"]') as HTMLInputElement;
+        const phoneInput = form.querySelector('input[name="phone"]') as HTMLInputElement;
+        const addressInput = form.querySelector('textarea[name="address"]') as HTMLTextAreaElement;
+
+        if (!nameInput?.value) {
+          return toast.warning("আপনার নাম প্রদান করুন");
+        }
+        if (!phoneInput?.value) {
+          return toast.warning("আপনার ফোন নাম্বার প্রদান করুন");
+        }
+        if (phoneInput?.validity.patternMismatch) {
+          return toast.warning("সঠিক ফোন নাম্বার প্রদান করুন (যেমন: 017XXXXXXXX)");
+        }
+        if (!addressInput?.value) {
+          return toast.warning("আপনার ঠিকানা প্রদান করুন");
+        }
+        
+        if (!form.checkValidity()) {
+          return toast.warning("অনুগ্রহ করে সব তথ্য সঠিকভাবে পূরণ করুন");
+        }
+      }
+    }
+  };
+
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!formValid) {
+      handleButtonClick();
+      return;
+    }
     const target = e.currentTarget;
     const formData = {
       name: (target.elements.namedItem("name") as HTMLInputElement).value,
@@ -162,17 +195,21 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                   কুপন কোড <span className="text-gray-500 text-sm">(ঐচ্ছিক)</span>
                 </label>
                 <div className="flex gap-2 w-full">
-                  <div className="relative w-full border-2 border-green-200 rounded-xl bg-white">
+                  <div className="relative w-full border-2 border-green-200 rounded-xl bg-white overflow-hidden">
                     <input
                       type="text"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       name="cuponCode"
-                      className=" w-[70%] px-4 md:px-5 py-2 md:py-3 rounded-xl  focus:border-green-500 focus:ring-0 transition-colors bg-white"
+                      className="w-full pr-24 px-4 md:px-5 py-2 md:py-3 rounded-xl focus:border-green-500 focus:ring-0 transition-colors bg-white"
                       placeholder="কুপন কোড"
                     />
-                    <button onClick={applyCoupon} type="button" className="px-3 md:px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors absolute right-1 top-1/2 transform -translate-y-1/2">
-                      যাচাই করুন
+                    <button 
+                      onClick={applyCoupon} 
+                      type="button" 
+                      className="px-3 md:px-4 py-1.5 md:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors absolute right-1 top-1/2 transform -translate-y-1/2 text-sm font-bold"
+                    >
+                      যাচাই
                     </button>
                   </div>
                 </div>
@@ -194,9 +231,10 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
 
           <button
             type="submit"
-            disabled={!formValid || isLoading}
+            onClick={handleButtonClick}
+            disabled={isLoading}
             className={`w-full mt-6 md:mt-10 bg-gradient-to-r 
-              ${formValid && !isLoading
+              ${!isLoading
                 ? 'from-green-600 to-green-500 hover:from-green-700 hover:to-green-600'
                 : 'from-gray-400 to-gray-500 cursor-not-allowed'
               } 
@@ -204,6 +242,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
               transition-all duration-300 transform hover:scale-[1.02] 
               focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-lg
               relative
+              ${!formValid ? 'opacity-90' : 'opacity-100'}
             `}
           >
             {isLoading ? (
@@ -238,9 +277,15 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
             <div className="flex flex-col xl:flex-row items-center gap-3 md:gap-6 p-3 md:p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
               <div className=" relative">
                 <img
-                  src={image?.url}
-                  alt={image?.alt}
-                  className="size-40 mx-auto object-cover rounded-xl "
+                  src={image?.url || "https://placehold.co/400x400?text=Product"}
+                  alt={image?.alt || title}
+                  className="size-40 mx-auto object-cover rounded-xl"
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement;
+                    if (target.src !== "https://placehold.co/400x400?text=Product") {
+                      target.src = "https://placehold.co/400x400?text=Product";
+                    }
+                  }}
                 />
                 <div className="absolute -top-2 -right-2 bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
                   {quantity}

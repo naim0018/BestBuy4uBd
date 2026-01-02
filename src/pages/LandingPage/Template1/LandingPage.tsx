@@ -5,8 +5,6 @@ import {
   Card,
   CardBody,
   Divider,
-  Breadcrumbs,
-  BreadcrumbItem,
 } from "@heroui/react";
 import {
   Star,
@@ -26,11 +24,12 @@ import { Product } from "@/types/Product/Product";
 import { useCreateOrderMutation } from "@/store/Api/OrderApi";
 import { useDispatch } from "react-redux";
 import { clearCart } from "@/store/Slices/CartSlice";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "sonner";
 import OrderSuccessModal from "../Template2/LandingPage/OrderSuccessModal";
 import CheckoutSection from "../Template2/LandingPage/CheckoutSection";
 import RelatedProducts from "../Components/RelatedProducts";
+import AnimatedContainer from "../Components/AnimatedContainer";
+import DynamicBanner from "../Components/DynamicBanner";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const navigate = useNavigate();
@@ -223,12 +222,6 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        theme="light"
-      />
 
       {successOrderDetails && (
         <OrderSuccessModal
@@ -238,30 +231,41 @@ const LandingPage = ({ product }: { product: Product }) => {
         />
       )}
 
-      {/* Breadcrumb & Back */}
-      <div className="container mx-auto px-4 py-6">
-        <Button
-          variant="light"
-          startContent={<ArrowLeft className="w-4 h-4" />}
-          onPress={() => navigate(-1)}
-          className="mb-4 text-gray-600 hover:text-black"
-        >
-          Back to Products
-        </Button>
-        <Breadcrumbs>
-          <BreadcrumbItem>Home</BreadcrumbItem>
-          <BreadcrumbItem>Products</BreadcrumbItem>
-          <BreadcrumbItem>{basicInfo?.category}</BreadcrumbItem>
-          <BreadcrumbItem className="text-primary-green font-medium">
-            {basicInfo?.title}
-          </BreadcrumbItem>
-        </Breadcrumbs>
-      </div>
+      {/* Dynamic Banner */}
+      <DynamicBanner
+        title={basicInfo.title}
+        regularPrice={price.regular}
+        discountedPrice={currentPrice}
+        onShopNow={scrollToCheckout}
+        backgroundImage={images?.[0]?.url}
+      />
 
-      <div className="container mx-auto px-4">
+      {/* Breadcrumb & Back */}
+      {/* <AnimatedContainer direction="down" delay={0.1}>
+        <div className="container mx-auto px-4 py-8">
+          <Button
+            variant="light"
+            startContent={<ArrowLeft className="w-4 h-4" />}
+            onPress={() => navigate(-1)}
+            className="mb-4 text-gray-600 hover:text-black"
+          >
+            Back to Products
+          </Button>
+          <Breadcrumbs>
+            <BreadcrumbItem>Home</BreadcrumbItem>
+            <BreadcrumbItem>Products</BreadcrumbItem>
+            <BreadcrumbItem>{basicInfo?.category}</BreadcrumbItem>
+            <BreadcrumbItem className="text-primary-green font-medium">
+              {basicInfo?.title}
+            </BreadcrumbItem>
+          </Breadcrumbs>
+        </div>
+      </AnimatedContainer> */}
+
+      <div className="container mx-auto px-4 mt-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Column: Image Gallery */}
-          <div className="space-y-4">
+          <AnimatedContainer direction="right" className="space-y-4">
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group">
               <img
                 src={
@@ -324,20 +328,22 @@ const LandingPage = ({ product }: { product: Product }) => {
                 </button>
               ))}
             </div>
-          </div>
+          </AnimatedContainer>
 
           {/* Right Column: Product Details */}
-          <div className="space-y-8">
+          <AnimatedContainer direction="left" className="space-y-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Chip
-                  size="sm"
-                  variant="flat"
-                  color="primary"
-                  className="uppercase tracking-wider font-semibold"
-                >
-                  {basicInfo?.brand}
-                </Chip>
+                {basicInfo?.brand && (
+                  <Chip
+                    size="sm"
+                    variant="flat"
+                    color="primary"
+                    className="uppercase tracking-wider font-semibold"
+                  >
+                    {basicInfo?.brand}
+                  </Chip>
+                )}
                 {stockStatus === "In Stock" ? (
                   <Chip
                     size="sm"
@@ -381,7 +387,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                 <span className="text-4xl font-bold text-primary-green">
                   ৳{(currentPrice || discountedPrice).toLocaleString()}
                 </span>
-                {regularPrice > discountedPrice && (
+                {regularPrice > currentPrice && (
                   <div className="flex flex-col mb-1">
                     <span className="text-lg text-gray-400 line-through decoration-1">
                       ৳{regularPrice.toLocaleString()}
@@ -457,116 +463,130 @@ const LandingPage = ({ product }: { product: Product }) => {
                 </div>
               </div>
             </div>
-          </div>
+          </AnimatedContainer>
         </div>
 
         {/* Flattened Information Sections */}
         <div className="mt-20 space-y-16">
           {/* Description */}
-          <section>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-green-50 rounded-lg text-primary-green">
-                <Layout className="w-6 h-6" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Product Description
-              </h2>
-            </div>
-            <Card className="shadow-none border border-gray-100 bg-gray-50/30">
-              <CardBody className="p-8">
-                <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
-                  {basicInfo?.description}
+          {basicInfo?.description && (
+            <AnimatedContainer>
+              <section>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-green-50 rounded-lg text-primary-green">
+                    <Layout className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Product Description
+                  </h2>
                 </div>
-              </CardBody>
-            </Card>
-          </section>
+                <Card className="shadow-none border border-gray-100 bg-gray-50/30">
+                  <CardBody className="p-8">
+                    <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
+                      {basicInfo?.description}
+                    </div>
+                  </CardBody>
+                </Card>
+              </section>
+            </AnimatedContainer>
+          )}
 
           {/* Specifications */}
           {specifications && specifications.length > 0 && (
-            <section>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-green-50 rounded-lg text-primary-green">
-                  <ClipboardList className="w-6 h-6" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Technical Specifications
-                </h2>
-              </div>
-              <Card className="shadow-none border border-gray-100">
-                <CardBody className="p-0">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 p-8">
-                    {specifications.map((specGroup, idx) => (
-                      <div key={idx}>
-                        <h3 className="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                          {specGroup.group}
-                        </h3>
-                        <ul className="space-y-3">
-                          {specGroup.items.map((item, i) => (
-                            <li
-                              key={i}
-                              className="flex justify-between text-sm py-1"
-                            >
-                              <span className="text-gray-500 font-medium">
-                                {item.name}
-                              </span>
-                              <span className="text-gray-900 font-semibold text-right">
-                                {item.value}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
+            <AnimatedContainer delay={0.1}>
+              <section>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-green-50 rounded-lg text-primary-green">
+                    <ClipboardList className="w-6 h-6" />
                   </div>
-                </CardBody>
-              </Card>
-            </section>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Technical Specifications
+                  </h2>
+                </div>
+                <Card className="shadow-none border border-gray-100">
+                  <CardBody className="p-0">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 p-8">
+                      {specifications.map((specGroup, idx) => (
+                        <div key={idx}>
+                          <h3 className="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                            {specGroup.group}
+                          </h3>
+                          <ul className="space-y-3">
+                            {specGroup.items.map((item, i) => (
+                              <li
+                                key={i}
+                                className="flex justify-between text-sm py-1"
+                              >
+                                <span className="text-gray-500 font-medium">
+                                  {item.name}
+                                </span>
+                                <span className="text-gray-900 font-semibold text-right">
+                                  {item.value}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </CardBody>
+                </Card>
+              </section>
+            </AnimatedContainer>
           )}
 
-          {/* Reviews coming soon placeholder */}
-          <section>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-green-50 rounded-lg text-primary-green">
-                <MessageSquare className="w-6 h-6" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Customer Reviews ({reviewCount})
-              </h2>
-            </div>
-            <Card className="shadow-none border border-gray-100 p-12 text-center bg-gray-50/50">
-              <p className="text-gray-500 italic">
-                No reviews yet. Be the first to review this product!
-              </p>
-            </Card>
-          </section>
+          {/* Reviews placeholder */}
+          {reviewCount > 0 && (
+            <AnimatedContainer delay={0.2}>
+              <section>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-green-50 rounded-lg text-primary-green">
+                    <MessageSquare className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Customer Reviews ({reviewCount})
+                  </h2>
+                </div>
+                <Card className="shadow-none border border-gray-100 p-12 text-center bg-gray-50/50">
+                  <p className="text-gray-500 italic">
+                    No reviews yet. Be the first to review this product!
+                  </p>
+                </Card>
+              </section>
+            </AnimatedContainer>
+          )}
 
-          {/* Checkout Section directly in Template 1 */}
-          <div id="checkout" className="pt-10">
-            <CheckoutSection
-              orderDetails={{
-                title: basicInfo.title,
-                price: currentPrice,
-                variants: selectedVariants,
-                quantity: quantity,
-                image: images?.[0],
-                product: product,
-                discount: discount,
-              }}
-              handleSubmit={handleSubmit}
-              onQuantityChange={setQuantity}
-              onVariantChange={handleVariantChange}
-              isLoading={isOrderLoading}
-              couponCode={couponCode}
-              setCouponCode={setCouponCode}
-              applyCoupon={applyCoupon}
-            />
-          </div>
+          {/* Checkout Section */}
+          <AnimatedContainer direction="none" delay={0.3}>
+            <div id="checkout" className="pt-10">
+              <CheckoutSection
+                orderDetails={{
+                  title: basicInfo.title,
+                  price: currentPrice,
+                  variants: selectedVariants,
+                  quantity: quantity,
+                  image: images?.[0],
+                  product: product,
+                  discount: discount,
+                }}
+                handleSubmit={handleSubmit}
+                onQuantityChange={setQuantity}
+                onVariantChange={handleVariantChange}
+                isLoading={isOrderLoading}
+                couponCode={couponCode}
+                setCouponCode={setCouponCode}
+                applyCoupon={applyCoupon}
+              />
+            </div>
+          </AnimatedContainer>
 
           {/* Related Products */}
-          <RelatedProducts
-            category={basicInfo?.category}
-            currentProductId={product._id}
-          />
+          <AnimatedContainer>
+            <RelatedProducts
+              category={basicInfo?.category}
+              currentProductId={product._id}
+            />
+          </AnimatedContainer>
         </div>
       </div>
     </div>

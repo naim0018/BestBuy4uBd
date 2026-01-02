@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { useNavigate } from 'react-router-dom';
 
@@ -43,16 +43,7 @@ const OrderSuccessModal = ({ isOpen, onClose, orderDetails }: OrderSuccessModalP
   const handleCopyOrderId = () => {
     navigator.clipboard.writeText(orderDetails.orderId);
     setCopied(true);
-    toast.info('অর্ডার আইডি কপি করা হয়েছে!', {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      className: "bg-blue-50 border border-blue-200",
-    });
+    toast.info('অর্ডার আইডি কপি করা হয়েছে!');
     setTimeout(() => setCopied(false), 1000);
   };
 

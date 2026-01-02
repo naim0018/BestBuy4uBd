@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,6 +21,7 @@ interface OrderSuccessModalProps {
 const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({ isOpen, onClose, orderDetails }) => {
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
+
   useEffect(() => {
     if (isOpen) {
       confetti({
@@ -34,21 +35,12 @@ const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({ isOpen, onClose, 
 
   if (!isOpen) {
     return null;
-  };
+  }
 
   const handleCopyOrderId = () => {
     navigator.clipboard.writeText(orderDetails.orderId);
     setCopied(true);
-    toast.info('অর্ডার আইডি কপি করা হয়েছে!', {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      className: "bg-blue-50 border border-blue-200",
-    });
+    toast.info('অর্ডার আইডি কপি করা হয়েছে!');
     setTimeout(() => setCopied(false), 1000);
   };
 
@@ -100,7 +92,7 @@ const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({ isOpen, onClose, 
                         </svg>
                       ) : (
                         <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                         </svg>
                       )}
                     </button>
@@ -117,9 +109,9 @@ const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({ isOpen, onClose, 
                 {
                   orderDetails.appliedCoupon && orderDetails.appliedCoupon.discount > 0 && (
                     <div className="flex justify-between">
-                  <span className="text-gray-600">ডিস্কাউন্ট:</span>
-                  <span className="font-medium">{orderDetails.appliedCoupon.code} : ৳{orderDetails.appliedCoupon.discount}</span>
-                </div>
+                      <span className="text-gray-600">ডিস্কাউন্ট:</span>
+                      <span className="font-medium">{orderDetails.appliedCoupon.code} : ৳{orderDetails.appliedCoupon.discount}</span>
+                    </div>
                   )
                 }
                 <div className="flex justify-between pt-2 border-green-200 border-t font-bold text-green-700 text-lg">

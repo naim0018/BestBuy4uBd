@@ -6,8 +6,7 @@ import { Helmet } from "react-helmet";
 import { useDispatch } from "react-redux";
 import { clearCart } from "../../../../store/Slices/CartSlice";
 import { useCreateOrderMutation } from "../../../../store/Api/OrderApi";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "sonner";
 import OrderSuccessModal from "./OrderSuccessModal";
 import { FaHome } from "react-icons/fa";
 import { Product } from "@/types/Product/Product";
@@ -15,6 +14,8 @@ import CheckoutSection from "./CheckoutSection";
 import LandingPageProductDetails from "./DecomposedLandingPage Component/LandingPageProductDetails";
 import LandingPageHeroSection from "./DecomposedLandingPage Component/LandingPageHeroSection";
 import RelatedProducts from "../../Components/RelatedProducts";
+import DynamicBanner from "../../Components/DynamicBanner";
+import AnimatedContainer from "../../Components/AnimatedContainer";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
@@ -206,25 +207,15 @@ const LandingPage = ({ product }: { product: Product }) => {
     } catch (error: any) {
       toast.error(
         <div>
-          <h3 className="font-bold text-red-800">
+          <h3 className="font-bold">
             দুঃখিত! অর্ডার সম্পন্ন করা যায়নি।
           </h3>
           {error.data?.message && (
-            <p className="text-sm text-red-600 mt-1">
+            <p className="text-sm mt-1">
               কারণ: {error.data.message}
             </p>
           )}
-        </div>,
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          className: "bg-red-50 border border-red-200",
-        }
+        </div>
       );
     }
   };
@@ -261,18 +252,22 @@ const LandingPage = ({ product }: { product: Product }) => {
         </Link>
       </div>
 
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        theme="light"
-      />
+      {/* Toast notifications are handled globally via Toaster in main.tsx */}
 
       <Helmet>
         <title>{product?.seo?.metaTitle || product?.basicInfo?.title}</title>
         <meta name="description" content={product?.seo?.metaDescription} />
         <meta name="slug" content={product?.seo?.slug} />
       </Helmet>
+
+      {/* Dynamic Banner */}
+      <DynamicBanner
+        title={product.basicInfo.title}
+        regularPrice={product.price.regular}
+        discountedPrice={currentPrice}
+        onShopNow={scrollToCheckout}
+        backgroundImage={product.images?.[0]?.url}
+      />
 
       {successOrderDetails && (
         <OrderSuccessModal
@@ -283,18 +278,20 @@ const LandingPage = ({ product }: { product: Product }) => {
       )}
 
       {/* Hero Section with Product */}
-      <LandingPageHeroSection
-        product={product}
-        currentImage={currentImage}
-        currentPrice={currentPrice}
-        setCurrentImage={setCurrentImage}
-        quantity={quantity}
-        handleVariantSelect={handleVariantSelect}
-        selectedVariants={selectedVariants}
-        handleIncrement={handleIncrement}
-        handleDecrement={handleDecrement}
-        scrollToCheckout={scrollToCheckout}
-      />
+      <AnimatedContainer>
+        <LandingPageHeroSection
+          product={product}
+          currentImage={currentImage}
+          currentPrice={currentPrice}
+          setCurrentImage={setCurrentImage}
+          quantity={quantity}
+          handleVariantSelect={handleVariantSelect}
+          selectedVariants={selectedVariants}
+          handleIncrement={handleIncrement}
+          handleDecrement={handleDecrement}
+          scrollToCheckout={scrollToCheckout}
+        />
+      </AnimatedContainer>
 
       {/* Product Details Sections */}
       <LandingPageProductDetails
@@ -312,22 +309,26 @@ const LandingPage = ({ product }: { product: Product }) => {
       {/* Checkout Section */}
       <div className="bg-gray-50 py-16" id="checkout">
         <div className="container mx-auto px-4">
-          <CheckoutSection
-            orderDetails={orderDetails}
-            handleSubmit={handleSubmit}
-            onQuantityChange={setQuantity}
-            onVariantChange={handleVariantSelect}
-            isLoading={isOrderLoading}
-            couponCode={couponCode}
-            setCouponCode={setCouponCode}
-            applyCoupon={applyCoupon}
-          />
+          <AnimatedContainer direction="none" delay={0.1}>
+            <CheckoutSection
+              orderDetails={orderDetails}
+              handleSubmit={handleSubmit}
+              onQuantityChange={setQuantity}
+              onVariantChange={handleVariantSelect}
+              isLoading={isOrderLoading}
+              couponCode={couponCode}
+              setCouponCode={setCouponCode}
+              applyCoupon={applyCoupon}
+            />
+          </AnimatedContainer>
         </div>
       </div>
       
       {/* Related Products */}
       <div className="container mx-auto px-4 pb-20">
-        <RelatedProducts category={product.basicInfo.category} currentProductId={product._id} />
+        <AnimatedContainer delay={0.2}>
+          <RelatedProducts category={product.basicInfo.category} currentProductId={product._id} />
+        </AnimatedContainer>
       </div>
     </div>
   );
