@@ -8,7 +8,6 @@
 ========================== */
 @import "tailwindcss";
 
-@import "tailwindcss";
 @plugin '../hero.ts';
 /* Note: You may need to change the path to fit your project structure */
 @source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
@@ -35,34 +34,48 @@
    🌈 Root Color Theme Variables
 ========================== */
 :root {
-  --primary-background: #f1f5f8;
-  --light-background: #fefefe;
-  --border: #e8eaeb;
+  /* Light Mode (Base) */
+  --primary-background: #f8fafc; /* Slate 50 */
+  --light-background: #ffffff; /* White */
+  --border: #e2e8f0; /* Slate 200 */
 
   --primary-blue: #0082fa;
-  --dark-blue: #1c2a33;
-  --light-gray: #70797e;
+  --dark-blue: #0f172a; /* Slate 900 (Text) */
+  --light-gray: #64748b; /* Slate 500 (Subtext) */
 
-  --primary-green: #08ad36;
-  --light-green: #08ad361a;
+  --primary-green: #4ade80; /* Green 400 */
+  --light-green: #4ade801a;
 
-  --primary-yellow: #fcab3f;
-  --light-yellow: #fcab3f1a;
+  --primary-yellow: #facc15; /* Yellow 400 */
+  --light-yellow: #facc151a;
 
-  --primary-orange: #ffa600;
-  --light-orange: #ffa6001a;
+  --primary-orange: #fb923c; /* Orange 400 */
+  --light-orange: #fb923c1a;
 
-  --primary-red: #ff0000;
-  --light-red: #ff00001a;
+  --primary-red: #f87171; /* Red 400 */
+  --light-red: #f871711a;
 
-  --primary-purple: #8a38f5;
-  --light-purple: #8a38f51a;
+  --primary-purple: #a78bfa; /* Violet 400 */
+  --light-purple: #a78bfa1a;
 
-  --primary-purple-new: #9747ff;
-  --light-purple-new: #9747ff1a;
+  --primary-purple-new: #c084fc; /* Purple 400 */
+  --light-purple-new: #c084fc1a;
 
-  --primary-cyan: #00c7f4;
-  --light-cyan: #00c7f41a;
+  --primary-cyan: #22d3ee; /* Cyan 400 */
+  --light-cyan: #22d3ee1a;
+}
+
+/* Dark Mode Implementation */
+.dark {
+  --primary-background: #020617; /* Slate 950 */
+  --light-background: #0f172a; /* Slate 900 */
+  --border: #1e293b; /* Slate 800 */
+
+  --dark-blue: #f8fafc; /* Slate 50 (Text) */
+  --light-gray: #94a3b8; /* Slate 400 (Subtext) */
+  
+  --primary-green: #4ade80; /* Keep vibrant */
+  --light-green: #4ade8020;
 }
 
 /* =======================
@@ -101,10 +114,14 @@
 
   body {
     font-family: var(--font-montserrat);
+    background-color: var(--primary-background);
+    color: var(--dark-blue);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   * {
     font-family: var(--font-montserrat);
+    @apply border-border; /* Apply default border color */
   }
 
   *:focus,
@@ -115,7 +132,7 @@
 
   /* Headings */
   h1 {
-    @apply font-semibold;
+    @apply font-semibold text-dark-blue;
     font-size: clamp(1.875rem, 3vw + 1rem, 2rem); /* 28px → 56px */
     line-height: 1.2;
   }
@@ -127,19 +144,19 @@
   }
 
   h3 {
-    @apply font-medium;
+    @apply font-medium text-dark-blue;
     font-size: clamp(1rem, 2vw + 0.25rem, 1.25rem); /* 16px → 20px */
     line-height: 1.4;
   }
 
   h4 {
-    @apply font-medium;
+    @apply font-medium text-dark-blue;
     font-size: 1.125rem; /* 18px */
     line-height: 1.5;
   }
 
   h5 {
-    @apply font-normal;
+    @apply font-normal text-dark-blue;
     font-size: 1rem; /* 16px */
     line-height: 1.5;
   }
@@ -171,7 +188,7 @@
   }
 
   a {
-    @apply text-primary-blue underline hover:text-dark-blue transition;
+    @apply text-primary-green underline hover:text-dark-blue transition;
   }
 }
 
@@ -195,14 +212,8 @@
 ========================== */
 @layer components {
   .custom-checkbox {
-    @apply appearance-none h-4 w-4 border-2 border-blue-500 rounded 
-      checked:bg-blue-500 checked:ring-4 checked:ring-blue-200 
-      cursor-pointer transition-all duration-200;
-  }
-
-  .custom-checkbox-red {
-    @apply appearance-none h-4 w-4 border-2 border-red-500 rounded 
-      checked:bg-red-500 checked:ring-4 checked:ring-red-200 
+    @apply appearance-none h-4 w-4 border-2 border-primary-green rounded 
+      checked:bg-primary-green checked:border-primary-green
       cursor-pointer transition-all duration-200;
   }
 }

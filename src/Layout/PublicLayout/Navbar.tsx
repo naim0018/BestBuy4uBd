@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/hooks/useRedux";
 import { logOut } from "@/store/Slices/AuthSlice/authSlice";
 import UserAvatar from "@/ui/UserAvatar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import NavItems from "./NavItems";
 
 const Navbar: React.FC = () => {
@@ -30,6 +31,7 @@ const Navbar: React.FC = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             <NavItems />
+            <ThemeToggle />
 
             {/* User menu */}
             <div className="relative group">
@@ -84,6 +86,9 @@ const Navbar: React.FC = () => {
             classNameNC="block px-3 py-2 rounded-md hover:bg-website-color-lightGreen"
             classNameC="block px-3 py-2 rounded-md hover:bg-website-color-lightGreen"
           />
+          <div className="px-3 py-2">
+            <ThemeToggle />
+          </div>
 
           <button
             onClick={handleLogout}
