@@ -23,6 +23,8 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          VITE_API_URL: https://spark-tech-server.vercel.app/api/v1
 
       - name: Deploy to hosting via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
