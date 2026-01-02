@@ -64,7 +64,7 @@ export interface ProductPrice {
   discounted?: number;
   savings?: number;
   savingsPercentage?: number;
-  selectedVariants?: Map<string, string> | Record<string, string>;
+  selectedVariants?: Record<string, string>;
 }
 
 // Product Shipping Details

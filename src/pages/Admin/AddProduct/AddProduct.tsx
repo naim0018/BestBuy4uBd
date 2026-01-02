@@ -9,6 +9,7 @@ import {
   useGetProductByIdQuery,
 } from "@/store/Api/ProductApi";
 
+
 export default function ProductAdminPage() {
   const { id } = useParams<{ id: string }>();
   const isAdd = id === "new";
@@ -16,11 +17,11 @@ export default function ProductAdminPage() {
   const [preview, setPreview] = useState(false);
   const [draft, setDraft] = useState<ProductFormValues | null>(null);
   const [defaultValues, setDefaultValues] = useState<
-    ProductFormValues | undefined
+    Partial<ProductFormValues> | undefined
   >(undefined);
 
   // Fetch existing product (only if updating)
-  const { data: existing, isLoading } = useGetProductByIdQuery(id!, {
+  const { data: existing, isLoading } = useGetProductByIdQuery({ id: id! }, {
     skip: isAdd,
   });
 
@@ -29,7 +30,7 @@ export default function ProductAdminPage() {
 
   // When existing product loads, set it as default values
   useEffect(() => {
-    if (existing) setDefaultValues(existing);
+    if (existing) setDefaultValues(existing.data as unknown as ProductFormValues);
   }, [existing]);
 
   const handleSubmit = (values: ProductFormValues) => {
