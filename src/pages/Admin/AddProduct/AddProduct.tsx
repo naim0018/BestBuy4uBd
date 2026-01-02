@@ -54,6 +54,7 @@ export default function ProductAdminPage() {
             (feature) => feature.trim() !== ""
           ) || [],
         },
+        
         price: {
           regular: Number(draft.price.regular),
           discounted: draft.price.discounted
