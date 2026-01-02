@@ -24,7 +24,7 @@ export const productApi = baseApi.injectEndpoints({
       providesTags: ["Product"],
     }),
     getProductById: builder.query<ApiResponse<Product>, { id: string }>({
-      query: (id) => `/product/${id}`,
+      query: ({ id }) => `/product/${id}`,
     }),
     addProduct: builder.mutation({
       query: (product) => ({

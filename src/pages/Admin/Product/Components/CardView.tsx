@@ -3,12 +3,14 @@ import { Card, Badge, Button, Chip, Tooltip } from "@heroui/react";
 import { Star, Eye, Edit } from "lucide-react";
 import { ProductDisplay } from "./types";
 import { formatPrice, getStatusColor } from "./utils";
+import { useNavigate } from "react-router-dom";
 
 interface CardViewProps {
   products: ProductDisplay[];
 }
 
 const CardView = ({ products }: CardViewProps) => {
+  const navigate = useNavigate();
   return (
     // Card View
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -122,6 +124,7 @@ const CardView = ({ products }: CardViewProps) => {
                 variant="light"
                 fullWidth
                 startContent={<Eye className="w-4 h-4" />}
+                onPress={() => navigate(`/${product._id}`)}
               >
                 View
               </Button>

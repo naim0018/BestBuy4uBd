@@ -14,12 +14,14 @@ import {
 import { Eye, Edit, Trash2, Star } from "lucide-react";
 import { ProductDisplay } from "./types";
 import { formatPrice, getStatusColor } from "./utils";
+import { useNavigate } from "react-router-dom";
 
 interface TableViewProps {
   products: ProductDisplay[];
 }
 
 const TableView = ({ products }: TableViewProps) => {
+  const navigate = useNavigate();
   const tableColumns = [
     { key: "image", label: "Product" },
     { key: "title", label: "Name" },
@@ -131,7 +133,12 @@ const TableView = ({ products }: TableViewProps) => {
     actions: (
       <div className="flex gap-2">
         <Tooltip content="View Details">
-          <Button isIconOnly size="sm" variant="light">
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            onPress={() => navigate(`/${product._id}`)}
+          >
             <Eye className="w-4 h-4" />
           </Button>
         </Tooltip>
