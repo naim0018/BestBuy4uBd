@@ -1,7 +1,7 @@
 import About from "../pages/Public/About/About";
 import Contact from "../pages/Public/Contact/Contact";
 import Services from "@/pages/Public/Services/Services";
-import Home from "@/pages/Public/Home/Home";
+import Home from "@/pages/Public/Home/Home1/Home";
 import TableDemo from "@/pages/TableDemo";
 import FormDemo from "@/pages/FormDemo";
 
