@@ -65,11 +65,11 @@ const DealsSection = () => {
   };
 
   return (
-    <section className="py-20 px-4 relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden">
       {/* Background Gradient Orb */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary-purple/10 rounded-full blur-3xl" />
 
-      <div className="container mx-auto relative z-10">
+      <div className="container px-4 mx-auto relative z-10">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

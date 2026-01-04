@@ -1,33 +1,74 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { tabs, products } from "./data";
 import ProductCard from "./ProductCard";
 import ProductModal from "./ProductModal";
 import VerticalPagination from "./VerticalPagination";
 import { ProductData } from "./types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useGetAllCategoriesQuery } from "../../../../../../store/Api/CategoriesApi";
+import { useGetAllProductsQuery } from "../../../../../../store/Api/ProductApi";
 
-const ITEMS_PER_PAGE = 5;
+const FETCH_LIMIT = 12;
+const ITEMS_PER_VIEW = 4;
 
 const RecommendedSection = () => {
-  const [activeTab, setActiveTab] = useState(tabs[0].id);
+  const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedProduct, setSelectedProduct] = useState<ProductData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Filter products based on active tab
-  const filteredProducts = useMemo(() => {
-    // For demo purposes, we do some simple filtering.
-    // In a real app this would query a backend or filter a larger list.
-    const filtered = products.filter((p) => {
-        const tabValue = tabs.find(t => t.id === activeTab)?.value;
-        return p.category === tabValue || (activeTab === tabs[0].id); 
-    });
-    // If filtered is empty (e.g. no products for that category in mock), show all for demo
-    return filtered.length > 0 ? filtered : products.slice(0, 3); 
+  // 1. Fetch Categories for Tabs
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery({});
+  
+  const tabs = useMemo(() => {
+     const fetchedTabs = categoriesData?.data?.map((cat: any) => ({
+       id: cat.name, 
+       label: cat.name,
+       value: cat.name
+     })) || [];
+     
+     return [
+       { id: "all", label: "All Products", value: "all" },
+       ...fetchedTabs
+     ];
+  }, [categoriesData]);
+
+  // 2. Fetch Products
+  const queryOptions = useMemo(() => {
+    const options: any = {
+      page: 1, // Always fetch page 1
+      limit: FETCH_LIMIT, // Fetch 12 items
+    };
+    if (activeTab !== "all") {
+      options.category = activeTab;
+    }
+    return options;
   }, [activeTab]);
 
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const { data: productsData, isLoading: isProductsLoading, isFetching } = useGetAllProductsQuery(queryOptions);
+
+  const products: ProductData[] = useMemo(() => {
+    if (!productsData?.data) return [];
+    
+    return productsData.data.map((item: any) => ({
+      id: item._id,
+      category: item.basicInfo.category,
+      title: item.basicInfo.title,
+      brand: item.basicInfo.brand,
+      price: item.price.discounted || item.price.regular,
+      oldPrice: item.price.discounted ? item.price.regular : undefined,
+      discount: item.price.discounted ? Math.round(((item.price.regular - item.price.discounted) / item.price.regular) * 100) : undefined,
+      rating: item.rating?.average || 0,
+      reviews: item.rating?.count || 0,
+      image: item.images?.[0]?.url || "https://placehold.co/400",
+      colors: item.variants?.flatMap((v: any) => v.items.map((i: any) => i.value)) || [],
+      tag: item.stockStatus === "Out of Stock" ? "SALE" : (item.additionalInfo?.isFeatured ? "HOT" : undefined),
+      description: item.basicInfo.description,
+      purchases: item.sold || 0
+    }));
+  }, [productsData]);
+
+  const totalPages = Math.ceil(products.length / ITEMS_PER_VIEW) || 1;
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
@@ -39,13 +80,12 @@ const RecommendedSection = () => {
     setIsModalOpen(true);
   };
 
-  const nextPage = () => setCurrentPage((prev) => (prev + 1) % (totalPages || 1));
-  const prevPage = () => setCurrentPage((prev) => (prev - 1 + (totalPages || 1)) % (totalPages || 1));
+  const nextPage = () => setCurrentPage((prev) => (prev + 1) % totalPages);
+  const prevPage = () => setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
 
-  // Get current page items
-  const currentItems = filteredProducts.slice(
-    currentPage * ITEMS_PER_PAGE,
-    (currentPage + 1) * ITEMS_PER_PAGE
+  const currentProducts = products.slice(
+    currentPage * ITEMS_PER_VIEW,
+    (currentPage + 1) * ITEMS_PER_VIEW
   );
 
   return (
@@ -60,29 +100,37 @@ const RecommendedSection = () => {
 
         {/* Tabs */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
-                activeTab === tab.id
-                  ? "bg-primary-green text-white shadow-md transform scale-105"
-                  : "bg-gray-100 text-dark-blue hover:bg-gray-200"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {isCategoriesLoading ? (
+             // Simple Skeleton for tabs
+             Array.from({length: 4}).map((_, i) => (
+                <div key={i} className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse" />
+             ))
+          ) : (
+             tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                    activeTab === tab.id
+                      ? "bg-primary-green text-white shadow-md transform scale-105"
+                      : "bg-gray-100 text-dark-blue hover:bg-gray-200"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))
+          )}
         </div>
 
         {/* Carousel Content */}
         <div className="relative flex items-center gap-4">
           
-          {/* Left Vertical Pagination / Controls */}
+          {/* Left Controls */}
            <div className="hidden md:flex flex-col items-center gap-4 bg-gray-50 p-2 rounded-xl">
              <button 
                onClick={prevPage}
                className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+               disabled={totalPages <= 1}
              >
                <ChevronLeft className="w-5 h-5 text-gray-500" />
              </button>
@@ -94,6 +142,7 @@ const RecommendedSection = () => {
               <button 
                onClick={nextPage}
                className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+               disabled={totalPages <= 1}
              >
                <ChevronRight className="w-5 h-5 text-gray-500" />
              </button>
@@ -102,41 +151,52 @@ const RecommendedSection = () => {
           {/* Product Grid */}
           <div className="flex-1 overflow-hidden min-h-[420px]">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={`${activeTab}-${currentPage}`} // Key change triggers animation
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.4 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 h-full"
-              >
-                {currentItems.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onOpen={handleOpenModal}
-                  />
-                ))}
-                {currentItems.length === 0 && (
-                     <div className="col-span-full flex items-center justify-center text-gray-400 h-64">
-                         No products found.
-                     </div>
-                )}
-              </motion.div>
+               {isProductsLoading || isFetching ? (
+                   // Product Grid Skeleton
+                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
+                       {Array.from({length: ITEMS_PER_VIEW}).map((_, i) => (
+                           <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm animate-pulse h-[380px]">
+                               <div className="w-full h-48 bg-gray-200 rounded-xl mb-4" />
+                               <div className="h-4 w-3/4 bg-gray-200 rounded mb-2" />
+                               <div className="h-4 w-1/2 bg-gray-200 rounded mb-4" />
+                               <div className="flex justify-between mt-auto">
+                                   <div className="h-6 w-20 bg-gray-200 rounded" />
+                                   <div className="h-8 w-8 bg-gray-200 rounded-full" />
+                               </div>
+                           </div>
+                       ))}
+                   </div>
+               ) : (
+                <motion.div
+                    key={`${activeTab}-${currentPage}`}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.4 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full"
+                >
+                    {currentProducts.length > 0 ? currentProducts.map((product) => (
+                    <ProductCard
+                        key={product.id}
+                        product={product}
+                        onOpen={handleOpenModal}
+                    />
+                    )) : (
+                        <div className="col-span-full flex flex-col items-center justify-center text-gray-400 h-64">
+                             <p className="text-lg">No products found in this category.</p>
+                        </div>
+                    )}
+                </motion.div>
+               )}
             </AnimatePresence>
           </div>
 
-           {/* Right Spacer (for visual balance if needed, or we can duplicate controls) */}
-           <div className="hidden md:flex flex-col items-center gap-4 w-12 p-2">
-                {/* Optional: Add same controls here if "vertical dot pagination" implies checking both sides 
-                    The image showed pagination bars on left and right possibly. 
-                    I'll implement dual controls if requested, but for now single left side is safer UX unless specified.
-                    Actually, looking at the image, there are gray bars on BOTH sides.
-                    I will replicate the Right side bar too.
-                */}
-                <button 
+           {/* Right Controls */}
+           <div className="hidden md:flex flex-col items-center gap-4 bg-gray-50 p-2 rounded-xl">
+               <button 
                onClick={prevPage}
                className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+               disabled={totalPages <= 1}
              >
                <ChevronLeft className="w-5 h-5 text-gray-500" />
              </button>
@@ -148,6 +208,7 @@ const RecommendedSection = () => {
               <button 
                onClick={nextPage}
                className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+               disabled={totalPages <= 1}
              >
                <ChevronRight className="w-5 h-5 text-gray-500" />
              </button>

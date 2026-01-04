@@ -66,7 +66,7 @@ const ProductModal = ({ product, isOpen, onClose }: ProductModalProps) => {
                         {product.brand}
                       </h4>
                     )}
-                    <h2 className="text-3xl font-bold text-dark-blue mb-2 leading-tight">
+                    <h2 className="text-xl font-bold text-dark-blue mb-2 leading-tight line-clamp-2">
                       {product.title}
                     </h2>
 
@@ -74,10 +74,14 @@ const ProductModal = ({ product, isOpen, onClose }: ProductModalProps) => {
                     <div className="flex items-center gap-2 mb-4">
                       <div className="flex text-yellow-400">
                         {Array.from({ length: 5 }).map((_, i) => (
-                           <Star
-                             key={i}
-                             className={`w-4 h-4 ${i < Math.floor(product.rating) ? "fill-current" : "text-gray-300"}`}
-                           />
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < Math.floor(product.rating)
+                                ? "fill-current"
+                                : "text-gray-300"
+                            }`}
+                          />
                         ))}
                       </div>
                       <span className="text-sm text-gray-500">
@@ -102,34 +106,48 @@ const ProductModal = ({ product, isOpen, onClose }: ProductModalProps) => {
                       )}
                     </div>
 
-                    <p className="text-gray-600 mb-8 leading-relaxed">
+                    <p className="text-gray-600 mb-8 leading-relaxed line-clamp-2">
                       {product.description ||
                         "Experience premium quality and exceptional performance with this top-rated product. Designed for durability and comfort."}
                     </p>
 
                     {/* Quantity & Actions */}
                     <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                       <div className="flex items-center bg-gray-100 rounded-lg px-4 py-2 w-max">
-                         <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center font-bold text-gray-600 hover:text-dark-blue">-</button>
-                         <span className="w-8 text-center font-semibold text-dark-blue">{quantity}</span>
-                         <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center font-bold text-gray-600 hover:text-dark-blue">+</button>
-                       </div>
-                       
-                       <button className="flex-1 bg-dark-blue text-white px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
-                         <ShoppingCart className="w-5 h-5" />
-                         Add to Cart
-                       </button>
+                      <div className="flex items-center bg-gray-100 rounded-lg px-4 py-2 w-max">
+                        <button
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className="w-8 h-8 flex items-center justify-center font-bold text-gray-600 hover:text-dark-blue"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center font-semibold text-dark-blue">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={() => setQuantity(quantity + 1)}
+                          className="w-8 h-8 flex items-center justify-center font-bold text-gray-600 hover:text-dark-blue"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <button className="flex-1 bg-dark-blue text-white px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                        <ShoppingCart className="w-5 h-5" />
+                        Add to Cart
+                      </button>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between border-t border-gray-100 pt-6">
-                     <button className="flex items-center gap-2 text-gray-500 hover:text-primary-red transition-colors">
-                        <Heart className="w-5 h-5" />
-                        <span className="text-sm font-medium">Add to Wishlist</span>
-                     </button>
-                     <span className="text-sm text-gray-400">
-                        {product.purchases.toLocaleString()} people bought this
-                     </span>
+                    <button className="flex items-center gap-2 text-gray-500 hover:text-primary-red transition-colors">
+                      <Heart className="w-5 h-5" />
+                      <span className="text-sm font-medium">
+                        Add to Wishlist
+                      </span>
+                    </button>
+                    <span className="text-sm text-gray-400">
+                      {product.purchases.toLocaleString()} people bought this
+                    </span>
                   </div>
                 </div>
               </div>
