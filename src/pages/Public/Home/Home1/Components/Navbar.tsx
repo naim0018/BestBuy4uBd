@@ -80,10 +80,7 @@ const Navbar = () => {
               </div>
               <div className="flex flex-col leading-none">
                 <span className="text-xl font-bold text-dark-blue">
-                  BESTBUY
-                </span>
-                <span className="text-xs text-light-gray font-medium">
-                  TECH MART
+                  BESTBUY4UBD
                 </span>
               </div>
             </div>
@@ -160,14 +157,14 @@ const Navbar = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center justify-between py-3 gap-4">
             {/* Search Section */}
-            <div className="flex items-center w-full lg:w-auto lg:flex-1 lg:max-w-md">
+            <div className="flex items-center w-full lg:w-auto lg:flex-1 lg:max-w-md border border-white rounded-full bg-white">
               {/* Category Dropdown */}
-              <button className="bg-white px-4 py-3 rounded-l-full flex items-center gap-2 border-r border-border whitespace-nowrap">
+              {/* <button className="bg-white px-4 py-3 rounded-l-full flex items-center gap-2 border-r border-border whitespace-nowrap">
                 <span className="text-sm font-medium text-dark-blue">
                   All Categories
                 </span>
                 <ChevronDown className="w-4 h-4 text-dark-blue" />
-              </button>
+              </button> */}
 
               {/* Search Input */}
               <div className="relative flex-1">

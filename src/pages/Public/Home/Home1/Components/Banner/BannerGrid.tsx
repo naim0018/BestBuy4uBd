@@ -10,14 +10,14 @@ const BannerGrid = () => {
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Large Hero Banner */}
-        <div className="lg:col-span-2 lg:row-span-2">
+        <div className="lg:col-span-2 lg:row-span-2 h-[500px]">
           <HeroBanner data={heroBanner} />
         </div>
 
         {/* Right Column - Product Cards */}
-        <div className="space-y-6">
+        <div className="space-y-6 h-[500px]">
           {/* Top Right Cards */}
-          {productCards.slice(0, 2).map((card, index) => (
+          {productCards.slice(0, 1).map((card, index) => (
             <ProductCard key={card.id} data={card} index={index} />
           ))}
         </div>

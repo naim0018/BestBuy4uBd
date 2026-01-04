@@ -24,7 +24,7 @@ const HeroBanner = ({
       <div className="relative z-10 p-8 md:p-12 max-w-lg">
         {/* Title */}
         <h2
-          className={`text-4xl md:text-5xl font-bold ${data.textColor} mb-3 leading-tight`}
+          className={`text-2xl md:text-4xl font-bold ${data.textColor} mb-3 leading-tight`}
         >
           {data.title}
         </h2>

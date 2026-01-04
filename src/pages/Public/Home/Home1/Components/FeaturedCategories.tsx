@@ -56,7 +56,7 @@ const categories = [
 const FeaturedCategories = () => {
   return (
     <section className="py-20 px-4">
-      <div className="container mx-auto max-w-7xl">
+      <div className="container mx-auto">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -65,18 +65,16 @@ const FeaturedCategories = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Shop by Category
-          </h2>
-          <p className="text-light-gray text-lg max-w-2xl mx-auto">
+          <h2 className="mb-4">Shop by Category</h2>
+          <p className="text-light-gray max-w-2xl mx-auto">
             Explore our curated collections of premium products across multiple
             categories
           </p>
         </motion.div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category, index) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          {categories.map((category) => {
             const Icon = category.icon;
             return (
               <motion.div
@@ -84,7 +82,7 @@ const FeaturedCategories = () => {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5 }}
                 whileHover={{
                   scale: 1.05,
                   y: -8,
@@ -104,15 +102,13 @@ const FeaturedCategories = () => {
                     <motion.div
                       whileHover={{ rotate: 360 }}
                       transition={{ duration: 0.6 }}
-                      className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center shadow-lg`}
+                      className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center shadow-lg`}
                     >
-                      <Icon className="w-10 h-10 text-white" strokeWidth={2} />
+                      <Icon className="w-8 h-8 text-white" strokeWidth={2} />
                     </motion.div>
 
                     {/* Category Name */}
-                    <h3 className="text-2xl font-bold text-dark-blue">
-                      {category.name}
-                    </h3>
+                    <h3 className="text-dark-blue">{category.name}</h3>
 
                     {/* Product Count */}
                     <p className="text-light-gray font-medium">

@@ -69,7 +69,7 @@ const DealsSection = () => {
       {/* Background Gradient Orb */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary-purple/10 rounded-full blur-3xl" />
 
-      <div className="container mx-auto max-w-7xl relative z-10">
+      <div className="container mx-auto relative z-10">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -80,11 +80,9 @@ const DealsSection = () => {
         >
           <div className="inline-flex items-center gap-2 bg-primary-red/10 text-primary-red px-4 py-2 rounded-full font-semibold mb-4">
             <Zap className="w-5 h-5" />
-            Limited Time Offers
+            <span>Limited Time Offers</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Today's Hot Deals
-          </h2>
+          <h2 className="mb-4">Today's Hot Deals</h2>
           <p className="text-light-gray text-lg max-w-2xl mx-auto">
             Don't miss out on these incredible limited-time offers
           </p>
@@ -152,9 +150,7 @@ const DealsSection = () => {
                     <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 mb-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Clock className="w-4 h-4" />
-                        <span className="text-sm font-semibold">
-                          Ends In:
-                        </span>
+                        <span className="text-sm font-semibold">Ends In:</span>
                       </div>
                       <div className="flex gap-2">
                         <div className="flex-1 bg-white/20 rounded-lg p-2 text-center">
