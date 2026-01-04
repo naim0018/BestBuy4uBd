@@ -6,8 +6,10 @@ import {
   SettingsIcon,
   PackageSearch,
   Package2,
+  LayoutTemplate,
 } from "lucide-react";
 import Product from "@/pages/Admin/Product/Product";
+import CMS from "@/pages/Admin/CMS/CMS";
 
 export const adminRoutes = [
   {
@@ -37,5 +39,11 @@ export const adminRoutes = [
   {
     path: "update-product/:id",
     element: <AddProduct />,
+  },
+  {
+    label: "CMS",
+    icon: <LayoutTemplate />,
+    path: "cms",
+    element: <CMS />,
   },
 ];

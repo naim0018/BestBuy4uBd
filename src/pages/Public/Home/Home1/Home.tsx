@@ -1,5 +1,4 @@
 
-import Navbar from "./Components/Navbar";
 import { BannerGrid } from "./Components/Banner";
 import FeaturedCategories from "./Components/Categories/FeaturedCategories";
 import DealsSection from "./Components/Deals/DealsSection";
@@ -9,7 +8,6 @@ import RecommendedSection from "./Components/Recommended/RecommendedSection";
 const Home = () => {
   return (
     <>
-      <Navbar />
       {/* Banner Section */}
       <BannerGrid />
       <>
