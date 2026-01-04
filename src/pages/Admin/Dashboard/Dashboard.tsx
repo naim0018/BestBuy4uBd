@@ -2,7 +2,6 @@ import { useGetDashboardStatsQuery } from "@/store/Api/DashboardApi";
 import {
   Card,
   CardBody,
-  Spinner,
   Table,
   TableHeader,
   TableColumn,
@@ -48,6 +47,8 @@ const STATUS_COLORS: Record<string, string> = {
   shipped: "#8b5cf6",
 };
 
+import DashboardSkeleton from "@/common/Skeleton/DashboardSkeleton";
+
 const Dashboard = () => {
   const { data, isLoading, isError, error } = useGetDashboardStatsQuery(
     undefined,
@@ -56,15 +57,7 @@ const Dashboard = () => {
     }
   );
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Spinner
-          size="lg"
-          color="success"
-          label="Loading Dashboard Statistics..."
-        />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (isError || !data || !data.data) {
@@ -136,18 +129,18 @@ const Dashboard = () => {
     <div className="space-y-8 p-1">
       {/* Header / Last Order Status */}
       {overview?.lastOrder && (
-        <Card className="border-none shadow-sm bg-gradient-to-r from-green-600 to-green-500 text-white">
+        <Card className="border-none shadow-sm bg-gradient-to-r from-yellow-500 to-amber-100 text-white">
           <CardBody className="p-6 flex flex-row items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="bg-white/20 p-3 rounded-full">
                 <Package className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium opacity-90">
+                <p className="text-sm font-medium opacity-90 text-white">
                   Last Order Status
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <h2 className="text-2xl font-bold capitalize">
+                  <h2 className="text-2xl font-bold capitalize text-white">
                     {overview.lastOrder.status}
                   </h2>
                   <Chip
