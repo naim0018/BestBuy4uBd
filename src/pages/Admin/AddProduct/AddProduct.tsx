@@ -13,7 +13,7 @@ import {
 
 export default function ProductAdminPage() {
   const { id } = useParams<{ id: string }>();
-  const isAdd = id === "new";
+  const isAdd = !id || id === "new";
 
   const [preview, setPreview] = useState(false);
   const [draft, setDraft] = useState<ProductFormValues | null>(null);
@@ -53,62 +53,69 @@ export default function ProductAdminPage() {
           category: draft.basicInfo.category,
           subcategory: draft.basicInfo.subcategory,
           description: draft.basicInfo.description,
-          keyFeatures: draft.basicInfo.keyFeatures?.filter(
-            (feature) => feature.trim() !== ""
-          ) || [],
+          keyFeatures:
+            draft.basicInfo.keyFeatures?.filter(
+              (feature) => feature.trim() !== ""
+            ) || [],
+          addDeliveryCharge: draft.basicInfo.addDeliveryCharge || false,
+          deliveryChargeInsideDhaka: draft.basicInfo.deliveryChargeInsideDhaka
+            ? Number(draft.basicInfo.deliveryChargeInsideDhaka)
+            : 0,
+          deliveryChargeOutsideDhaka: draft.basicInfo.deliveryChargeOutsideDhaka
+            ? Number(draft.basicInfo.deliveryChargeOutsideDhaka)
+            : 0,
         },
-        
+
         price: {
           regular: Number(draft.price.regular),
           discounted: draft.price.discounted
             ? Number(draft.price.discounted)
             : undefined,
-          savings: draft.price.savings ? Number(draft.price.savings) : undefined,
-          savingsPercentage: draft.price.savingsPercentage 
-            ? Number(draft.price.savingsPercentage) 
+          savings: draft.price.savings
+            ? Number(draft.price.savings)
+            : undefined,
+          savingsPercentage: draft.price.savingsPercentage
+            ? Number(draft.price.savingsPercentage)
             : undefined,
           selectedVariants: draft.price.selectedVariants,
         },
-        addDeliveryCharge: draft.basicInfo.addDeliveryCharge || false,
-        deliveryChargeInsideDhaka: draft.basicInfo.deliveryChargeInsideDhaka 
-          ? Number(draft.basicInfo.deliveryChargeInsideDhaka) 
-          : 0,
-        deliveryChargeOutsideDhaka: draft.basicInfo.deliveryChargeOutsideDhaka 
-          ? Number(draft.basicInfo.deliveryChargeOutsideDhaka) 
-          : 0,
         stockStatus: draft.stockStatus,
         stockQuantity: draft.stockQuantity ? Number(draft.stockQuantity) : 0,
         sold: draft.sold ? Number(draft.sold) : 0,
         images: draft.images.filter((image) => image.url.trim() !== ""),
-        variants: draft.variants
-          ?.filter((variant) => variant.group.trim() !== "")
-          .map((variant) => ({
-            group: variant.group,
-            items: variant.items
-              .filter((item) => item.value.trim() !== "")
-              .map((item) => ({
-                value: item.value,
-                price: item.price ? Number(item.price) : 0,
-                stock: item.stock ? Number(item.stock) : 0,
-                image: item.image ? {
-                  url: item.image.url || "",
-                  alt: item.image.alt || "",
-                } : undefined,
-              })),
-          })) || [],
-        specifications: draft.specifications
-          ?.filter((spec) => spec.group.trim() !== "")
-          .map((spec) => ({
-            group: spec.group,
-            items: spec.items
-              .filter(
-                (item) => item.name.trim() !== "" && item.value.trim() !== ""
-              )
-              .map((item) => ({
-                name: item.name,
-                value: item.value,
-              })),
-          })) || [],
+        variants:
+          draft.variants
+            ?.filter((variant) => variant.group.trim() !== "")
+            .map((variant) => ({
+              group: variant.group,
+              items: variant.items
+                .filter((item) => item.value.trim() !== "")
+                .map((item) => ({
+                  value: item.value,
+                  price: item.price ? Number(item.price) : 0,
+                  stock: item.stock ? Number(item.stock) : 0,
+                  image: item.image
+                    ? {
+                        url: item.image.url || "",
+                        alt: item.image.alt || "",
+                      }
+                    : undefined,
+                })),
+            })) || [],
+        specifications:
+          draft.specifications
+            ?.filter((spec) => spec.group.trim() !== "")
+            .map((spec) => ({
+              group: spec.group,
+              items: spec.items
+                .filter(
+                  (item) => item.name.trim() !== "" && item.value.trim() !== ""
+                )
+                .map((item) => ({
+                  name: item.name,
+                  value: item.value,
+                })),
+            })) || [],
         shippingDetails: {
           length: Number(draft.shippingDetails.length),
           width: Number(draft.shippingDetails.width),
@@ -135,7 +142,7 @@ export default function ProductAdminPage() {
       };
 
       console.log("Sending product data:", productData); // Debug log
-      
+
       if (isAdd) {
         await addProduct(productData).unwrap();
       } else {
