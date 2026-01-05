@@ -15,6 +15,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import NavItems from "./NavItems";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -86,12 +87,7 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation Menu */}
-            <div className="hidden lg:flex items-center gap-8">
-              <NavItem label="HOMES" hasDropdown />
-              <NavItem label="PAGES" hasDropdown />
-              <NavItem label="PRODUCTS" hasDropdown />
-              <NavItem label="CONTACT" />
-            </div>
+            <NavItems className="hidden lg:block" />
 
             {/* Right Actions */}
             <div className="flex items-center gap-4">
@@ -222,18 +218,18 @@ const Navbar = () => {
             className="lg:hidden bg-white border-t border-border overflow-hidden"
           >
             <div className="container mx-auto px-4 py-4 space-y-3">
-              <MobileNavItem label="HOMES" />
-              <MobileNavItem label="PAGES" />
-              <MobileNavItem label="PRODUCTS" />
-              <MobileNavItem label="CONTACT" />
+              <NavItems 
+                isMobile={true} 
+                onItemClick={() => setIsMobileMenuOpen(false)} 
+              />
               <div className="pt-3 border-t border-border space-y-3">
-                <button className="w-full text-left py-2 text-dark-blue hover:text-primary-blue transition-colors">
+                <button className="w-full text-left px-5 py-2 text-dark-blue hover:text-primary-blue transition-colors font-semibold">
                   Compare
                 </button>
-                <button className="w-full text-left py-2 text-dark-blue hover:text-primary-blue transition-colors">
+                <button className="w-full text-left px-5 py-2 text-dark-blue hover:text-primary-blue transition-colors font-semibold">
                   Wishlist
                 </button>
-                <button className="w-full text-left py-2 text-dark-blue hover:text-primary-blue transition-colors">
+                <button className="w-full text-left px-5 py-2 text-dark-blue hover:text-primary-blue transition-colors font-semibold">
                   Log In / Register
                 </button>
               </div>
@@ -245,29 +241,5 @@ const Navbar = () => {
   );
 };
 
-// Nav Item Component
-const NavItem = ({
-  label,
-  hasDropdown = false,
-}: {
-  label: string;
-  hasDropdown?: boolean;
-}) => {
-  return (
-    <button className="flex items-center gap-1 text-sm font-semibold text-dark-blue hover:text-primary-blue transition-colors">
-      {label}
-      {hasDropdown && <ChevronDown className="w-4 h-4" />}
-    </button>
-  );
-};
-
-// Mobile Nav Item Component
-const MobileNavItem = ({ label }: { label: string }) => {
-  return (
-    <button className="w-full text-left py-2 text-dark-blue hover:text-primary-blue transition-colors font-semibold">
-      {label}
-    </button>
-  );
-};
 
 export default Navbar;

@@ -4,6 +4,7 @@ import Services from "@/pages/Public/Services/Services";
 import Home from "@/pages/Public/Home/Home1/Home";
 import TableDemo from "@/pages/TableDemo";
 import FormDemo from "@/pages/FormDemo";
+import Shop from "@/pages/Public/Shop/Shop";
 
 export const publicRoutes = [
   {
@@ -13,9 +14,9 @@ export const publicRoutes = [
     element: <Home />,
   },
   {
-    label: "About",
-    path: "/about",
-    element: <About />,
+    label: "Shop",
+    path: "/shop",
+    element: <Shop />,
     children: [
       {
         label: "About 2",
