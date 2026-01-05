@@ -5,6 +5,7 @@ import Home from "@/pages/Public/Home/Home1/Home";
 import TableDemo from "@/pages/TableDemo";
 import FormDemo from "@/pages/FormDemo";
 import Shop from "@/pages/Public/Shop/Shop";
+import ProductDetails from "@/pages/Public/Shop/Components/ProductDetails/ProductDetails";
 
 export const publicRoutes = [
   {
@@ -29,6 +30,10 @@ export const publicRoutes = [
         element: <About />,
       },
     ],
+  },
+  {
+    path: "/product/:id",
+    element: <ProductDetails />,
   },
   {
     label: "Contact",

@@ -21,13 +21,7 @@ export const productApi = baseApi.injectEndpoints({
           params: queryParams,
         };
       },
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.data.map(({ _id }) => ({ type: "Product" as const, id: _id })),
-              { type: "Product", id: "LIST" },
-            ]
-          : [{ type: "Product", id: "LIST" }],
+      providesTags: [],
     }),
     getProductById: builder.query<ApiResponse<Product>, { id: string }>({
       query: ({ id }) => `/product/${id}`,

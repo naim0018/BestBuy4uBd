@@ -1,6 +1,10 @@
 import { motion } from "framer-motion";
 import { Heart, Star, ShoppingCart, Eye } from "lucide-react";
 import { ProductData } from "./types";
+import { useDispatch, useSelector } from "react-redux";
+import { addToWishlist, removeFromWishlist } from "@/store/Slices/wishlistSlice";
+import { openWishlist } from "@/store/Slices/UISlice";
+import { RootState } from "@/store/store";
 
 interface ProductCardProps {
   product: ProductData;
@@ -8,6 +12,30 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onOpen }: ProductCardProps) => {
+  const dispatch = useDispatch();
+  const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
+  const isWishlisted = wishlistItems.some(item => item._id === product.id);
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isWishlisted) {
+      dispatch(removeFromWishlist(product.id));
+    } else {
+      // Map mock product to WishlistItem structure if needed, or just send it
+      const wishlistItem = {
+        _id: product.id,
+        basicInfo: { title: product.title },
+        price: { regular: product.price, discounted: product.price },
+        images: [{ url: product.image }],
+        category: product.category,
+        rating: { average: product.rating, count: product.reviews }
+      };
+      dispatch(addToWishlist(wishlistItem));
+      dispatch(openWishlist());
+    }
+  };
   return (
     <motion.div
       layout
@@ -29,8 +57,15 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
       </div>
 
       {/* Wishlist Button */}
-      <button className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-400 hover:text-primary-red hover:bg-primary-red/10 transition-colors">
-        <Heart className="w-4 h-4" />
+      <button 
+        onClick={handleWishlist}
+        className={`absolute top-4 right-4 z-10 w-8 h-8 rounded-full shadow-md flex items-center justify-center transition-colors ${
+          isWishlisted 
+            ? "bg-primary-red text-white" 
+            : "bg-white text-gray-400 hover:text-primary-red hover:bg-primary-red/10"
+        }`}
+      >
+        <Heart className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`} />
       </button>
 
       {/* Image Container */}
