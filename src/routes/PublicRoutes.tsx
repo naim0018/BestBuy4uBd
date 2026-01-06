@@ -18,18 +18,7 @@ export const publicRoutes = [
     label: "Shop",
     path: "/shop",
     element: <Shop />,
-    children: [
-      {
-        label: "About 2",
-        path: "about2",
-        element: <About />,
-      },
-      {
-        label: "About 3",
-        path: "about3",
-        element: <About />,
-      },
-    ],
+    children: [],
   },
   {
     path: "/product/:id",
@@ -44,15 +33,5 @@ export const publicRoutes = [
     label: "Services",
     path: "/services",
     element: <Services />,
-  },
-  {
-    label: "Table Demo",
-    path: "/table-demo",
-    element: <TableDemo />,
-  },
-  {
-    label: "Form Demo",
-    path: "/form-demo",
-    element: <FormDemo />,
   },
 ];

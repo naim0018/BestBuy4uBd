@@ -1,7 +1,7 @@
 /* =======================
    📦 Font Imports
 ========================== */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
 
 /* =======================
    📦 Tailwind Import
@@ -9,213 +9,203 @@
 @import "tailwindcss";
 
 @plugin '../hero.ts';
-/* Note: You may need to change the path to fit your project structure */
 @source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 @custom-variant dark (&:is(.dark *));
 
 /* =======================
-   🎨 Theme Custom Properties
+   🎨 Theme Custom Properties (Tailwind 4)
 ========================== */
 @theme {
-  /* Custom Website Colors */
-  --color-website-color-black: #212a31;
-  --color-website-color-darkGray: #2e3944;
-  --color-website-color-lightGray: #d3d9d4;
-  --color-website-color-green: #124e66;
-  --color-website-color-lightGreen: #748d92;
-  --color-website-color-blue: #1c2a33;
+  /* Brand Colors */
+  --color-primary: #0082fa;
+  --color-secondary: #4ade80;
+  --color-accent: #facc15;
+  --color-danger: #f87171;
+  --color-warning: #fb923c;
+  --color-info: #22d3ee;
+  --color-success: #4ade80;
+
+  /* Semantic UI Colors */
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-border-main: var(--border-main);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  /* Legacy Color Compatibility (if needed) */
+  --color-primary-blue: #0082fa;
+  --color-primary-green: #4ade80;
+  --color-primary-red: #f87171;
+  --color-primary-yellow: #facc15;
+  --color-dark-blue: var(--text-primary);
+  --color-light-gray: var(--text-secondary);
 
   /* Font Families */
-  --font-poppins: "Poppins", sans-serif;
-  --font-montserrat: "Montserrat", sans-serif;
-  --font-primary: var(--font-montserrat);
-  --font-secondary: var(--font-poppins);
+  --font-nunito: "Nunito", sans-serif;
+  --font-primary: var(--font-nunito);
+  --font-secondary: var(--font-nunito);
+
+  /* Border Radii - Reduced to xl (0.75rem) as requested */
+  --radius-container: 0.75rem; /* xl */
+  --radius-component: 0.5rem;  /* lg/md - relative to xl */
+  --radius-inner: 0.375rem;    /* md/sm */
 }
 
 /* =======================
    🌈 Root Color Theme Variables
 ========================== */
 :root {
-  /* Light Mode (Base) */
-  --primary-background: #f8fafc; /* Slate 50 */
-  --light-background: #ffffff; /* White */
-  --border: #e2e8f0; /* Slate 200 */
+  /* Light Mode */
+  --bg-base: #f8fafc;
+  --bg-surface: #ffffff;
+  --border-main: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
 
-  --primary-blue: #0082fa;
-  --dark-blue: #0f172a; /* Slate 900 (Text) */
-  --light-gray: #64748b; /* Slate 500 (Subtext) */
-
-  --primary-green: #4ade80; /* Green 400 */
-  --light-green: #4ade801a;
-
-  --primary-yellow: #facc15; /* Yellow 400 */
-  --light-yellow: #facc151a;
-
-  --primary-orange: #fb923c; /* Orange 400 */
-  --light-orange: #fb923c1a;
-
-  --primary-red: #f87171; /* Red 400 */
-  --light-red: #f871711a;
-
-  --primary-purple: #a78bfa; /* Violet 400 */
-  --light-purple: #a78bfa1a;
-
-  --primary-purple-new: #c084fc; /* Purple 400 */
-  --light-purple-new: #c084fc1a;
-
-  --primary-cyan: #22d3ee; /* Cyan 400 */
-  --light-cyan: #22d3ee1a;
+  --primary-background: var(--bg-base);
+  --light-background: var(--bg-surface);
+  --border: var(--border-main);
+  --dark-blue: var(--text-primary);
+  --light-gray: var(--text-secondary);
 }
 
-/* Dark Mode Implementation */
 .dark {
-  --primary-background: #020617; /* Slate 950 */
-  --light-background: #0f172a; /* Slate 900 */
-  --border: #1e293b; /* Slate 800 */
+  /* Dark Mode */
+  --bg-base: #020617;
+  --bg-surface: #0f172a;
+  --border-main: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
 
-  --dark-blue: #f8fafc; /* Slate 50 (Text) */
-  --light-gray: #94a3b8; /* Slate 400 (Subtext) */
-
-  --primary-green: #4ade80; /* Keep vibrant */
-  --light-green: #4ade8020;
+  --primary-background: var(--bg-base);
+  --light-background: var(--bg-surface);
+  --border: var(--border-main);
+  --dark-blue: var(--text-primary);
+  --light-gray: var(--text-secondary);
 }
 
 /* =======================
-   🎨 Inline Theme Variables (For JS Use or Theme Switching)
-========================== */
-@theme inline {
-  --color-primary-background: var(--primary-background);
-  --color-light-background: var(--light-background);
-  --color-border: var(--border);
-  --color-primary-blue: var(--primary-blue);
-  --color-dark-blue: var(--dark-blue);
-  --color-light-gray: var(--light-gray);
-  --color-primary-green: var(--primary-green);
-  --color-light-green: var(--light-green);
-  --color-primary-red: var(--primary-red);
-  --color-light-red: var(--light-red);
-  --color-primary-yellow: var(--primary-yellow);
-  --color-light-yellow: var(--light-yellow);
-  --color-primary-orange: var(--primary-orange);
-  --color-light-orange: var(--light-orange);
-  --color-primary-purple: var(--primary-purple);
-  --color-light-purple: var(--light-purple);
-  --color-primary-purple-new: var(--primary-purple-new);
-  --color-light-purple-new: var(--light-purple-new);
-  --color-primary-cyan: var(--primary-cyan);
-  --color-light-cyan: var(--light-cyan);
-}
-
-/* =======================
-   ✨ Base Styles
+   ✨ Base Styles & Typography
 ========================== */
 @layer base {
   html {
-    font-family: var(--font-montserrat);
+    font-family: var(--font-primary);
+    -webkit-font-smoothing: antialiased;
   }
 
   body {
-    font-family: var(--font-montserrat);
-    background-color: var(--primary-background);
-    color: var(--dark-blue);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    @apply bg-bg-base text-text-primary transition-colors duration-300;
+    font-family: var(--font-primary);
   }
 
   * {
-    font-family: var(--font-montserrat);
-    @apply border-border; /* Apply default border color */
+    @apply border-border-main;
   }
 
-  *:focus,
-  *:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
+  /* Headings with consistent styling */
+  h1, .h1 {
+    @apply text-text-primary font-semibold;
+    font-size: clamp(2.25rem, 5vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
   }
 
-  /* Headings */
-  h1 {
-    @apply font-semibold text-dark-blue;
-    font-size: clamp(1.875rem, 3vw + 1rem, 2rem); /* 28px → 56px */
+  h2, .h2 {
+    @apply text-text-primary font-semibold;
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
     line-height: 1.2;
+    letter-spacing: -0.005em;
   }
 
-  h2 {
-    @apply font-semibold text-dark-blue;
-    font-size: clamp(1.125rem, 2vw + 0.5rem, 1.5rem); /* 18px → 24px */
+  h3, .h3 {
+    @apply text-text-primary font-semibold;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
     line-height: 1.3;
   }
 
-  h3 {
-    @apply font-medium text-dark-blue;
-    font-size: clamp(1rem, 2vw + 0.25rem, 1.25rem); /* 16px → 20px */
+  h4, .h4 {
+    @apply text-text-primary font-semibold text-xl;
     line-height: 1.4;
   }
 
-  h4 {
-    @apply font-medium text-dark-blue;
-    font-size: 1.125rem; /* 18px */
+  h5, .h5 {
+    @apply text-text-primary font-medium text-lg;
     line-height: 1.5;
   }
 
-  h5 {
-    @apply font-normal text-dark-blue;
-    font-size: 1rem; /* 16px */
+  h6, .h6 {
+    @apply text-text-secondary font-medium text-base;
     line-height: 1.5;
   }
 
-  h6 {
-    @apply font-normal text-light-gray;
-    font-size: 0.875rem; /* 14px */
-    line-height: 1.5;
-  }
-
-  /* Paragraph */
-  p {
-    @apply font-medium text-base text-dark-blue;
+  p, .p {
+    @apply text-text-secondary font-medium;
     font-size: 1rem;
     line-height: 1.6;
   }
 
-  small {
-    @apply text-sm text-light-gray;
-    font-size: 0.75rem;
-  }
-
-  strong {
-    @apply font-semibold text-dark-blue;
-  }
-
-  span {
-    @apply text-sm;
+  small, .small {
+    @apply text-text-muted text-sm;
   }
 
   a {
-    @apply text-primary-green underline hover:text-dark-blue transition;
+    @apply text-primary hover:text-primary/80 transition-colors duration-200 no-underline;
+  }
+
+  button {
+    @apply cursor-pointer transition-all duration-200;
   }
 }
 
 /* =======================
-   🛠️ Custom Utility Classes
-========================== */
-@utility p1 {
-  @apply text-base text-dark-blue font-medium;
-  font-size: clamp(1rem, 1vw + 0.5rem, 1rem); /* ~16px */
-  line-height: 1.6;
-}
-
-@utility p2 {
-  @apply text-sm text-light-gray font-normal;
-  font-size: clamp(0.875rem, 1vw + 0.25rem, 0.875rem); /* ~14px */
-  line-height: 1.6;
-}
-
-/* =======================
-   🧩 Component Styles
+   🧩 Component Utilities
 ========================== */
 @layer components {
-  .custom-checkbox {
-    @apply appearance-none h-4 w-4 border-2 border-primary-green rounded 
-      checked:bg-primary-green checked:border-primary-green
-      cursor-pointer transition-all duration-200;
+  /* Generic Card Container */
+  .card-container {
+    @apply bg-bg-surface border border-border-main rounded-container shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  /* Inner elements like image boxes or nested sections */
+  .card-inner {
+    @apply rounded-component overflow-hidden;
+  }
+
+  /* Tag style */
+  .tag {
+    @apply px-2 py-0.5 rounded-inner text-[10px] font-semibold uppercase tracking-wider;
   }
 }
+
+/* =======================
+   🛠️ Functional Utilities
+========================== */
+@utility flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@utility absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@layer components {
+  .custom-checkbox {
+    @apply w-4 h-4 rounded-inner border-2 border-border-main appearance-none cursor-pointer transition-all relative;
+    &:checked {
+      @apply bg-secondary border-secondary;
+      &::after {
+        content: "";
+        @apply absolute-center w-2 h-2 bg-white rounded-full;
+      }
+    }
+  }
+}
+

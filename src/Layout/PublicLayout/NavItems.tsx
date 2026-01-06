@@ -10,11 +10,13 @@ const NavItems = ({
   classNameC,
   isMobile = false,
   onItemClick,
+  isFooter,
 }: {
   className?: string;
   classNameNC?: string;
   classNameC?: string;
   isMobile?: boolean;
+  isFooter?: boolean;
   onItemClick?: () => void;
 }) => {
   const location = useLocation();
@@ -52,14 +54,19 @@ const NavItems = ({
 
   return (
     <nav className={className}>
-      <ul className={`flex ${isMobile ? "flex-col w-full" : "gap-4"}`}>
+      <ul
+        className={`${isFooter ? "flex-col" : "flex"} ${isMobile ? "flex-col w-full" : "gap-4"}`}
+      >
         {navbarItems.map((item) => {
           const parentActive = isPathActive(item.path, item.children);
           const hasChildren = item.children && item.children.length > 0;
           const isDropdownOpen = openDropdown === item.label;
 
           return (
-            <li key={item.path ?? item.label} className={`relative group ${isMobile ? "w-full" : ""}`}>
+            <li
+              key={item.path ?? item.label}
+              className={`relative group ${isMobile ? "w-full" : ""}`}
+            >
               {/* Parent item */}
               <div className="flex items-center justify-between">
                 {item.path ? (
@@ -77,16 +84,20 @@ const NavItems = ({
                     {item.label}
                   </span>
                 )}
-                
+
                 {hasChildren && isMobile && (
-                  <button 
+                  <button
                     onClick={() => toggleDropdown(item.label)}
                     className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        isDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
                 )}
-                
+
                 {hasChildren && !isMobile && (
                   <ChevronDown className="w-3 h-3 text-slate-400 ml-1" />
                 )}
@@ -94,12 +105,17 @@ const NavItems = ({
 
               {/* Dropdown */}
               {hasChildren && (
-                <ul className={`
-                  ${isMobile 
-                    ? `w-full bg-slate-50 overflow-hidden transition-all duration-300 ${isDropdownOpen ? "max-h-[500px] py-2" : "max-h-0"}` 
-                    : "absolute left-0 top-full hidden min-w-[200px] rounded-lg bg-white shadow-lg group-hover:block border border-border z-20"
+                <ul
+                  className={`
+                  ${
+                    isMobile
+                      ? `w-full bg-slate-50 overflow-hidden transition-all duration-300 ${
+                          isDropdownOpen ? "max-h-[500px] py-2" : "max-h-0"
+                        }`
+                      : "absolute left-0 top-full hidden min-w-[200px] rounded-lg bg-white shadow-lg group-hover:block border border-border z-20"
                   }
-                `}>
+                `}
+                >
                   {item.children!.map((child) => {
                     const childActive =
                       child.path &&

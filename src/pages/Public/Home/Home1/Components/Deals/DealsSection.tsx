@@ -123,18 +123,18 @@ const DealsSection = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2">
                         <Tag className="w-4 h-4" />
-                        <span className="font-bold">{deal.discount}% OFF</span>
+                        <span className="font-semibold">{deal.discount}% OFF</span>
                       </div>
                       <TrendingUp className="w-6 h-6" />
                     </div>
 
                     {/* Deal Title */}
-                    <h3 className="text-2xl font-bold mb-4">{deal.title}</h3>
+                    <h3 className="text-2xl font-semibold mb-4">{deal.title}</h3>
 
                     {/* Pricing */}
                     <div className="mb-6">
                       <div className="flex items-baseline gap-3">
-                        <span className="text-4xl font-bold">
+                        <span className="text-4xl font-semibold">
                           ${deal.salePrice}
                         </span>
                         <span className="text-lg line-through opacity-70">
@@ -154,19 +154,19 @@ const DealsSection = () => {
                       </div>
                       <div className="flex gap-2">
                         <div className="flex-1 bg-white/20 rounded-lg p-2 text-center">
-                          <div className="text-2xl font-bold">
+                          <div className="text-2xl font-semibold">
                             {String(time.hours).padStart(2, "0")}
                           </div>
                           <div className="text-xs opacity-80">Hours</div>
                         </div>
                         <div className="flex-1 bg-white/20 rounded-lg p-2 text-center">
-                          <div className="text-2xl font-bold">
+                          <div className="text-2xl font-semibold">
                             {String(time.minutes).padStart(2, "0")}
                           </div>
                           <div className="text-xs opacity-80">Mins</div>
                         </div>
                         <div className="flex-1 bg-white/20 rounded-lg p-2 text-center">
-                          <div className="text-2xl font-bold">
+                          <div className="text-2xl font-semibold">
                             {String(time.secs).padStart(2, "0")}
                           </div>
                           <div className="text-xs opacity-80">Secs</div>
@@ -178,7 +178,7 @@ const DealsSection = () => {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full bg-white text-dark-blue py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="w-full bg-white text-dark-blue py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       Grab This Deal
                     </motion.button>

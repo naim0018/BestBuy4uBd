@@ -38,24 +38,24 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-slate-900 z-[101] shadow-2xl flex flex-col"
+            className="fixed top-0 right-0 h-full w-full max-w-md bg-bg-surface z-[101] shadow-2xl flex flex-col"
           >
             {/* Header */}
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-10">
+            <div className="p-6 border-b border-border-main flex items-center justify-between bg-bg-surface sticky top-0 z-10">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary-green/10 rounded-2xl flex items-center justify-center text-primary-green">
+                <div className="w-12 h-12 bg-secondary/10 rounded-component flex items-center justify-center text-secondary">
                   <ShoppingBag className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Your Cart</h2>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{cartItems.length} Items</p>
+                  <h2 className="text-xl font-semibold text-text-primary uppercase tracking-tighter">Your Cart</h2>
+                  <p className="text-xs font-medium text-text-muted uppercase tracking-widest">{cartItems.length} Items</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-colors group"
+                className="p-3 hover:bg-bg-base rounded-component transition-colors group"
               >
-                <X className="w-6 h-6 text-slate-400 group-hover:text-primary-red transition-colors" />
+                <X className="w-6 h-6 text-text-muted group-hover:text-danger transition-colors" />
               </button>
             </div>
 
@@ -64,17 +64,17 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
               {cartItems.length > 0 ? (
                 cartItems.map((item) => (
                   <div key={item.itemKey} className="flex gap-4 group">
-                    <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-2xl flex-shrink-0 p-2 border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+                    <div className="w-24 h-24 bg-bg-base rounded-component flex-shrink-0 p-2 border border-border-main relative overflow-hidden">
                       <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                     </div>
                     
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div>
                         <div className="flex justify-between items-start gap-2">
-                          <h3 className="text-sm font-bold text-slate-800 dark:text-white line-clamp-2 uppercase leading-tight">{item.name}</h3>
+                          <h3 className="text-sm font-medium text-text-primary line-clamp-2 uppercase leading-tight">{item.name}</h3>
                           <button 
                             onClick={() => dispatch(removeFromCart({ itemKey: item.itemKey }))}
-                            className="text-slate-300 hover:text-primary-red transition-colors flex-shrink-0"
+                            className="text-text-muted/50 hover:text-danger transition-colors flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -82,7 +82,7 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
                         {item.selectedVariants && item.selectedVariants.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {item.selectedVariants.map((v: any, idx: number) => (
-                              <span key={idx} className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                              <span key={idx} className="text-[10px] font-medium text-text-muted bg-bg-base px-1.5 py-0.5 rounded-inner">
                                 {v.value}
                               </span>
                             ))}
@@ -91,36 +91,36 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
                       </div>
 
                       <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center bg-bg-base rounded-component p-1 border border-border-main">
                           <button 
                             onClick={() => dispatch(decrementQuantity({ itemKey: item.itemKey }))}
-                            className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-primary-green transition-colors"
+                            className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-secondary transition-colors"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
-                          <span className="w-8 text-center text-xs font-black text-slate-800 dark:text-white">{item.quantity}</span>
+                          <span className="w-8 text-center text-xs font-semibold text-text-primary">{item.quantity}</span>
                           <button 
                             onClick={() => dispatch(incrementQuantity({ itemKey: item.itemKey }))}
-                            className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-primary-green transition-colors"
+                            className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-secondary transition-colors"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
                         </div>
-                        <p className="text-sm font-black text-primary-green">৳{(item.price * item.quantity).toLocaleString()}</p>
+                        <p className="text-sm font-semibold text-secondary">৳{(item.price * item.quantity).toLocaleString()}</p>
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                    <ShoppingBag className="w-10 h-10 text-slate-200" />
+                  <div className="w-20 h-20 bg-bg-base rounded-full flex items-center justify-center mb-6 shadow-inner">
+                    <ShoppingBag className="w-10 h-10 text-text-muted/30" />
                   </div>
-                  <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tighter">Your cart is empty</h3>
-                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-8">Looks like you haven't added anything yet</p>
+                  <h3 className="text-xl font-semibold text-text-primary mb-2 uppercase tracking-tighter">Your cart is empty</h3>
+                  <p className="text-text-muted font-medium uppercase tracking-widest text-[10px] mb-8">Looks like you haven't added anything yet</p>
                   <button 
                     onClick={onClose}
-                    className="px-8 py-4 bg-primary-green text-white rounded-2xl font-black shadow-xl shadow-primary-green/20 uppercase tracking-widest text-xs hover:translate-y-[-2px] active:translate-y-0 transition-all"
+                    className="px-8 py-4 bg-secondary text-white rounded-component font-semibold shadow-xl shadow-secondary/20 uppercase tracking-widest text-xs hover:translate-y-[-2px] active:translate-y-0 transition-all"
                   >
                     Start Shopping
                   </button>
@@ -130,25 +130,25 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
 
             {/* Footer */}
             {cartItems.length > 0 && (
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 space-y-4">
+              <div className="p-6 bg-bg-base border-t border-border-main space-y-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Subtotal</span>
-                  <span className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">৳{subtotal.toLocaleString()}</span>
+                  <span className="text-xs font-semibold text-text-muted uppercase tracking-[0.2em]">Subtotal</span>
+                  <span className="text-2xl font-semibold text-text-primary tracking-tighter">৳{subtotal.toLocaleString()}</span>
                 </div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Taxes and shipping calculated at checkout</p>
+                <p className="text-[10px] font-medium text-text-muted uppercase tracking-widest text-center">Taxes and shipping calculated at checkout</p>
                 
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <Link 
                     to="/cart"
                     onClick={onClose}
-                    className="w-full py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-center shadow-lg hover:bg-slate-50 transition-all"
+                    className="w-full py-4 bg-bg-surface border border-border-main text-text-primary rounded-component font-semibold text-[10px] uppercase tracking-widest text-center shadow-lg hover:bg-bg-base transition-all"
                   >
                     View Cart
                   </Link>
                   <Link 
                     to="/checkout"
                     onClick={onClose}
-                    className="w-full py-4 bg-primary-green text-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-center shadow-2xl shadow-primary-green/20 flex items-center justify-center gap-2 hover:translate-y-[-2px] active:translate-y-0 transition-all group"
+                    className="w-full py-4 bg-secondary text-white rounded-component font-semibold text-[10px] uppercase tracking-widest text-center shadow-2xl shadow-secondary/20 flex items-center justify-center gap-2 hover:translate-y-[-2px] active:translate-y-0 transition-all group"
                   >
                     Checkout
                     <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />

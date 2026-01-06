@@ -11,48 +11,43 @@ const Pagination = ({ currentPage, totalPage, onPageChange }: PaginationProps) =
 
   const pages = Array.from({ length: totalPage }, (_, i) => i + 1);
 
-  // Helper to determine which pages to show (ellipsis logic could be added here for many pages)
-  const renderPageNumbers = () => {
-    return pages.map((page) => (
-      <button
-        key={page}
-        onClick={() => onPageChange(page)}
-        className={`w-10 h-10 rounded-xl font-bold transition-all duration-300 ${
-          currentPage === page
-            ? "bg-primary-green text-white shadow-lg shadow-primary-green/30 scale-110"
-            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-        }`}
-      >
-        {page}
-      </button>
-    ));
-  };
-
   return (
     <div className="flex items-center justify-center gap-2 py-8">
       <button
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
-        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+        className={`w-10 h-10 rounded-component flex items-center justify-center transition-all ${
           currentPage === 1
-            ? "text-slate-300 dark:text-slate-700 cursor-not-allowed"
-            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            ? "text-text-muted/30 cursor-not-allowed"
+            : "text-text-primary hover:bg-bg-surface border border-border-main"
         }`}
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
 
       <div className="flex items-center gap-1">
-        {renderPageNumbers()}
+        {pages.map((page) => (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`w-10 h-10 rounded-component font-black transition-all duration-300 text-xs ${
+              currentPage === page
+                ? "bg-secondary text-white shadow-lg shadow-secondary/30 scale-110"
+                : "text-text-primary hover:bg-bg-surface border border-border-main"
+            }`}
+          >
+            {page}
+          </button>
+        ))}
       </div>
 
       <button
         onClick={() => onPageChange(Math.min(totalPage, currentPage + 1))}
         disabled={currentPage === totalPage}
-        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+        className={`w-10 h-10 rounded-component flex items-center justify-center transition-all ${
           currentPage === totalPage
-            ? "text-slate-300 dark:text-slate-700 cursor-not-allowed"
-            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            ? "text-text-muted/30 cursor-not-allowed"
+            : "text-text-primary hover:bg-bg-surface border border-border-main"
         }`}
       >
         <ChevronRight className="w-5 h-5" />

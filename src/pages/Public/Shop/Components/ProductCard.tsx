@@ -59,22 +59,22 @@ const ProductCard = ({ product }: ProductCardProps) => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="group relative bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-primary-green/20 transition-all duration-500 h-full flex flex-col"
+        className="group relative card-container p-4 h-full flex flex-col hover:border-primary/20"
       >
         {/* Badges */}
         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
           {discountPercentage > 0 && (
-            <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-primary-red text-white uppercase tracking-wider shadow-lg">
+            <span className="tag bg-danger text-white shadow-lg">
               -{discountPercentage}%
             </span>
           )}
           {additionalInfo?.isFeatured && (
-            <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-primary-blue text-white uppercase tracking-wider shadow-lg">
+            <span className="tag bg-primary text-white shadow-lg">
               Featured
             </span>
           )}
           {stockStatus === "Out of Stock" && (
-            <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-slate-500 text-white uppercase tracking-wider shadow-lg">
+            <span className="tag bg-text-muted text-white shadow-lg">
               Out of Stock
             </span>
           )}
@@ -85,15 +85,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
           onClick={handleWishlist}
           className={`absolute top-4 right-4 z-10 w-9 h-9 rounded-full backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
             isWishlisted 
-              ? "bg-primary-red text-white" 
-              : "bg-white/80 dark:bg-slate-800/80 text-slate-400 hover:text-primary-red hover:bg-white dark:hover:bg-slate-700"
+              ? "bg-danger text-white" 
+              : "bg-bg-surface/80 text-text-muted hover:text-danger hover:bg-bg-surface"
           }`}
         >
           <Heart className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`} />
         </button>
 
         {/* Image Container */}
-        <div className="relative h-56 mb-5 flex items-center justify-center overflow-hidden rounded-2xl bg-slate-50 dark:bg-slate-800/50 group-hover:bg-white dark:group-hover:bg-slate-800 transition-colors duration-500">
+        <div className="relative h-56 mb-5 flex items-center justify-center overflow-hidden card-inner bg-bg-base/50 group-hover:bg-bg-surface transition-colors duration-500">
           <motion.img
             src={images[0]?.url || "https://via.placeholder.com/300"}
             alt={basicInfo.title}
@@ -105,7 +105,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <motion.button
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.9 }}
-              className="w-11 h-11 rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-xl flex items-center justify-center hover:bg-primary-blue hover:text-white transition-all duration-300"
+              className="w-11 h-11 rounded-full bg-bg-surface text-text-primary shadow-xl flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300"
               title="Quick View"
             >
               <Eye className="w-5 h-5" />
@@ -117,8 +117,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
               disabled={stockStatus === "Out of Stock"}
               className={`w-11 h-11 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 ${
                 stockStatus === "Out of Stock" 
-                  ? "bg-slate-300 cursor-not-allowed text-slate-500" 
-                  : "bg-primary-green text-white hover:bg-green-600"
+                  ? "bg-text-muted/20 cursor-not-allowed text-text-muted" 
+                  : "bg-secondary text-white hover:bg-secondary/90"
               }`}
               title="Add to Cart"
             >
@@ -129,12 +129,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
         {/* Content */}
         <div className="flex-1 flex flex-col px-1">
-          <div className="text-[10px] font-bold text-primary-green uppercase tracking-widest mb-1">
+          <div className="text-[10px] font-semibold text-secondary uppercase tracking-widest mb-1">
             {basicInfo.category}
           </div>
           
           <h3
-            className="font-bold text-slate-800 dark:text-slate-100 mb-2 line-clamp-2 min-h-[48px] text-lg leading-tight group-hover:text-primary-green transition-colors duration-300"
+            className="text-text-primary mb-2 line-clamp-2 min-h-[48px] text-lg leading-tight group-hover:text-secondary transition-colors duration-300"
             title={basicInfo.title}
           >
             {basicInfo.title}
@@ -142,50 +142,50 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
           {/* Rating */}
           <div className="flex items-center gap-2 mb-4">
-            <div className="flex text-primary-yellow">
+            <div className="flex text-accent">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
                   className={`w-3.5 h-3.5 ${
                     i < Math.floor(rating?.average || 0)
                       ? "fill-current"
-                      : "text-slate-200 dark:text-slate-700"
+                      : "text-text-muted/20"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-xs font-medium text-slate-400">
+            <span className="small font-medium">
               ({rating?.count || 0} reviews)
             </span>
           </div>
 
-          <div className="mt-auto pt-4 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+          <div className="mt-auto pt-4 border-t border-border-main flex items-center justify-between">
             <div className="flex flex-col">
               {price.discounted ? (
                 <>
-                  <span className="text-xs text-slate-400 line-through font-medium">
+                  <span className="text-xs text-text-muted line-through font-medium">
                     ৳{price.regular.toLocaleString()}
                   </span>
-                  <span className="text-xl font-extrabold text-primary-red">
+                  <span className="text-xl font-semibold text-danger">
                     ৳{price.discounted.toLocaleString()}
                   </span>
                 </>
               ) : (
-                <span className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
+                <span className="text-xl font-semibold text-text-primary">
                   ৳{price.regular.toLocaleString()}
                 </span>
               )}
             </div>
 
             <div className="text-right">
-              <div className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                stockStatus === "In Stock" ? "bg-primary-green/10 text-primary-green" :
-                stockStatus === "Pre-order" ? "bg-primary-yellow/10 text-primary-yellow" :
-                "bg-primary-red/10 text-primary-red"
+              <div className={`tag ${
+                stockStatus === "In Stock" ? "bg-secondary/10 text-secondary" :
+                stockStatus === "Pre-order" ? "bg-accent/10 text-accent" :
+                "bg-danger/10 text-danger"
               }`}>
                 {stockStatus}
               </div>
-              <span className="text-[10px] text-slate-400 font-medium mt-1 block">
+              <span className="text-[10px] text-text-muted font-medium mt-1 block">
                 {product.sold || 0} Sold
               </span>
             </div>

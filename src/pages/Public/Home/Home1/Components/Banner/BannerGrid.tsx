@@ -12,16 +12,16 @@ const getBackgroundColor = (index: number, type: string) => {
 };
 
 const getTextColor = (bgColor: string) => {
-  return bgColor.includes("slate-900") || bgColor.includes("slate-500")
+  return bgColor.includes("slate-900") || bgColor.includes("slate-500") || bgColor.includes("text-primary")
     ? "text-white"
-    : "text-dark-blue";
+    : "text-text-primary";
 };
 
 const BannerGrid = () => {
   const { data: bannerResponse, isLoading } = useGetAllBannersQuery();
-  const banners = bannerResponse?.data || [];
 
   const { heroBanners, productCards } = useMemo(() => {
+    const banners = bannerResponse?.data || [];
     const heroes: BannerData[] = [];
     const others: BannerData[] = [];
 
@@ -51,7 +51,7 @@ const BannerGrid = () => {
     });
 
     return { heroBanners: heroes, productCards: others };
-  }, [banners]);
+  }, [bannerResponse]);
 
   const showSkeleton =
     isLoading || (heroBanners.length === 0 && productCards.length === 0);
@@ -61,17 +61,17 @@ const BannerGrid = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Hero Skeleton */}
-          <div className="lg:col-span-2 lg:row-span-2 h-[500px] bg-gray-200 rounded-3xl animate-pulse" />
+          <div className="lg:col-span-2 lg:row-span-2 h-[500px] bg-border-main/20 rounded-container animate-pulse" />
 
           {/* Right Column Skeleton */}
           <div className="space-y-6 h-[500px]">
-            <div className="h-full bg-gray-200 rounded-2xl animate-pulse" />
+            <div className="h-full bg-border-main/20 rounded-component animate-pulse" />
           </div>
 
           {/* Bottom Row Skeleton */}
           <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="h-[200px] bg-gray-200 rounded-2xl animate-pulse" />
-            <div className="h-[200px] bg-gray-200 rounded-2xl animate-pulse" />
+            <div className="h-[200px] bg-border-main/20 rounded-component animate-pulse" />
+            <div className="h-[200px] bg-border-main/20 rounded-component animate-pulse" />
           </div>
         </div>
       </div>
@@ -87,7 +87,7 @@ const BannerGrid = () => {
           {heroBanners.length > 0 ? (
             <HeroBanner banners={heroBanners} />
           ) : (
-            <div className="h-full bg-gray-200 rounded-3xl animate-pulse" />
+            <div className="h-full bg-border-main/20 rounded-container animate-pulse" />
           )}
         </div>
 
@@ -100,7 +100,7 @@ const BannerGrid = () => {
               index={0}
             />
           ) : (
-            <div className="h-full bg-gray-200 rounded-2xl animate-pulse" />
+            <div className="h-full bg-border-main/20 rounded-component animate-pulse" />
           )}
         </div>
 
@@ -114,8 +114,8 @@ const BannerGrid = () => {
               ))
           ) : (
             <>
-              <div className="h-[200px] bg-gray-200 rounded-2xl animate-pulse" />
-              <div className="h-[200px] bg-gray-200 rounded-2xl animate-pulse" />
+              <div className="h-[200px] bg-border-main/20 rounded-component animate-pulse" />
+              <div className="h-[200px] bg-border-main/20 rounded-component animate-pulse" />
             </>
           )}
         </div>

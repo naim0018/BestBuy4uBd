@@ -49,24 +49,24 @@ const WishlistSidebar = ({ isOpen, onClose }: WishlistSidebarProps) => {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-slate-900 z-[101] shadow-2xl flex flex-col"
+            className="fixed top-0 right-0 h-full w-full max-w-md bg-bg-surface z-[101] shadow-2xl flex flex-col"
           >
             {/* Header */}
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-10">
+            <div className="p-6 border-b border-border-main flex items-center justify-between bg-bg-surface sticky top-0 z-10">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary-red/10 rounded-2xl flex items-center justify-center text-primary-red">
+                <div className="w-12 h-12 bg-danger/10 rounded-component flex items-center justify-center text-danger">
                   <Heart className="w-6 h-6 fill-current" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Wishlist</h2>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{wishlistItems.length} Favorite Items</p>
+                  <h2 className="h5 text-text-primary uppercase tracking-tighter">Wishlist</h2>
+                  <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">{wishlistItems.length} Favorite Items</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-colors group"
+                className="p-3 hover:bg-bg-base rounded-component transition-colors group"
               >
-                <X className="w-6 h-6 text-slate-400 group-hover:text-primary-red transition-colors" />
+                <X className="w-6 h-6 text-text-muted group-hover:text-danger transition-colors" />
               </button>
             </div>
 
@@ -75,7 +75,7 @@ const WishlistSidebar = ({ isOpen, onClose }: WishlistSidebarProps) => {
               {wishlistItems.length > 0 ? (
                 wishlistItems.map((item) => (
                   <div key={item._id} className="flex gap-4 group">
-                    <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-2xl flex-shrink-0 p-2 border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+                    <div className="w-24 h-24 bg-bg-base rounded-component flex-shrink-0 p-2 border border-border-main relative overflow-hidden">
                       <img 
                         src={item.images?.[0]?.url || item.image || "https://via.placeholder.com/100"} 
                         alt={item.basicInfo?.title || item.name} 
@@ -86,17 +86,17 @@ const WishlistSidebar = ({ isOpen, onClose }: WishlistSidebarProps) => {
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div>
                         <div className="flex justify-between items-start gap-2">
-                          <h3 className="text-sm font-bold text-slate-800 dark:text-white line-clamp-2 uppercase leading-tight">
+                          <h3 className="text-sm font-medium text-text-primary line-clamp-2 uppercase leading-tight">
                             {item.basicInfo?.title || item.name}
                           </h3>
                           <button 
                             onClick={() => dispatch(removeFromWishlist(item._id))}
-                            className="text-slate-300 hover:text-primary-red transition-colors flex-shrink-0"
+                            className="text-text-muted/50 hover:text-danger transition-colors flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <p className="text-sm font-black text-primary-green mt-1">
+                        <p className="text-sm font-semibold text-secondary mt-1">
                           ৳{(item.price?.discounted || item.price?.regular || item.price || 0).toLocaleString()}
                         </p>
                       </div>
@@ -104,7 +104,7 @@ const WishlistSidebar = ({ isOpen, onClose }: WishlistSidebarProps) => {
                       <div className="flex items-center justify-between mt-2">
                          <button 
                             onClick={() => handleMoveToCart(item)}
-                            className="text-[10px] font-black uppercase tracking-widest text-primary-green flex items-center gap-2 hover:bg-primary-green/5 px-3 py-1.5 rounded-lg transition-colors border border-primary-green/10"
+                            className="text-[10px] font-semibold uppercase tracking-widest text-secondary flex items-center gap-2 hover:bg-secondary/5 px-3 py-1.5 rounded-inner transition-colors border border-secondary/10"
                          >
                             <ShoppingCart className="w-3 h-3" />
                             Add to Cart
@@ -115,14 +115,14 @@ const WishlistSidebar = ({ isOpen, onClose }: WishlistSidebarProps) => {
                 ))
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                    <Heart className="w-10 h-10 text-slate-200" />
+                  <div className="w-20 h-20 bg-bg-base rounded-full flex items-center justify-center mb-6 shadow-inner">
+                    <Heart className="w-10 h-10 text-text-muted/20" />
                   </div>
-                  <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tighter">Your wishlist is empty</h3>
-                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-8">Save items you love to find them later</p>
+                  <h3 className="h5 text-text-primary mb-2 uppercase tracking-tighter">Your wishlist is empty</h3>
+                  <p className="text-text-muted font-medium uppercase tracking-widest text-[10px] mb-8">Save items you love to find them later</p>
                   <button 
                     onClick={onClose}
-                    className="px-8 py-4 bg-primary-red text-white rounded-2xl font-black shadow-xl shadow-primary-red/20 uppercase tracking-widest text-xs hover:translate-y-[-2px] active:translate-y-0 transition-all font-montserrat"
+                    className="px-8 py-4 bg-danger text-white rounded-component font-semibold shadow-xl shadow-danger/20 uppercase tracking-widest text-xs hover:translate-y-[-2px] active:translate-y-0 transition-all"
                   >
                     Explore Shop
                   </button>
@@ -132,11 +132,11 @@ const WishlistSidebar = ({ isOpen, onClose }: WishlistSidebarProps) => {
 
             {/* Footer */}
             {wishlistItems.length > 0 && (
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
+              <div className="p-6 bg-bg-base border-t border-border-main">
                 <Link 
                   to="/shop"
                   onClick={onClose}
-                  className="w-full py-4 bg-primary-red text-white rounded-2xl font-black text-[10px] uppercase tracking-widest text-center shadow-2xl shadow-primary-red/20 flex items-center justify-center gap-2 hover:translate-y-[-2px] active:translate-y-0 transition-all group"
+                  className="w-full py-4 bg-danger text-white rounded-component font-semibold text-[10px] uppercase tracking-widest text-center shadow-2xl shadow-danger/20 flex items-center justify-center gap-2 hover:translate-y-[-2px] active:translate-y-0 transition-all group"
                 >
                   Continue Shopping
                   <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
