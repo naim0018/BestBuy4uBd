@@ -26,11 +26,9 @@ const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
-  console.log(result, "Result");
   if (result.error && result.error.status === 400) {
     const state = api.getState() as any;
     const refreshToken = state.auth.user?.refreshToken;
-    console.log(refreshToken);
     if (!refreshToken) {
       api.dispatch(logOut());
       return result;
@@ -60,6 +58,14 @@ const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithReauth,
   endpoints: () => ({}),
-  tagTypes: ["Product", "Categories", "Orders", "Users", "Banner"],
+  tagTypes: [
+    "Product",
+    "Categories",
+    "Orders",
+    "Users",
+    "Banner",
+    "GoogleAnalytics",
+    "FacebookPixel",
+  ],
 });
 export default baseApi;
