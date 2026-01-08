@@ -7,9 +7,7 @@ interface CommonWrapperProps {
 
 const CommonWrapper = ({ children, className = "" }: CommonWrapperProps) => {
   return (
-    <div className={`max-w-[1400px] mx-auto my-auto ${className}`}>
-      {children}
-    </div>
+    <div className={`container mx-auto my-auto ${className}`}>{children}</div>
   );
 };
 

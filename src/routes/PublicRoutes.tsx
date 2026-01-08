@@ -3,6 +3,7 @@ import Services from "@/pages/Public/Services/Services";
 import Home from "@/pages/Public/Home/Home1/Home";
 import Shop from "@/pages/Public/Shop/Shop";
 import ProductDetails from "@/pages/Public/Shop/Components/ProductDetails/ProductDetails";
+import Checkout from "@/pages/Public/Checkout/Checkout";
 
 export const publicRoutes = [
   {
@@ -20,6 +21,10 @@ export const publicRoutes = [
   {
     path: "/product/:id",
     element: <ProductDetails />,
+  },
+  {
+    path: "/checkout",
+    element: <Checkout />,
   },
   {
     label: "Contact",

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToWishlist, removeFromWishlist } from "@/store/Slices/wishlistSlice";
 import { openWishlist } from "@/store/Slices/UISlice";
 import { RootState } from "@/store/store";
+import { Link } from "react-router-dom";
 
 interface ProductCardProps {
   product: ProductData;
@@ -37,11 +38,12 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
     }
   };
   return (
+    <Link to={`/product/${product.id}`} className="h-full block">
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="card-container p-4 flex flex-col group h-full"
+      className="card-container p-4 flex flex-col group h-full relative"
     >
       {/* Badges */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
@@ -146,8 +148,6 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
           </div>
 
           <div className="flex flex-col items-end">
-            <Heart className="w-4 h-4 text-text-muted/30 mb-1" />{" "}
-            {/* Just visual for now based on design */}
             <span className="text-[10px] text-text-muted uppercase font-bold tracking-widest">
               {product.purchases} Sold
             </span>
@@ -155,6 +155,7 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 };
 

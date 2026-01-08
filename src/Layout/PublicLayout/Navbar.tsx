@@ -14,6 +14,7 @@ import {
   Truck,
   RefreshCw,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import NavItems from "./NavItems";
 import CartSidebar from "./CartSidebar";
@@ -94,9 +95,9 @@ const Navbar = () => {
                 <ShoppingCart className="w-6 h-6 text-white" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-xl font-bold text-dark-blue">
+                <Link to="/" className="text-xl font-bold text-dark-blue hover:text-primary-green transition-colors">
                   BESTBUY4UBD
-                </span>
+                </Link>
               </div>
             </div>
 
