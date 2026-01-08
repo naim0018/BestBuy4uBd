@@ -1,0 +1,247 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { useGetOrderByIdQuery, useUpdateOrderMutation } from "@/store/Api/OrderApi";
+import { Card, Chip, Button } from "@heroui/react";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { ArrowLeft, Save, Printer, Package, User, MapPin, Phone, Mail } from "lucide-react";
+import DashboardSkeleton from "@/common/Skeleton/DashboardSkeleton";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const orderSchema = z.object({
+  status: z.string().min(1, "Status is required"),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  phone: z.string().min(1, "Phone is required"),
+  address: z.string().min(1, "Address is required"),
+  city: z.string().optional(),
+});
+
+type OrderFormValues = z.infer<typeof orderSchema>;
+
+const STATUS_OPTIONS = [
+  { value: "Pending", label: "Pending" },
+  { value: "Processing", label: "Processing" },
+  { value: "Shipped", label: "Shipped" },
+  { value: "Delivered", label: "Delivered" },
+  { value: "Cancelled", label: "Cancelled" },
+];
+
+const OrderDetails = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { data: orderData, isLoading, refetch } = useGetOrderByIdQuery(id);
+  const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
+
+  const order = orderData?.data;
+
+  const { register, handleSubmit, reset } = useForm<OrderFormValues>({
+    resolver: zodResolver(orderSchema),
+  });
+
+  useEffect(() => {
+    if (order) {
+      reset({
+        status: order.status,
+        name: order.billingInformation?.name,
+        email: order.billingInformation?.email,
+        phone: order.billingInformation?.phone,
+        address: order.billingInformation?.address,
+        city: order.billingInformation?.city || "",
+      });
+    }
+  }, [order, reset]);
+
+  const onSubmit = async (data: OrderFormValues) => {
+    try {
+      const updatePayload = {
+        id,
+        status: data.status,
+        billingInformation: {
+          ...order.billingInformation,
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          city: data.city,
+          paymentMethod: order.billingInformation?.paymentMethod || order.paymentMethod || "COD",
+        },
+      };
+      await updateOrder(updatePayload).unwrap();
+      toast.success("Order updated successfully");
+      refetch();
+    } catch (err) {
+      toast.error("Failed to update order");
+      console.error(err);
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  if (isLoading) return <DashboardSkeleton />;
+
+  if (!order) return <div className="p-10 text-center text-red-500">Order not found</div>;
+
+  return (
+    <div className="space-y-6 container mx-auto pb-10">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between no-print">
+        <div className="flex items-center gap-3">
+          <Button isIconOnly variant="flat" onClick={() => navigate("/admin/orders")}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+             <h1 className="text-2xl font-bold flex items-center gap-2">
+                Order #{order._id?.slice(-6).toUpperCase()}
+                <Chip size="sm" color={order.status === 'Cancelled' ? 'danger' : order.status === 'Delivered' ? 'success' : 'warning'} variant="flat">
+                    {order.status}
+                </Chip>
+             </h1>
+             <p className="text-sm text-gray-500">
+                Placed on {new Date(order.createdAt).toLocaleString()}
+             </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+            <Button color="secondary" variant="flat" startContent={<Printer className="w-4 h-4" />} onClick={handlePrint}>
+                Print Invoice
+            </Button>
+            <Button color="primary" isLoading={isUpdating} startContent={<Save className="w-4 h-4" />} onClick={handleSubmit(onSubmit)}>
+                Save Changes
+            </Button>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column: Order Items */}
+        <div className="lg:col-span-2 space-y-6">
+            <Card className="p-4 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <Package className="w-5 h-5 text-gray-500" /> Order Items
+                </h3>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                            <tr>
+                                <th className="px-4 py-3 rounded-l-lg">Product</th>
+                                <th className="px-4 py-3 text-center">Unit Price</th>
+                                <th className="px-4 py-3 text-center">Qty</th>
+                                <th className="px-4 py-3 text-right rounded-r-lg">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {order.products?.map((item: any, idx: number) => (
+                                <tr key={idx} className="hover:bg-gray-50/50">
+                                    <td className="px-4 py-4 flex items-center gap-3">
+                                        {/* Assuming item.product is loaded or we have name/image */}
+                                         <div className="w-12 h-12 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
+                                           {item.product?.images?.[0] && <img src={item.product.images[0]} alt={item.product.title} className="w-full h-full object-cover" />}
+                                         </div>
+                                         <div>
+                                            <p className="font-semibold text-gray-800">{item.product?.title || "Product Deleted"}</p>
+                                            <p className="text-xs text-gray-500">{item.product?.brand}</p>
+                                         </div>
+                                    </td>
+                                    <td className="px-4 py-4 text-center">৳{item.price?.toLocaleString()}</td>
+                                    <td className="px-4 py-4 text-center font-medium">x {item.quantity}</td>
+                                    <td className="px-4 py-4 text-right font-bold">৳{(item.price * item.quantity).toLocaleString()}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        <tfoot className="border-t-2 border-dashed border-gray-200">
+                            <tr>
+                                <td colSpan={3} className="px-4 py-3 text-right text-gray-600 font-medium">Subtotal</td>
+                                <td className="px-4 py-3 text-right font-bold">৳{order.totalAmount?.toLocaleString()}</td>
+                            </tr>
+                             <tr>
+                                <td colSpan={3} className="px-4 py-2 text-right text-gray-600 font-medium">Shipping</td>
+                                <td className="px-4 py-2 text-right font-bold text-gray-500">Free</td>
+                            </tr>
+                             <tr>
+                                <td colSpan={3} className="px-4 py-4 text-right text-gray-900 font-black text-lg">Total Amount</td>
+                                <td className="px-4 py-4 text-right font-black text-lg text-primary-blue">৳{order.totalAmount?.toLocaleString()}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </Card>
+        </div>
+
+        {/* Right Column: Customer & Status */}
+        <div className="space-y-6">
+             {/* Status Card */}
+             <Card className="p-5 shadow-sm border border-gray-100 border-l-4 border-l-primary-blue">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Order Status</h3>
+                <div className="relative">
+                     <select 
+                        {...register("status")}
+                        className="w-full p-3 rounded-lg border border-gray-200 bg-gray-50 font-semibold text-gray-800 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all cursor-pointer"
+                    >
+                        {STATUS_OPTIONS.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                    <span>Payment Method</span>
+                    <span className="font-bold text-gray-700 capitalize">{order.paymentMethod || "COD"}</span>
+                </div>
+             </Card>
+
+             {/* Customer Info Card */}
+             <Card className="p-5 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <User className="w-5 h-5 text-gray-500" /> Customer Details
+                </h3>
+                <div className="space-y-4">
+                     <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-500 uppercase">Full Name</label>
+                        <div className="relative">
+                            <User className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                            <input {...register("name")} className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="Name" />
+                        </div>
+                     </div>
+                     <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-500 uppercase">Email Address</label>
+                         <div className="relative">
+                            <Mail className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                            <input {...register("email")} className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="Email" />
+                        </div>
+                     </div>
+                     <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-500 uppercase">Phone Number</label>
+                         <div className="relative">
+                            <Phone className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                            <input {...register("phone")} className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="Phone" />
+                        </div>
+                     </div>
+                </div>
+             </Card>
+
+              {/* Shipping Address */}
+             <Card className="p-5 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-gray-500" /> Shipping Info
+                </h3>
+                  <div className="space-y-4">
+                     <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-500 uppercase">Address</label>
+                        <textarea {...register("address")} rows={3} className="w-full p-3 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="Address"></textarea>
+                     </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-500 uppercase">City / Region</label>
+                        <input {...register("city")} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="City" />
+                     </div>
+                </div>
+             </Card>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default OrderDetails;

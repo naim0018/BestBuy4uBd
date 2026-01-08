@@ -22,6 +22,8 @@ import WishlistSidebar from "./WishlistSidebar";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store/store";
 import { toggleCart, closeCart, toggleWishlist, closeWishlist } from "@/store/Slices/UISlice";
+import { logOut } from "@/store/Slices/AuthSlice/authSlice";
+import UserMenuDropdown from "./UserMenuDropdown";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -31,6 +33,7 @@ const Navbar = () => {
   const { isCartOpen, isWishlistOpen } = useSelector((state: RootState) => state.ui);
   const { cartItems } = useSelector((state: RootState) => state.cart);
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const cartSubtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -125,17 +128,40 @@ const Navbar = () => {
               </button>
 
               {/* User Account */}
-              <button className="hidden md:flex items-center gap-2 hover:text-primary-blue transition-colors">
-                <div className="w-10 h-10 bg-light-background rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-dark-blue" />
+              {user?.email ? (
+                <div className="relative group z-50">
+                  <button className="hidden md:flex items-center gap-2 hover:text-primary-blue transition-colors">
+                    <div className="w-10 h-10 bg-primary-green/10 rounded-full flex items-center justify-center border border-primary-green/20">
+                      <User className="w-5 h-5 text-primary-green" />
+                    </div>
+                    <div className="flex flex-col items-start leading-tight">
+                      <span className="text-xs text-light-gray">
+                        {user.role === 'admin' ? 'ADMIN' : 'HELLO,'}
+                      </span>
+                      <span className="text-sm font-semibold text-dark-blue max-w-[100px] truncate">
+                        {user.email.split('@')[0]}
+                      </span>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-light-gray group-hover:text-primary-blue transition-colors" />
+                  </button>
+
+
+                  {/* Dropdown Menu */}
+                  <UserMenuDropdown user={user} />
                 </div>
-                <div className="flex flex-col items-start leading-tight">
-                  <span className="text-xs text-light-gray">WELCOME</span>
-                  <span className="text-sm font-semibold text-dark-blue">
-                    LOG IN / REGISTER
-                  </span>
-                </div>
-              </button>
+              ) : (
+                <Link to="/login" className="hidden md:flex items-center gap-2 hover:text-primary-blue transition-colors">
+                  <div className="w-10 h-10 bg-light-background rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-dark-blue" />
+                  </div>
+                  <div className="flex flex-col items-start leading-tight">
+                    <span className="text-xs text-light-gray">WELCOME</span>
+                    <span className="text-sm font-semibold text-dark-blue">
+                      LOG IN / REGISTER
+                    </span>
+                  </div>
+                </Link>
+              )}
 
               {/* Cart */}
               <button 
@@ -182,15 +208,6 @@ const Navbar = () => {
           <div className="flex flex-col lg:flex-row items-center justify-between py-3 gap-4">
             {/* Search Section */}
             <div className="flex items-center w-full lg:w-auto lg:flex-1 lg:max-w-md border border-white rounded-full bg-white">
-              {/* Category Dropdown */}
-              {/* <button className="bg-white px-4 py-3 rounded-l-full flex items-center gap-2 border-r border-border whitespace-nowrap">
-                <span className="text-sm font-medium text-dark-blue">
-                  All Categories
-                </span>
-                <ChevronDown className="w-4 h-4 text-dark-blue" />
-              </button> */}
-
-              {/* Search Input */}
               <div className="relative flex-1">
                 <input
                   type="text"
@@ -203,8 +220,6 @@ const Navbar = () => {
                   <Search className="w-5 h-5 text-dark-blue" />
                 </button>
               </div>
-
-              {/* Search Button - Rounded End */}
               <div className="bg-white rounded-r-full pr-1">
                 <div className="w-1"></div>
               </div>
@@ -265,9 +280,34 @@ const Navbar = () => {
                     </span>
                   )}
                 </button>
-                <button className="w-full text-left px-5 py-2 text-dark-blue hover:text-primary-blue transition-colors font-semibold">
-                  Log In / Register
-                </button>
+                {user?.email ? (
+                  <>
+                     <Link
+                      to={user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard'}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block w-full text-left px-5 py-2 text-dark-blue hover:text-primary-blue transition-colors font-semibold"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={() => {
+                        dispatch(logOut());
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-5 py-2 text-danger hover:bg-red-50 transition-colors font-semibold"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                     onClick={() => setIsMobileMenuOpen(false)}
+                    className="block w-full text-left px-5 py-2 text-dark-blue hover:text-primary-blue transition-colors font-semibold"
+                  >
+                    Log In / Register
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>
@@ -286,6 +326,5 @@ const Navbar = () => {
     </nav>
   );
 };
-
 
 export default Navbar;

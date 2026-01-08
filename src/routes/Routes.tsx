@@ -11,6 +11,8 @@ import DashboardLayout from "@/Layout/DashboardLayout/DashboardLayout";
 import LandingPageContainer from "@/pages/LandingPage/LandingPageContainer";
 import { userRoutes } from "./UserRoutes";
 
+import ProtectedRoute from "./ProtectedRoute";
+
 const routes = createBrowserRouter([
   {
     path: "/",
@@ -33,7 +35,11 @@ const routes = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <DashboardLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={['admin']}>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -44,7 +50,11 @@ const routes = createBrowserRouter([
   },
   {
     path: "/user",
-    element: <DashboardLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={['user', 'admin']}>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,

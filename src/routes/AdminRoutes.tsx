@@ -4,6 +4,8 @@ import AddProduct from "@/pages/Admin/AddProduct/AddProduct";
 import Product from "@/pages/Admin/Product/Product";
 import CMS from "@/pages/Admin/CMS/CMS";
 import Services from "@/pages/Admin/Services/Services";
+import AllOrders from "@/pages/Admin/Order/AllOrders";
+import OrderDetails from "@/pages/Admin/Order/OrderDetails";
 import {
   LayoutDashboard,
   SettingsIcon,
@@ -11,6 +13,7 @@ import {
   Package2,
   LayoutTemplate,
   Activity,
+  ShoppingCart,
 } from "lucide-react";
 
 export const adminRoutes = [
@@ -22,6 +25,21 @@ export const adminRoutes = [
         icon: <LayoutDashboard />,
         path: "dashboard",
         element: <Dashboard />,
+      },
+    ]
+  },
+  {
+    group: "Order Management",
+    items: [
+      {
+        label: "All Orders",
+        icon: <ShoppingCart />,
+        path: "orders",
+        element: <AllOrders />,
+      },
+      {
+        path: "orders/:id",
+        element: <OrderDetails />,
       },
     ]
   },

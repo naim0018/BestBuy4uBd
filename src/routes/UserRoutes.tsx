@@ -6,19 +6,19 @@ export const userRoutes = [
   {
     icon: <User />,
     label: "Dashboard",
-    path: "/dashboard",
+    path: "dashboard",
     element: <Dashboard />,
   },
   {
     icon: <TruckIcon />,
     label: "Track Order",
-    path: "/track-order",
+    path: "track-order",
     element: <Order />,
   },
   {
     icon: <Settings2 />,
     label: "Settings",
-    path: "/settings",
+    path: "settings",
     element: <Settings />,
   },
 ];

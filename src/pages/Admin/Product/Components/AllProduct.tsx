@@ -39,8 +39,6 @@ const AllProduct = () => {
   // Extract meta data
   const meta = data?.meta || { page: 1, limit: 12, total: 0, totalPage: 1 };
   const apiProducts = data?.data || [];
-  console.log(apiProducts);
-
   // Normalize products for display
   const products: ProductDisplay[] = apiProducts.map(normalizeProduct);
 
@@ -81,7 +79,7 @@ const AllProduct = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-    {/* Filters and Controls */}
+      {/* Filters and Controls */}
       <Card className="p-4 mb-6 shadow-sm border-none bg-gray-50/50">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
@@ -231,7 +229,7 @@ const AllProduct = () => {
             </Select>
           </div>
         </div>
-        
+
         {meta.totalPage > 1 && (
           <Pagination
             total={meta.totalPage}
@@ -299,7 +297,6 @@ const AllProduct = () => {
           )}
         </div>
       </div>
-
 
       {products.length === 0 && (
         <Card className="p-8 text-center">
