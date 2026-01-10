@@ -8,6 +8,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -43,6 +44,7 @@ const Header = () => {
 
       {/* Right Side: Actions & Profile */}
       <div className="flex items-center gap-4">
+        <ThemeToggle />
         {/* Notifications */}
         <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full relative transition-colors">
           <Bell className="w-5 h-5" />

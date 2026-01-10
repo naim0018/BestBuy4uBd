@@ -236,6 +236,14 @@ export const additionalInfoFields: FieldConfig[] = [
     label: "Warranty",
     placeholder: "e.g., 1 year manufacturer warranty",
   },
+  {
+    name: "additionalInfo.landingPageTemplate",
+    type: "text",
+    label: "Landing Page Template",
+    placeholder: "e.g., template1, template2",
+    helpText: "Specify the landing page design template for this product",
+    defaultValue: "template1",
+  },
 ];
 
 // ============================================

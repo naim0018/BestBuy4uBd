@@ -6,8 +6,10 @@ import ProductPreviewNew from "./Components/ProductPreviewNew";
 import { ProductFormValues } from "./Components/Product";
 import {
   useAddProductMutation,
+  useUpdateProductMutation,
   useGetProductByIdQuery,
 } from "@/store/Api/ProductApi";
+
 
 export default function ProductAdminPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,20 +18,22 @@ export default function ProductAdminPage() {
   const [preview, setPreview] = useState(false);
   const [draft, setDraft] = useState<ProductFormValues | null>(null);
   const [defaultValues, setDefaultValues] = useState<
-    ProductFormValues | undefined
+    Partial<ProductFormValues> | undefined
   >(undefined);
 
   // Fetch existing product (only if updating)
-  const { data: existing, isLoading } = useGetProductByIdQuery(id!, {
+  const { data: existing, isLoading } = useGetProductByIdQuery({ id: id! }, {
     skip: isAdd,
   });
 
   // RTK Mutation for create/update
-  const [saveProduct, { isLoading: isSaving }] = useAddProductMutation();
+  const [addProduct, { isLoading: isAdding }] = useAddProductMutation();
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const isSaving = isAdding || isUpdating;
 
   // When existing product loads, set it as default values
   useEffect(() => {
-    if (existing) setDefaultValues(existing);
+    if (existing) setDefaultValues(existing.data as unknown as ProductFormValues);
   }, [existing]);
 
   const handleSubmit = (values: ProductFormValues) => {
@@ -53,6 +57,7 @@ export default function ProductAdminPage() {
             (feature) => feature.trim() !== ""
           ) || [],
         },
+        
         price: {
           regular: Number(draft.price.regular),
           discounted: draft.price.discounted
@@ -119,6 +124,7 @@ export default function ProductAdminPage() {
           estimatedDelivery: draft.additionalInfo?.estimatedDelivery,
           returnPolicy: draft.additionalInfo?.returnPolicy,
           warranty: draft.additionalInfo?.warranty,
+          landingPageTemplate: draft.additionalInfo?.landingPageTemplate,
         },
         seo: {
           metaTitle: draft.seo?.metaTitle || undefined,
@@ -129,7 +135,13 @@ export default function ProductAdminPage() {
       };
 
       console.log("Sending product data:", productData); // Debug log
-      await saveProduct(productData).unwrap();
+      
+      if (isAdd) {
+        await addProduct(productData).unwrap();
+      } else {
+        await updateProduct({ id: id!, ...productData }).unwrap();
+      }
+
       alert(isAdd ? "Product created" : "Product updated");
       setPreview(false);
     } catch (err) {

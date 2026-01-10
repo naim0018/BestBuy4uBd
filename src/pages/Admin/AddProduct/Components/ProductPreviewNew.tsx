@@ -71,8 +71,10 @@ const ProductPreviewNew = memo(({ data }: ProductPreviewProps) => {
                       alt={img.alt}
                       className="w-full h-48 object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "https://via.placeholder.com/400?text=Image+Not+Found";
+                        const target = e.currentTarget as HTMLImageElement;
+                        if (target.src !== "https://placehold.co/400x400?text=No+Image") {
+                          target.src = "https://placehold.co/400x400?text=No+Image";
+                        }
                       }}
                     />
                     <div className="p-2 bg-gray-50 text-xs text-gray-600">

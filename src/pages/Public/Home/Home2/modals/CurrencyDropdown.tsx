@@ -1,0 +1,54 @@
+// dropdowns/CurrencyDropdown.tsx
+import React, { useState } from "react";
+
+const CurrencyDropdown: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const currencies = ["USD", "EUR", "GBP", "JPY"];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1 px-3 py-1 bg-transparent border border-white rounded text-white hover:bg-white hover:text-teal-600 transition"
+      >
+        USD
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={`h-4 w-4 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg z-50">
+          {currencies.map((curr) => (
+            <button
+              key={curr}
+              className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+              onClick={() => {
+                // Handle currency change
+                console.log("Selected:", curr);
+                setIsOpen(false);
+              }}
+            >
+              {curr}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CurrencyDropdown;

@@ -1,9 +1,10 @@
+import FormDemo from "@/pages/FormDemo";
+import Home from "@/pages/Public/Home/Home1/Home";
+import Home2 from "@/pages/Public/Home/Home2/Home2";
+import Services from "@/pages/Public/Services/Services";
+import TableDemo from "@/pages/TableDemo";
 import About from "../pages/Public/About/About";
 import Contact from "../pages/Public/Contact/Contact";
-import Services from "@/pages/Public/Services/Services";
-import Home from "@/pages/Public/Home/Home";
-import TableDemo from "@/pages/TableDemo";
-import FormDemo from "@/pages/FormDemo";
 
 export const publicRoutes = [
   {
@@ -11,6 +12,11 @@ export const publicRoutes = [
     index: true,
     path: "/",
     element: <Home />,
+  },
+  {
+    label: "Home2",
+    path: "/home2",
+    element: <Home2 />,
   },
   {
     label: "About",
