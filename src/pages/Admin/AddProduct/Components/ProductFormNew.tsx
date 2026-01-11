@@ -16,7 +16,7 @@ import {
   SpecificationsField,
 } from "./NestedArrayFields";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState, useCallback, useMemo, memo } from "react";
+import { useState, useCallback, useMemo, memo, useEffect } from "react";
 
 type Props = {
   defaultValues?: Partial<ProductFormValues>;
@@ -310,7 +310,15 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
+    reset,
   } = form;
+
+  // Populate form when defaultValues arrive (e.g., when editing)
+  useEffect(() => {
+    if (defaultValues) {
+      reset(defaultValues);
+    }
+  }, [defaultValues, reset]);
 
   // Memoize field groups to prevent re-renders
   const basicInfoFieldsSlice1 = useMemo(() => basicInfoFields.slice(0, 6), []);

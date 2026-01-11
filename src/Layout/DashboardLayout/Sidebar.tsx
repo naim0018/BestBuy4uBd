@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { adminRoutes } from "@/routes/AdminRoutes";
 import { menuGenerator, MenuItem } from "@/utils/Generator/MenuGenerator";
 import { Location } from "react-router-dom";
+import { userRoutes } from "@/routes/UserRoutes";
 // Sub-component to handle recursive levels and isolated hover states
 const NavItem = ({
   item,
@@ -87,8 +88,12 @@ const NavItem = ({
 };
 
 const Sidebar = () => {
-  const menu = menuGenerator(adminRoutes, "/admin");
   const location = useLocation();
+  const isAdmin = location.pathname.startsWith("/admin");
+  
+  const menu = isAdmin 
+    ? menuGenerator(adminRoutes, "/admin")
+    : menuGenerator(userRoutes, "/user");
 
   const groupedMenu = menu.reduce<Record<string, MenuItem[]>>((acc, item) => {
     const group = item.group || "General";

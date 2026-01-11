@@ -2,15 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import {
   Search,
   Bell,
-  User,
-  Settings,
-  LogOut,
   ChevronDown,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import UserMenuDropdown from "../PublicLayout/UserMenuDropdown";
 
 const Header = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -61,16 +61,16 @@ const Header = () => {
           >
             <div className="text-right hidden sm:block">
               <p className="text-sm font-semibold text-gray-800 leading-none">
-                John Doe
+                {user?.email?.split('@')[0] || 'User'}
               </p>
               <p className="text-[10px] text-gray-500 uppercase mt-1 text-left">
-                Admin
+                {user?.role || 'Guest'}
               </p>
             </div>
 
             <div className="relative">
-              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold border-2 border-gray-100 group-hover:border-gray-300 transition-all">
-                JD
+              <div className="w-10 h-10 bg-primary-green/10 rounded-full flex items-center justify-center text-primary-green font-bold border-2 border-primary-green/20 group-hover:border-primary-green/40 transition-all">
+                {user?.email?.[0]?.toUpperCase() || 'U'}
               </div>
               {/* Status Indicator */}
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
@@ -84,41 +84,7 @@ const Header = () => {
           </button>
 
           {/* Actual Dropdown Card */}
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">
-                  Account
-                </p>
-              </div>
-
-              <Link
-                to="/admin/profile"
-                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline"
-              >
-                <User className="w-4 h-4 text-gray-500" />
-                Profile Details
-              </Link>
-
-              <Link
-                to="/admin/settings"
-                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline"
-              >
-                <Settings className="w-4 h-4 text-gray-500" />
-                Account Settings
-              </Link>
-
-              <div className="border-t border-gray-100 mt-2 pt-2">
-                <button
-                  onClick={() => console.log("Logging out...")}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
-                </button>
-              </div>
-            </div>
-          )}
+          <UserMenuDropdown user={user || {}} isOpen={isDropdownOpen} onClose={() => setIsDropdownOpen(false)} />
         </div>
       </div>
     </header>

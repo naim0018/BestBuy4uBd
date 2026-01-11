@@ -4,81 +4,83 @@ import NavItems from "./NavItems";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#212a31] text-white py-8">
+    <footer className="bg-text-primary text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* About Section */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">About Us</h3>
-            <p className="text-sm">
+          <div className="space-y-4">
+            <h3 className="h6 text-white uppercase tracking-widest">About Us</h3>
+            <p className="text-sm opacity-70 leading-relaxed">
               We are a team of passionate developers building amazing web
-              applications with modern technologies.
+              applications with modern technologies. BestBuy4uBd is your one-stop
+              shop for premium products.
             </p>
           </div>
           {/* Quick Links Section */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Quick Links</h3>
+          <div className="space-y-4">
+            <h3 className="h6 text-white uppercase tracking-widest">Quick Links</h3>
             <NavItems
-              className="grid items-start justify-start gap-4 "
+              isFooter={true}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start justify-start gap-4"
               classNameC="px-0!"
               classNameNC="px-0!"
             />
           </div>
 
           {/* Social Media Section */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Follow Us</h3>
+          <div className="space-y-4">
+            <h3 className="h6 text-white uppercase tracking-widest">Follow Us</h3>
             <div className="flex space-x-4">
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-gray-300"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-secondary transition-all"
               >
-                <FaFacebook size={24} />
+                <FaFacebook size={18} />
               </a>
               <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-gray-300"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-info transition-all"
               >
-                <FaTwitter size={24} />
+                <FaTwitter size={18} />
               </a>
               <a
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-gray-300"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-danger transition-all"
               >
-                <FaInstagram size={24} />
+                <FaInstagram size={18} />
               </a>
               <a
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-gray-300"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-all"
               >
-                <FaLinkedin size={24} />
+                <FaLinkedin size={18} />
               </a>
             </div>
           </div>
 
           {/* Newsletter Section */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Newsletter</h3>
-            <p className="text-sm mb-4">
+          <div className="space-y-4">
+            <h3 className="h6 text-white uppercase tracking-widest">Newsletter</h3>
+            <p className="text-sm opacity-70">
               Subscribe to our newsletter to get the latest updates.
             </p>
-            <form className="flex">
+            <form className="flex flex-col gap-2">
               <input
                 type="email"
                 placeholder="Your email"
-                className="p-2 mr-2 rounded-md border-1 border-white  text-white focus:outline-none"
+                className="w-full p-3 bg-white/5 border border-white/10 rounded-component text-white focus:outline-none focus:border-secondary transition-colors"
               />
               <button
                 type="submit"
-                className="bg-[#124e66] text-[#d3d9d4] px-4 rounded-md hover:bg-[#124e66]/50"
+                className="w-full bg-secondary text-white py-3 rounded-component font-semibold uppercase tracking-widest text-[10px] hover:bg-secondary/90 shadow-xl shadow-secondary/10 transition-all"
               >
                 Subscribe
               </button>
@@ -87,9 +89,9 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Copyright Section */}
-        <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-          <p className="text-sm text-white">
-            &copy; {new Date().getFullYear()}
+        <div className="border-t border-white/5 mt-12 pt-8 text-center">
+          <p className="text-xs opacity-50 uppercase tracking-widest">
+            &copy; {new Date().getFullYear()} BestBuy4uBd. All rights reserved.
           </p>
         </div>
       </div>

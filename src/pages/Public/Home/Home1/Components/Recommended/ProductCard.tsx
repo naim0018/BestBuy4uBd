@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
 import { Heart, Star, ShoppingCart, Eye } from "lucide-react";
 import { ProductData } from "./types";
+import { useDispatch, useSelector } from "react-redux";
+import { addToWishlist, removeFromWishlist } from "@/store/Slices/wishlistSlice";
+import { openWishlist } from "@/store/Slices/UISlice";
+import { RootState } from "@/store/store";
+import { Link } from "react-router-dom";
 
 interface ProductCardProps {
   product: ProductData;
@@ -8,19 +13,44 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onOpen }: ProductCardProps) => {
+  const dispatch = useDispatch();
+  const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
+  const isWishlisted = wishlistItems.some(item => item._id === product.id);
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isWishlisted) {
+      dispatch(removeFromWishlist(product.id));
+    } else {
+      // Map mock product to WishlistItem structure if needed, or just send it
+      const wishlistItem = {
+        _id: product.id,
+        basicInfo: { title: product.title },
+        price: { regular: product.price, discounted: product.price },
+        images: [{ url: product.image }],
+        category: product.category,
+        rating: { average: product.rating, count: product.reviews }
+      };
+      dispatch(addToWishlist(wishlistItem));
+      dispatch(openWishlist());
+    }
+  };
   return (
+    <Link to={`/product/${product.id}`} className="h-full block">
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="group relative bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-xl hover:border-primary-green/20 transition-all duration-300 h-full flex flex-col"
+      className="card-container p-4 flex flex-col group h-full relative"
     >
       {/* Badges */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
         {product.tag && (
           <span
-            className={`text-[10px] font-bold px-2 py-1 rounded text-white uppercase tracking-wider ${
-              product.tag === "NEW" ? "bg-dark-blue" : "bg-primary-red"
+            className={`tag text-white uppercase tracking-wider ${
+              product.tag === "NEW" ? "bg-primary" : "bg-danger"
             }`}
           >
             {product.tag}
@@ -29,12 +59,19 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
       </div>
 
       {/* Wishlist Button */}
-      <button className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-400 hover:text-primary-red hover:bg-primary-red/10 transition-colors">
-        <Heart className="w-4 h-4" />
+      <button 
+        onClick={handleWishlist}
+        className={`absolute top-4 right-4 z-10 w-8 h-8 rounded-full shadow-md flex items-center justify-center transition-colors ${
+          isWishlisted 
+            ? "bg-danger text-white" 
+            : "bg-bg-surface text-text-muted hover:text-danger hover:bg-danger/10"
+        }`}
+      >
+        <Heart className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`} />
       </button>
 
       {/* Image Container */}
-      <div className="relative h-48 mb-4 flex items-center justify-center overflow-hidden rounded-xl bg-gray-50 group-hover:bg-white transition-colors ">
+      <div className="relative h-48 mb-4 flex items-center justify-center overflow-hidden card-inner bg-bg-base group-hover:bg-bg-surface transition-colors ">
         <motion.img
           src={product.image}
           alt={product.title}
@@ -47,7 +84,7 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
             onClick={() => onOpen(product)}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 rounded-full bg-white text-dark-blue shadow-lg flex items-center justify-center hover:bg-dark-blue hover:text-white transition-colors"
+            className="w-10 h-10 rounded-full bg-bg-surface text-text-primary shadow-lg flex items-center justify-center hover:bg-text-primary hover:text-white transition-colors"
             title="Quick View"
           >
             <Eye className="w-5 h-5" />
@@ -56,7 +93,7 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
             onClick={() => onOpen(product)} // For now, both open detailed modal
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 rounded-full bg-primary-green text-white shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors"
+            className="w-10 h-10 rounded-full bg-secondary text-white shadow-lg flex items-center justify-center hover:bg-secondary/90 transition-colors"
             title="Add to Cart"
           >
             <ShoppingCart className="w-5 h-5" />
@@ -66,43 +103,43 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
 
       {/* Content */}
       <div className="flex-1 flex flex-col">
-        <h5
-          className="font-semibold text-dark-blue mb-1 line-clamp-2 min-h-[40px] group-hover:text-primary-green transition-colors"
+        <h3
+          className="h6 text-text-primary mb-1 line-clamp-2 min-h-[40px] group-hover:text-secondary transition-colors"
           title={product.title}
         >
           {product.title}
-        </h5>
+        </h3>
 
         {/* Rating */}
         <div className="flex items-center gap-1 mb-3">
-          <div className="flex text-yellow-400">
+          <div className="flex text-accent">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
                 className={`w-3 h-3 ${
                   i < Math.floor(product.rating)
                     ? "fill-current"
-                    : "text-gray-300"
+                    : "text-text-muted/20"
                 }`}
               />
             ))}
           </div>
-          <span className="text-xs text-gray-400">({product.reviews})</span>
+          <span className="small">({product.reviews})</span>
         </div>
 
         <div className="mt-auto flex items-center justify-between">
           <div>
             {product.oldPrice && (
-              <span className="text-xs text-gray-400 line-through mr-2">
+              <span className="text-xs text-text-muted line-through mr-2">
                 ${product.oldPrice.toFixed(0)}
               </span>
             )}
             {product.discount && (
-              <span className="text-xs font-bold text-primary-red bg-primary-red/10 px-1 rounded">
+              <span className="text-[10px] font-bold text-danger bg-danger/10 px-1.5 py-0.5 rounded-inner">
                 {product.discount}% OFF
               </span>
             )}
-            <div className="text-lg font-bold text-dark-blue">
+            <div className="text-lg font-bold text-text-primary">
               $
               {product.price.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -111,15 +148,14 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
           </div>
 
           <div className="flex flex-col items-end">
-            <Heart className="w-4 h-4 text-gray-300 mb-1" />{" "}
-            {/* Just visual for now based on design */}
-            <span className="text-[10px] text-gray-400">
-              {product.purchases} Purchases
+            <span className="text-[10px] text-text-muted uppercase font-bold tracking-widest">
+              {product.purchases} Sold
             </span>
           </div>
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 };
 

@@ -15,7 +15,7 @@ const ProductCard1 = ({ data, index }: ProductCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       whileHover={{ y: -4, boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}
-      className="relative rounded-2xl overflow-hidden h-full shadow-lg cursor-pointer transition-all duration-300"
+      className="relative rounded-component overflow-hidden h-full shadow-lg cursor-pointer transition-all duration-300 border border-border-main"
     >
       {/* Background Image */}
       {data.image ? (

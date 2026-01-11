@@ -1,10 +1,9 @@
-import FormDemo from "@/pages/FormDemo";
-import Home from "@/pages/Public/Home/Home1/Home";
-import Home2 from "@/pages/Public/Home/Home2/Home2";
-import Services from "@/pages/Public/Services/Services";
-import TableDemo from "@/pages/TableDemo";
-import About from "../pages/Public/About/About";
 import Contact from "../pages/Public/Contact/Contact";
+import Services from "@/pages/Public/Services/Services";
+import Home from "@/pages/Public/Home/Home1/Home";
+import Shop from "@/pages/Public/Shop/Shop";
+import ProductDetails from "@/pages/Public/Shop/Components/ProductDetails/ProductDetails";
+import Checkout from "@/pages/Public/Checkout/Checkout";
 
 export const publicRoutes = [
   {
@@ -14,26 +13,18 @@ export const publicRoutes = [
     element: <Home />,
   },
   {
-    label: "Home2",
-    path: "/home2",
-    element: <Home2 />,
+    label: "Shop",
+    path: "/shop",
+    element: <Shop />,
+    children: [],
   },
   {
-    label: "About",
-    path: "/about",
-    element: <About />,
-    children: [
-      {
-        label: "About 2",
-        path: "about2",
-        element: <About />,
-      },
-      {
-        label: "About 3",
-        path: "about3",
-        element: <About />,
-      },
-    ],
+    path: "/product/:id",
+    element: <ProductDetails />,
+  },
+  {
+    path: "/checkout",
+    element: <Checkout />,
   },
   {
     label: "Contact",
@@ -44,15 +35,5 @@ export const publicRoutes = [
     label: "Services",
     path: "/services",
     element: <Services />,
-  },
-  {
-    label: "Table Demo",
-    path: "/table-demo",
-    element: <TableDemo />,
-  },
-  {
-    label: "Form Demo",
-    path: "/form-demo",
-    element: <FormDemo />,
   },
 ];

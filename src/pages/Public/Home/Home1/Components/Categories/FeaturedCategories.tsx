@@ -76,7 +76,7 @@ const FeaturedCategories = () => {
           className="text-center mb-12"
         >
           <h2 className="mb-4">Shop by Category</h2>
-          <p className="text-light-gray max-w-2xl mx-auto">
+          <p className="text-text-muted max-w-2xl mx-auto uppercase tracking-widest text-xs font-medium">
             Explore our curated collections of premium products across multiple
             categories
           </p>
@@ -89,12 +89,12 @@ const FeaturedCategories = () => {
               Array.from({ length: 5 }).map((_, index) => (
                 <div
                   key={index}
-                  className="bg-light-background rounded-2xl p-8 border border-border shadow-lg animate-pulse"
+                  className="bg-bg-base rounded-component p-8 border border-border-main shadow-lg animate-pulse"
                 >
                   <div className="flex flex-col items-center space-y-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-200/50" />
-                    <div className="h-4 w-24 bg-gray-200/50 rounded" />
-                    <div className="h-3 w-16 bg-gray-200/50 rounded" />
+                    <div className="w-16 h-16 rounded-component bg-border-main/50" />
+                    <div className="h-4 w-24 bg-border-main/50 rounded" />
+                    <div className="h-3 w-16 bg-border-main/50 rounded" />
                   </div>
                 </div>
               ))
@@ -114,7 +114,7 @@ const FeaturedCategories = () => {
                     className="group cursor-pointer"
                   >
                     {/* Glassmorphic Card */}
-                    <div className="relative bg-light-background rounded-2xl p-8 border border-border shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                    <div className="relative bg-bg-surface rounded-component p-8 border border-border-main shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
                       {/* Gradient Background on Hover */}
                       <div
                         className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
@@ -126,7 +126,7 @@ const FeaturedCategories = () => {
                         <motion.div
                           whileHover={{ rotate: 360 }}
                           transition={{ duration: 0.6 }}
-                          className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}
+                          className={`w-16 h-16 rounded-component bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}
                         >
                           <Icon
                             className="w-8 h-8 text-white"
@@ -135,12 +135,12 @@ const FeaturedCategories = () => {
                         </motion.div>
 
                         {/* Category Name */}
-                        <h3 className="text-dark-blue line-clamp-1">
+                        <h3 className="text-text-primary line-clamp-1 h6">
                           {category.name}
                         </h3>
 
                         {/* View Collection Label (Replaces Count) */}
-                        <p className="text-light-gray font-medium text-sm">
+                        <p className="small text-text-muted">
                           View Collection
                         </p>
 
@@ -150,7 +150,7 @@ const FeaturedCategories = () => {
                           initial={{ x: -10 }}
                           whileHover={{ x: 0 }}
                         >
-                          <span className="text-sm font-semibold text-primary-blue flex items-center gap-2">
+                          <span className="text-[10px] font-semibold text-primary flex items-center gap-2 uppercase tracking-widest">
                             Explore
                             <svg
                               className="w-4 h-4"

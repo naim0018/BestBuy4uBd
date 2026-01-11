@@ -30,8 +30,8 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
   return (
     <div
       className={`relative ${
-        data.bgColor || "bg-gray-200"
-      } rounded-3xl overflow-hidden h-full min-h-[400px] flex items-center transition-colors duration-500`}
+        data.bgColor || "bg-bg-base"
+      } rounded-container overflow-hidden h-full min-h-[400px] flex items-center transition-colors duration-500`}
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -43,12 +43,12 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
           className="w-full h-full absolute inset-0 flex items-center"
         >
           {/* Content */}
-          <div className="relative z-10 p-8 md:p-12 max-w-lg w-full">
+          <div className="relative z-10 p-8 md:p-16 max-w-xl w-full">
             {/* Title */}
             <h2
-              className={`text-2xl md:text-4xl font-bold ${
-                data.textColor || "text-dark-blue"
-              } mb-3 leading-tight`}
+              className={`h2 ${
+                data.textColor || "text-text-primary"
+              } mb-4 leading-[1.1] uppercase tracking-tighter`}
             >
               {data.title}
             </h2>
@@ -56,20 +56,20 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
             {/* Subtitle */}
             {data.subtitle && (
               <h3
-                className={`text-lg ${
-                  data.textColor || "text-dark-blue"
-                } opacity-90 mb-4`}
+                className={`text-lg md:text-xl font-semibold ${
+                  data.textColor || "text-text-primary"
+                } opacity-90 mb-6 uppercase tracking-widest`}
               >
                 {data.subtitle}
               </h3>
             )}
 
-            {/* Features (if mapped description contains commas or just show description) */}
+            {/* Features */}
             {data.description && (
               <p
-                className={`${
-                  data.textColor || "text-dark-blue"
-                } opacity-80 mb-8`}
+                className={`text-base font-medium ${
+                  data.textColor || "text-text-primary"
+                } opacity-70 mb-10 uppercase tracking-[0.15em] leading-relaxed`}
               >
                 {data.description}
               </p>
@@ -80,7 +80,7 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
               href={data.ctaLink}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="inline-block bg-white text-dark-blue px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 no-underline"
+              className="inline-block bg-bg-surface text-text-primary px-10 py-4 rounded-component font-semibold shadow-xl shadow-black/5 hover:shadow-2xl transition-all duration-300 no-underline uppercase tracking-widest text-xs border border-border-main"
             >
               {data.ctaText || "Shop Now"}
             </motion.a>
@@ -93,10 +93,10 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
                 <img
                   src={data.image}
                   alt={data.title}
-                  className="h-full w-full object-cover drop-shadow-2xl"
+                  className="h-full w-full object-cover drop-shadow-2xl transition-transform duration-1000 group-hover:scale-105"
                 />
               ) : (
-                <div className="w-64 h-64 bg-white/20 rounded-full blur-2xl"></div>
+                <div className="w-64 h-64 bg-white/10 rounded-full blur-3xl opacity-50"></div>
               )}
             </div>
           </div>
@@ -105,21 +105,21 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
 
       {/* Pagination / Navigation */}
       {banners.length > 1 && (
-        <div className="absolute bottom-6 right-6 bg-white rounded-full px-4 py-2 shadow-lg flex items-center gap-3 z-20">
+        <div className="absolute bottom-8 right-8 bg-bg-surface/80 backdrop-blur-md rounded-component p-2 border border-border-main shadow-2xl flex items-center gap-4 z-20">
           <button
             onClick={prevSlide}
-            className="p-1 hover:bg-light-background rounded-full transition-colors"
+            className="w-10 h-10 hover:bg-bg-base rounded-inner transition-colors flex items-center justify-center"
           >
-            <ChevronLeft className="w-4 h-4 text-dark-blue" />
+            <ChevronLeft className="w-5 h-5 text-text-primary" />
           </button>
-          <span className="text-sm font-semibold text-dark-blue">
-            {currentSlide + 1} / {banners.length}
+          <span className="text-xs font-semibold text-text-primary uppercase tracking-widest">
+            {currentSlide + 1} <span className="text-text-muted mx-1">/</span> {banners.length}
           </span>
           <button
             onClick={nextSlide}
-            className="p-1 hover:bg-light-background rounded-full transition-colors"
+            className="w-10 h-10 hover:bg-bg-base rounded-inner transition-colors flex items-center justify-center"
           >
-            <ChevronRight className="w-4 h-4 text-dark-blue" />
+            <ChevronRight className="w-5 h-5 text-text-primary" />
           </button>
         </div>
       )}

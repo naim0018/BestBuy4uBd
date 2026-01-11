@@ -108,11 +108,11 @@ const RecommendedSection = () => {
   );
 
   return (
-    <section className="py-16 bg-white relative overflow-hidden">
+    <section className="py-16 bg-bg-base relative overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-dark-blue mb-2">Recommended</h2>
+          <h2 className="text-text-primary mb-2">Recommended</h2>
         </div>
 
         {/* Tabs */}
@@ -122,17 +122,17 @@ const RecommendedSection = () => {
               Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse"
+                  className="h-10 w-24 bg-border-main/20 rounded-component animate-pulse"
                 />
               ))
             : tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                  className={`px-5 py-2 rounded-component text-sm font-semibold transition-all duration-300 ${
                     activeTab === tab.id
-                      ? "bg-primary-green text-white shadow-md transform scale-105"
-                      : "bg-gray-100 text-dark-blue hover:bg-gray-200"
+                      ? "bg-secondary text-white shadow-md transform scale-105"
+                      : "bg-bg-surface text-text-primary hover:bg-bg-surface/80 border border-border-main"
                   }`}
                 >
                   {tab.label}
@@ -143,13 +143,13 @@ const RecommendedSection = () => {
         {/* Carousel Content */}
         <div className="relative flex items-center gap-4">
           {/* Left Controls */}
-          <div className="hidden md:flex flex-col items-center gap-4 bg-gray-50 p-2 rounded-xl">
+          <div className="hidden md:flex flex-col items-center gap-4 bg-bg-surface p-2 rounded-component border border-border-main">
             <button
               onClick={prevPage}
-              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+              className="p-1 rounded-full hover:bg-bg-base transition-colors"
               disabled={totalPages <= 1}
             >
-              <ChevronLeft className="w-5 h-5 text-gray-500" />
+              <ChevronLeft className="w-5 h-5 text-text-muted" />
             </button>
             <VerticalPagination
               total={totalPages > 0 ? totalPages : 1}
@@ -158,10 +158,10 @@ const RecommendedSection = () => {
             />
             <button
               onClick={nextPage}
-              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+              className="p-1 rounded-full hover:bg-bg-base transition-colors"
               disabled={totalPages <= 1}
             >
-              <ChevronRight className="w-5 h-5 text-gray-500" />
+              <ChevronRight className="w-5 h-5 text-text-muted" />
             </button>
           </div>
 
@@ -174,14 +174,14 @@ const RecommendedSection = () => {
                   {Array.from({ length: ITEMS_PER_VIEW }).map((_, i) => (
                     <div
                       key={i}
-                      className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm animate-pulse h-[380px]"
+                      className="bg-bg-surface rounded-component p-4 border border-border-main shadow-sm animate-pulse h-[380px]"
                     >
-                      <div className="w-full h-48 bg-gray-200 rounded-xl mb-4" />
-                      <div className="h-4 w-3/4 bg-gray-200 rounded mb-2" />
-                      <div className="h-4 w-1/2 bg-gray-200 rounded mb-4" />
+                      <div className="w-full h-48 bg-bg-base rounded-inner mb-4" />
+                      <div className="h-4 w-3/4 bg-bg-base rounded mb-2" />
+                      <div className="h-4 w-1/2 bg-bg-base rounded mb-4" />
                       <div className="flex justify-between mt-auto">
-                        <div className="h-6 w-20 bg-gray-200 rounded" />
-                        <div className="h-8 w-8 bg-gray-200 rounded-full" />
+                        <div className="h-6 w-20 bg-bg-base rounded" />
+                        <div className="h-8 w-8 bg-bg-base rounded-full" />
                       </div>
                     </div>
                   ))}
@@ -204,7 +204,7 @@ const RecommendedSection = () => {
                       />
                     ))
                   ) : (
-                    <div className="col-span-full flex flex-col items-center justify-center text-gray-400 h-64">
+                    <div className="col-span-full flex flex-col items-center justify-center text-text-muted h-64">
                       <p className="text-lg">
                         No products found in this category.
                       </p>
@@ -216,13 +216,13 @@ const RecommendedSection = () => {
           </div>
 
           {/* Right Controls */}
-          <div className="hidden md:flex flex-col items-center gap-4 bg-gray-50 p-2 rounded-xl">
+          <div className="hidden md:flex flex-col items-center gap-4 bg-bg-surface p-2 rounded-component border border-border-main">
             <button
               onClick={prevPage}
-              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+              className="p-1 rounded-full hover:bg-bg-base transition-colors"
               disabled={totalPages <= 1}
             >
-              <ChevronLeft className="w-5 h-5 text-gray-500" />
+              <ChevronLeft className="w-5 h-5 text-text-muted" />
             </button>
             <VerticalPagination
               total={totalPages > 0 ? totalPages : 1}
@@ -231,24 +231,24 @@ const RecommendedSection = () => {
             />
             <button
               onClick={nextPage}
-              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+              className="p-1 rounded-full hover:bg-bg-base transition-colors"
               disabled={totalPages <= 1}
             >
-              <ChevronRight className="w-5 h-5 text-gray-500" />
+              <ChevronRight className="w-5 h-5 text-text-muted" />
             </button>
           </div>
         </div>
 
         {/* Mobile controls */}
         <div className="md:hidden flex justify-center gap-4 mt-8">
-          <button onClick={prevPage} className="p-2 bg-gray-100 rounded-full">
-            <ChevronLeft />
+          <button onClick={prevPage} className="p-2 bg-bg-surface rounded-full border border-border-main">
+            <ChevronLeft className="text-text-primary" />
           </button>
-          <span className="font-semibold text-gray-500">
+          <span className="font-semibold text-text-muted">
             {currentPage + 1} / {totalPages || 1}
           </span>
-          <button onClick={nextPage} className="p-2 bg-gray-100 rounded-full">
-            <ChevronRight />
+          <button onClick={nextPage} className="p-2 bg-bg-surface rounded-full border border-border-main">
+            <ChevronRight className="text-text-primary" />
           </button>
         </div>
       </div>
