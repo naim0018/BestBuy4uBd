@@ -16,52 +16,47 @@ const InvoiceTemplate3: React.FC<InvoiceTemplateProps> = ({ order }) => {
   return (
     <div className="p-16 text-gray-800 font-sans border border-gray-100">
       {/* Top Brand */}
-      <div className="flex justify-between items-center mb-24">
+      <div className="flex justify-between items-center mb-12">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-500 rounded-md flex items-center justify-center text-white font-bold text-xl">P</div>
-          <span className="text-xl font-bold tracking-tight">BestBuy4u</span>
+          <div className="w-8 h-8 bg-emerald-500 rounded-md flex items-center justify-center text-white font-bold text-lg">P</div>
+          <span className="text-lg font-bold tracking-tight">BestBuy4u</span>
         </div>
-        <div className="text-right text-[10px] text-gray-400 font-medium uppercase tracking-widest">
+        <div className="text-right text-[8px] text-gray-400 font-medium uppercase tracking-widest">
           <p>BestBuy4uBd Ltd.</p>
           <p>Gulshan-1, Dhaka</p>
-          <p>+880 1800 000000</p>
         </div>
       </div>
 
       {/* Invoice Title */}
-      <div className="mb-20">
-        <h1 className="text-5xl font-bold text-emerald-500 mb-8">Invoice</h1>
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-emerald-500 mb-6">Invoice</h1>
         <div className="grid grid-cols-2 gap-20">
-          <div className="space-y-1 text-sm text-gray-500">
-            <p className="text-xs font-bold text-gray-400 uppercase">Information</p>
+          <div className="space-y-0.5 text-xs text-gray-500">
+            <p className="text-[10px] font-bold text-gray-400 uppercase">Information</p>
             <p>Invoice No: <span className="text-gray-900 font-medium">#{_id?.slice(-6).toUpperCase()}</span></p>
             <p>Date: <span className="text-gray-900 font-medium">{new Date(createdAt).toLocaleDateString()}</span></p>
-            <p>Due Date: <span className="text-gray-900 font-medium">{new Date(createdAt).toLocaleDateString()}</span></p>
           </div>
-          <div className="text-right space-y-1 text-sm text-gray-500">
-            <p className="text-xs font-bold text-gray-400 uppercase">Bill To:</p>
+          <div className="text-right space-y-0.5 text-xs text-gray-500">
+            <p className="text-[10px] font-bold text-gray-400 uppercase">Bill To:</p>
             <p className="text-gray-900 font-bold">{billingInformation?.name}</p>
-            <p>{billingInformation?.address}</p>
             <p>{billingInformation?.phone}</p>
-            <p>{billingInformation?.email}</p>
           </div>
         </div>
       </div>
 
       {/* Modern Table */}
-      <div className="mb-20">
-        <div className="grid grid-cols-12 gap-4 border-b border-gray-100 pb-4 mb-4 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+      <div className="mb-12">
+        <div className="grid grid-cols-12 gap-4 border-b border-gray-100 pb-2 mb-2 text-[8px] font-bold text-emerald-500 uppercase tracking-widest">
             <div className="col-span-6">Name</div>
             <div className="col-span-2 text-right">Price</div>
             <div className="col-span-2 text-center">Qty</div>
             <div className="col-span-2 text-right">Subtotal</div>
         </div>
-        <div className="space-y-6">
+        <div className="space-y-4">
             {items.map((item: any, idx: number) => (
-                <div key={idx} className="grid grid-cols-12 gap-4 text-sm items-center pb-4 border-b border-gray-50 last:border-0 hover:bg-emerald-50/10 transition-colors">
+                <div key={idx} className="grid grid-cols-12 gap-4 text-xs items-center pb-2 border-b border-gray-50 last:border-0 hover:bg-emerald-50/10 transition-colors">
                     <div className="col-span-6">
                         <p className="font-bold text-gray-900">{item.itemKey}</p>
-                        <p className="text-[10px] text-gray-400">Electronics</p>
                     </div>
                     <div className="col-span-2 text-right text-gray-500">৳{item.price?.toLocaleString()}</div>
                     <div className="col-span-2 text-center font-medium capitalize">{item.quantity}</div>

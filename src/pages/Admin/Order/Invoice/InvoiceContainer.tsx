@@ -55,7 +55,29 @@ const InvoiceContainer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8 print:p-0 print:bg-white print:min-h-0">
+      <style>{`
+        @media print {
+          @page {
+            margin: 0.5cm;
+            size: A4;
+          }
+          body {
+            background-color: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          header, footer, nav {
+            display: none !important;
+          }
+          .print-full-width {
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+        }
+      `}</style>
       <div className="max-w-4xl mx-auto mb-6 flex justify-end print:hidden">
         <Button
           color="primary"
@@ -65,7 +87,7 @@ const InvoiceContainer = () => {
           Print / Download PDF
         </Button>
       </div>
-      <div className="max-w-4xl mx-auto bg-white shadow-lg overflow-hidden">
+      <div className="max-w-4xl mx-auto bg-white shadow-lg overflow-hidden print:shadow-none print:max-w-none print:w-full print:m-0 print-full-width">
         {renderTemplate()}
       </div>
     </div>

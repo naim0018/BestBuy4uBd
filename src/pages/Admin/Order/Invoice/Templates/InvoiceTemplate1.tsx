@@ -17,73 +17,67 @@ const InvoiceTemplate1: React.FC<InvoiceTemplateProps> = ({ order }) => {
   return (
     <div className="p-12 text-gray-800 font-sans">
       {/* Header */}
-      <div className="flex justify-between items-start mb-12">
+      <div className="flex justify-between items-start mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center text-white text-3xl font-bold">
+          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white text-2xl font-bold">
             BB4U
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Digital Invoice</h1>
-            <p className="text-sm text-gray-500">Invoice ID: #{_id?.slice(-6).toUpperCase()}</p>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Digital Invoice</h1>
+            <p className="text-[10px] text-gray-500">Invoice ID: #{_id?.slice(-6).toUpperCase()}</p>
           </div>
         </div>
         <div className="text-right space-y-1">
-          <p className="text-xs uppercase text-gray-400 font-semibold">Date Issued</p>
-          <p className="font-medium">{new Date(createdAt).toLocaleDateString()}</p>
+          <p className="text-[10px] uppercase text-gray-400 font-semibold">Date Issued</p>
+          <p className="text-sm font-medium">{new Date(createdAt).toLocaleDateString()}</p>
         </div>
       </div>
 
       {/* Info Sections */}
-      <div className="grid grid-cols-2 gap-12 mb-12">
+      <div className="grid grid-cols-2 gap-12 mb-8">
         <div>
-          <h2 className="text-xs uppercase text-blue-600 font-bold mb-4 tracking-wider">From:</h2>
-          <div className="space-y-1">
-            <p className="font-bold text-lg">BestBuy4uBd</p>
-            <p className="text-sm text-gray-600">Dhaka, Bangladesh</p>
-            <p className="text-sm text-gray-600">support@bestbuy4ubd.com</p>
-            <p className="text-sm text-gray-600">+880 1234 567890</p>
+          <h2 className="text-[10px] uppercase text-blue-600 font-bold mb-2 tracking-wider">From:</h2>
+          <div className="space-y-0.5">
+            <p className="font-bold text-base">BestBuy4uBd</p>
+            <p className="text-xs text-gray-600">Dhaka, Bangladesh</p>
+            <p className="text-xs text-gray-600">support@bestbuy4ubd.com</p>
           </div>
         </div>
         <div className="text-right">
-          <h2 className="text-xs uppercase text-blue-600 font-bold mb-4 tracking-wider">Bill To:</h2>
-          <div className="space-y-1 text-right ml-auto">
-            <p className="font-bold text-lg">{billingInformation?.name || "Customer"}</p>
-            <p className="text-sm text-gray-600">{billingInformation?.email}</p>
-            <p className="text-sm text-gray-600">{billingInformation?.phone}</p>
-            <p className="text-sm text-gray-600">{billingInformation?.address}</p>
-            <p className="text-sm text-gray-600">{billingInformation?.country}</p>
+          <h2 className="text-[10px] uppercase text-blue-600 font-bold mb-2 tracking-wider">Bill To:</h2>
+          <div className="space-y-0.5 text-right ml-auto">
+            <p className="font-bold text-base">{billingInformation?.name || "Customer"}</p>
+            <p className="text-xs text-gray-600">{billingInformation?.email}</p>
+            <p className="text-xs text-gray-600">{billingInformation?.phone}</p>
           </div>
         </div>
       </div>
 
       {/* Items Table */}
-      <div className="mb-12">
+      <div className="mb-8">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b-2 border-gray-100">
-              <th className="py-4 font-bold text-xs uppercase tracking-wider">Description</th>
-              <th className="py-4 font-bold text-xs uppercase tracking-wider text-center">Qty</th>
-              <th className="py-4 font-bold text-xs uppercase tracking-wider text-right">Rate</th>
-              <th className="py-4 font-bold text-xs uppercase tracking-wider text-right">Amount</th>
+              <th className="py-2 font-bold text-[10px] uppercase tracking-wider">Description</th>
+              <th className="py-2 font-bold text-[10px] uppercase tracking-wider text-center">Qty</th>
+              <th className="py-2 font-bold text-[10px] uppercase tracking-wider text-right">Rate</th>
+              <th className="py-2 font-bold text-[10px] uppercase tracking-wider text-right">Amount</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {items.map((item: any, idx: number) => (
               <tr key={idx}>
-                <td className="py-6">
-                  <div className="flex items-center gap-4">
-                    <img src={item.image} alt={item.product?.name} className="w-12 h-12 rounded object-cover border border-gray-100" />
+                <td className="py-3">
+                  <div className="flex items-center gap-3">
+                    <img src={item.image} alt={item.product?.name} className="w-10 h-10 rounded object-cover border border-gray-100" />
                     <div>
-                      <p className="font-bold text-gray-900">{item.itemKey}</p>
-                      {item.selectedVariants && Object.entries(item.selectedVariants).map(([key, val]: [string, any]) => (
-                        <p key={key} className="text-xs text-gray-500">{key}: {val.value}</p>
-                      ))}
+                      <p className="font-bold text-gray-900 text-sm">{item.itemKey}</p>
                     </div>
                   </div>
                 </td>
-                <td className="py-6 text-center text-gray-600">{item.quantity}</td>
-                <td className="py-6 text-right text-gray-600">৳{item.price?.toLocaleString()}</td>
-                <td className="py-6 text-right font-bold text-gray-900">৳{(item.price * item.quantity).toLocaleString()}</td>
+                <td className="py-3 text-center text-sm text-gray-600">{item.quantity}</td>
+                <td className="py-3 text-right text-sm text-gray-600">৳{item.price?.toLocaleString()}</td>
+                <td className="py-3 text-right font-bold text-gray-900 text-sm">৳{(item.price * item.quantity).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>

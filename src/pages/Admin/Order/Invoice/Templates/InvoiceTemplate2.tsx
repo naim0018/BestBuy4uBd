@@ -17,59 +17,55 @@ const InvoiceTemplate2: React.FC<InvoiceTemplateProps> = ({ order }) => {
   return (
     <div className="p-12 text-gray-700 font-sans border-t-[12px] border-teal-600">
       {/* Header */}
-      <div className="flex justify-between items-start mb-16">
+      <div className="flex justify-between items-start mb-8">
         <div className="space-y-4">
-          <h1 className="text-5xl font-black text-gray-900 uppercase">Invoice</h1>
+          <h1 className="text-4xl font-black text-gray-900 uppercase">Invoice</h1>
           <div className="space-y-1">
-            <p className="text-sm font-bold text-teal-600 uppercase tracking-widest">BestBuy4uBd</p>
-            <p className="text-xs text-gray-400">Dhaka, Bangladesh</p>
+            <p className="text-xs font-bold text-teal-600 uppercase tracking-widest">BestBuy4uBd</p>
           </div>
         </div>
         <div className="text-right">
-          <div className="w-24 h-24 bg-gray-900 flex items-center justify-center text-white text-4xl font-black rounded-sm ml-auto mb-4">
+          <div className="w-16 h-16 bg-gray-900 flex items-center justify-center text-white text-2xl font-black rounded-sm ml-auto mb-2">
             BB
           </div>
-          <div className="space-y-1 text-xs uppercase font-bold text-gray-400">
+          <div className="space-y-1 text-[10px] uppercase font-bold text-gray-400">
             <p>Invoice No: <span className="text-gray-900">#{_id?.slice(-6).toUpperCase()}</span></p>
-            <p>Issue Date: <span className="text-gray-900">{new Date(createdAt).toLocaleDateString()}</span></p>
-            <p>Payment: <span className="text-gray-900">{paymentInfo?.paymentMethod}</span></p>
+            <p>Date: <span className="text-gray-900">{new Date(createdAt).toLocaleDateString()}</span></p>
           </div>
         </div>
       </div>
 
       {/* Hero Info */}
-      <div className="grid grid-cols-4 gap-0 mb-16 bg-gray-900 text-white">
-        <div className="p-6 col-span-1 border-r border-gray-800">
-          <p className="text-[10px] uppercase font-bold text-teal-400 mb-2">Customer</p>
-          <p className="text-sm font-bold truncate">{billingInformation?.name || "Customer"}</p>
+      <div className="grid grid-cols-4 gap-0 mb-8 bg-gray-900 text-white">
+        <div className="p-4 col-span-1 border-r border-gray-800">
+          <p className="text-[8px] uppercase font-bold text-teal-400 mb-1">Customer</p>
+          <p className="text-xs font-bold truncate">{billingInformation?.name || "Customer"}</p>
         </div>
-        <div className="p-6 col-span-1 border-r border-gray-800">
-          <p className="text-[10px] uppercase font-bold text-teal-400 mb-2">Issue Date</p>
-          <p className="text-sm font-bold">{new Date(createdAt).toLocaleDateString()}</p>
+        <div className="p-4 col-span-1 border-r border-gray-800">
+          <p className="text-[8px] uppercase font-bold text-teal-400 mb-1">Issue Date</p>
+          <p className="text-xs font-bold">{new Date(createdAt).toLocaleDateString()}</p>
         </div>
-        <div className="p-6 col-span-1 border-r border-gray-800">
-          <p className="text-[10px] uppercase font-bold text-teal-400 mb-2">Payment Status</p>
-          <p className="text-sm font-bold capitalize">{paymentInfo?.status || "Pending"}</p>
+        <div className="p-4 col-span-1 border-r border-gray-800">
+          <p className="text-[8px] uppercase font-bold text-teal-400 mb-1">Status</p>
+          <p className="text-xs font-bold capitalize">{paymentInfo?.status || "Pending"}</p>
         </div>
-        <div className="p-6 col-span-1 bg-teal-600">
-          <p className="text-[10px] uppercase font-bold text-white/70 mb-2">Total Due</p>
-          <p className="text-xl font-black">৳{totalAmount?.toLocaleString()}</p>
+        <div className="p-4 col-span-1 bg-teal-600">
+          <p className="text-[8px] uppercase font-bold text-white/70 mb-1">Total Due</p>
+          <p className="text-lg font-black">৳{totalAmount?.toLocaleString()}</p>
         </div>
       </div>
 
       {/* Bill To Info */}
-      <div className="mb-16">
-        <h2 className="text-xs uppercase font-bold text-gray-400 mb-4 border-b pb-2">Billing Information</h2>
-        <div className="grid grid-cols-2 gap-12 text-sm">
+      <div className="mb-8">
+        <h2 className="text-[10px] uppercase font-bold text-gray-400 mb-2 border-b pb-1">Billing Information</h2>
+        <div className="grid grid-cols-2 gap-12 text-xs">
           <div>
             <p className="font-bold text-gray-900">{billingInformation?.name}</p>
             <p className="text-gray-500">{billingInformation?.address}</p>
-            <p className="text-gray-500">{billingInformation?.country}</p>
           </div>
           <div className="text-right">
             <p className="text-gray-500">{billingInformation?.phone}</p>
             <p className="text-gray-500">{billingInformation?.email}</p>
-            <p className="mt-4 text-[10px] font-bold text-teal-600 uppercase italic">Method: {paymentInfo?.paymentMethod}</p>
           </div>
         </div>
       </div>

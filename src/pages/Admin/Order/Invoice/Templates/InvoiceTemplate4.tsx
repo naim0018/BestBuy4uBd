@@ -18,14 +18,14 @@ const InvoiceTemplate4: React.FC<InvoiceTemplateProps> = ({ order }) => {
   return (
     <div className="p-10 text-slate-800 font-sans border-2 border-slate-100">
       {/* Top Bar */}
-      <div className="flex justify-between items-center mb-8 pb-8 border-b border-slate-100">
+      <div className="flex justify-between items-center mb-6 pb-6 border-b border-slate-100">
         <div>
-           <h1 className="text-4xl font-black text-blue-600 tracking-tighter uppercase italic">BestBuy4uBd</h1>
+           <h1 className="text-3xl font-black text-blue-600 tracking-tighter uppercase italic">BestBuy4uBd</h1>
            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Premium Electronics Hub</p>
         </div>
         <div className="text-right">
-            <h2 className="text-2xl font-black text-slate-900 uppercase">Purchase Order</h2>
-            <div className="text-xs font-bold text-slate-500 mt-2">
+            <h2 className="text-xl font-black text-slate-900 uppercase">Purchase Order</h2>
+            <div className="text-xs font-bold text-slate-500 mt-1">
                 <p>PO No: <span className="text-blue-600">#{_id?.slice(-6).toUpperCase()}</span></p>
                 <p>Date: {new Date(createdAt).toLocaleDateString()}</p>
                 <p>Status: <span className="text-green-600 uppercase italic">Confirmed</span></p>
@@ -34,29 +34,29 @@ const InvoiceTemplate4: React.FC<InvoiceTemplateProps> = ({ order }) => {
       </div>
 
       {/* Supplier & Delivery Info */}
-      <div className="grid grid-cols-2 gap-0 mb-8 overflow-hidden rounded-md border border-blue-600">
+      <div className="grid grid-cols-2 gap-0 mb-6 overflow-hidden rounded-md border border-blue-600">
         <div className="col-span-1">
             <div className="bg-blue-600 text-white p-2 text-[10px] font-black uppercase tracking-widest px-4">Supplier</div>
-            <div className="p-6 space-y-1 text-sm border-r border-slate-100 h-full">
+            <div className="p-4 space-y-1 text-sm border-r border-slate-100 h-full">
                 <p className="font-black text-slate-900">BestBuy4uBd Office</p>
                 <p className="text-slate-500">Suite 12, Floor 4, Plaza Tower</p>
                 <p className="text-slate-500">Dhaka, Bangladesh, 1212</p>
-                <p className="text-slate-500 font-bold mt-4 pt-4 border-t border-slate-50 underline underline-offset-4 decoration-blue-600">Contact: support@bb4u.com</p>
+                <p className="text-blue-600 font-bold mt-2 pt-2 border-t border-slate-50 underline underline-offset-4 decoration-blue-600">Contact: support@bb4u.com</p>
             </div>
         </div>
         <div className="col-span-1">
             <div className="bg-blue-600 text-white p-2 text-[10px] font-black uppercase tracking-widest px-4">Delivery Address</div>
-            <div className="p-6 space-y-1 text-sm bg-slate-50/50 h-full">
+            <div className="p-4 space-y-1 text-sm bg-slate-50/50 h-full">
                 <p className="font-black text-slate-900">{billingInformation?.name}</p>
                 <p className="text-slate-500">{billingInformation?.address}</p>
                 <p className="text-slate-500">{billingInformation?.country}</p>
-                <p className="text-slate-500 font-bold mt-4 pt-4 border-t border-slate-50 text-blue-600 italic">ATTN: {billingInformation?.phone}</p>
+                <p className="text-blue-600 font-bold mt-2 pt-2 border-t border-slate-50 italic">ATTN: {billingInformation?.phone}</p>
             </div>
         </div>
       </div>
 
       {/* Dates Grid */}
-      <div className="grid grid-cols-4 gap-0 mb-8 border border-slate-200 rounded-md overflow-hidden">
+      <div className="grid grid-cols-4 gap-0 mb-6 border border-slate-200 rounded-md overflow-hidden">
         <div className="p-4 border-r border-slate-200 text-center">
             <p className="text-[10px] font-black text-blue-600 uppercase mb-1">Order Date</p>
             <p className="text-xs font-bold">{new Date().toLocaleDateString()}</p>
