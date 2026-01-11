@@ -6,6 +6,7 @@ import CMS from "@/pages/Admin/CMS/CMS";
 import Services from "@/pages/Admin/Services/Services";
 import AllOrders from "@/pages/Admin/Order/AllOrders";
 import OrderDetails from "@/pages/Admin/Order/OrderDetails";
+import InvoiceContainer from "@/pages/Admin/Order/Invoice/InvoiceContainer";
 import {
   LayoutDashboard,
   SettingsIcon,
@@ -40,6 +41,10 @@ export const adminRoutes = [
       {
         path: "orders/:id",
         element: <OrderDetails />,
+      },
+      {
+        path: "orders/invoice/:id",
+        element: <InvoiceContainer />,
       },
     ]
   },

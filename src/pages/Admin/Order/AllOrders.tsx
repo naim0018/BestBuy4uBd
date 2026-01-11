@@ -2,11 +2,13 @@ import { useGetAllOrdersQuery, useDeleteOrderMutation } from "@/store/Api/OrderA
 import { useGetDashboardStatsQuery } from "@/store/Api/DashboardApi";
 import DynamicTable from "@/common/DynamicTable/DynamicTable";
 import { toast } from "sonner";
-import { Eye, Trash2, CheckCircle, XCircle, Clock, Truck, Package } from "lucide-react";
+import { Eye, Trash2, CheckCircle, XCircle, Clock, Truck, Package, LayoutTemplate } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Card } from "@heroui/react";
+import { Card, Select, SelectItem } from "@heroui/react";
+import { useState } from "react";
 
 const AllOrders = () => {
+  const [selectedTemplates, setSelectedTemplates] = useState<Record<string, string>>({});
   const { data: apiData, isLoading } = useGetAllOrdersQuery(undefined, {
     pollingInterval: 30000,
   });
@@ -131,6 +133,27 @@ const AllOrders = () => {
       label: "Status",
       render: (row: any) => getStatusBadge(row.status),
     },
+    {
+      key: "invoiceTemplate",
+      label: "Invoice Design",
+      render: (row: any) => (
+        <Select
+          size="sm"
+          className="max-w-[140px]"
+          aria-label="Select Invoice Template"
+          selectedKeys={[selectedTemplates[row._id] || "template1"]}
+          onSelectionChange={(keys) => {
+            const val = Array.from(keys)[0] as string;
+            setSelectedTemplates((prev) => ({ ...prev, [row._id]: val }));
+          }}
+        >
+          <SelectItem key="template1" textValue="Template 1">Modern</SelectItem>
+          <SelectItem key="template2" textValue="Template 2">Professional</SelectItem>
+          <SelectItem key="template3" textValue="Template 3">Minimalist</SelectItem>
+          <SelectItem key="template4" textValue="Template 4">Purchase Order</SelectItem>
+        </Select>
+      ),
+    },
   ];
 
   const actions = [
@@ -138,6 +161,15 @@ const AllOrders = () => {
       label: "View/Edit",
       onClick: (row: any) => navigate(`/admin/orders/${row._id}`),
       icon: <Eye className="w-4 h-4" />,
+      variant: "primary" as const,
+    },
+    {
+      label: "View Invoice",
+      onClick: (row: any) => {
+        const template = selectedTemplates[row._id] || "template1";
+        window.open(`/admin/orders/invoice/${row._id}?template=${template}`, "_blank");
+      },
+      icon: <LayoutTemplate className="w-4 h-4" />,
       variant: "primary" as const,
     },
     {
