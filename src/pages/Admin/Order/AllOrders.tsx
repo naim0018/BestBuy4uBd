@@ -1,4 +1,5 @@
 import { useGetAllOrdersQuery, useDeleteOrderMutation } from "@/store/Api/OrderApi";
+import { useCreateSteadfastOrderMutation } from "@/store/Api/SteadfastApi";
 import { useGetDashboardStatsQuery } from "@/store/Api/DashboardApi";
 import DynamicTable from "@/common/DynamicTable/DynamicTable";
 import { toast } from "sonner";
@@ -10,10 +11,11 @@ import { useState } from "react";
 const AllOrders = () => {
   const [selectedTemplates, setSelectedTemplates] = useState<Record<string, string>>({});
   const { data: apiData, isLoading } = useGetAllOrdersQuery(undefined, {
-    pollingInterval: 30000,
+    pollingInterval: 60000,
   });
   const { data: statsData } = useGetDashboardStatsQuery(undefined);
   const [deleteOrder] = useDeleteOrderMutation();
+  const [createSteadfastOrder] = useCreateSteadfastOrderMutation();
   const navigate = useNavigate();
 
   const orders = apiData?.data || [];
@@ -171,6 +173,24 @@ const AllOrders = () => {
       },
       icon: <LayoutTemplate className="w-4 h-4" />,
       variant: "primary" as const,
+    },
+    {
+      label: "Send to Steadfast",
+      onClick: async (row: any) => {
+          // If already sent, maybe show toast or disable?
+          if(row.consignment_id) {
+              toast.info(`Already sent! ID: ${row.consignment_id}`);
+              return;
+          }
+          try {
+            await createSteadfastOrder({ orderId: row._id }).unwrap();
+            toast.success("Sent to Steadfast successfully!");
+          } catch (err: any) {
+            toast.error(err?.data?.message || "Failed to send to Steadfast");
+          }
+      },
+      icon: <Truck className="w-4 h-4" />,
+      variant: "primary" as const, // Or a dedicated 'success' variant if available, using primary for now
     },
     {
       label: "Delete",

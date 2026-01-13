@@ -52,7 +52,7 @@ const Dashboard = () => {
   const { data, isLoading, isError, error } = useGetDashboardStatsQuery(
     undefined,
     {
-      pollingInterval: 30000,
+      pollingInterval: 60000,
     }
   );
   if (isLoading) {

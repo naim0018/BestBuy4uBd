@@ -4,6 +4,7 @@ import AddProduct from "@/pages/Admin/AddProduct/AddProduct";
 import Product from "@/pages/Admin/Product/Product";
 import CMS from "@/pages/Admin/CMS/CMS";
 import Services from "@/pages/Admin/Services/Services";
+import SteadfastManager from "@/pages/Admin/Steadfast/SteadfastManager";
 import AllOrders from "@/pages/Admin/Order/AllOrders";
 import OrderDetails from "@/pages/Admin/Order/OrderDetails";
 import InvoiceContainer from "@/pages/Admin/Order/Invoice/InvoiceContainer";
@@ -15,6 +16,7 @@ import {
   LayoutTemplate,
   ShoppingCart,
   Briefcase,
+  Truck
 } from "lucide-react";
 
 export const adminRoutes = [
@@ -83,6 +85,12 @@ export const adminRoutes = [
         icon: <Briefcase />,
         path: "services",
         element: <Services />,
+      },
+      {
+        label: "Steadfast Courier",
+        icon: <Truck />,
+        path: "courier",
+        element: <SteadfastManager />,
       },
       {
         label: "Settings",

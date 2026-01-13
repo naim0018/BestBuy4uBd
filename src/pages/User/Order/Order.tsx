@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useGetOrderByIdQuery, useTrackOrderByPhoneQuery } from "@/store/Api/OrderApi";
+import { useGetOrderByIdQuery, useTrackOrderByPhoneQuery, useTrackOrderByConsignmentIdQuery } from "@/store/Api/OrderApi";
 import { MapPin, Phone, Truck, CheckCircle, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import SteadfastStatus from "./SteadfastStatus";
 
 const Order = () => {
-    const [searchType, setSearchType] = useState<"id" | "phone">("id");
+    const [searchType, setSearchType] = useState<"id" | "phone" | "consignment">("id");
     const [searchValue, setSearchValue] = useState("");
     const [triggerSearch, setTriggerSearch] = useState(false);
 
@@ -18,8 +19,12 @@ const Order = () => {
         skip: !triggerSearch || searchType !== "phone",
     });
 
-    const isLoading = isLoadingId || isLoadingPhone;
-    const isError = isErrorId || isErrorPhone;
+    const { data: orderByConsignment, isLoading: isLoadingConsignment, isError: isErrorConsignment } = useTrackOrderByConsignmentIdQuery(searchValue, {
+        skip: !triggerSearch || searchType !== "consignment",
+    });
+
+    const isLoading = isLoadingId || isLoadingPhone || isLoadingConsignment;
+    const isError = isErrorId || isErrorPhone || isErrorConsignment;
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,6 +37,8 @@ const Order = () => {
 
     const orders = searchType === "id" 
         ? (orderById?.data ? [orderById.data] : []) 
+        : searchType === "consignment"
+        ? (orderByConsignment?.data ? [orderByConsignment.data] : [])
         : (ordersByPhone?.data || []);
 
     const OrderCard = ({ order }: { order: any }) => (
@@ -108,6 +115,7 @@ const Order = () => {
                             <span>Total</span>
                             <span>৳{order.totalAmount}</span>
                         </div>
+                        {order.consignment_id && <SteadfastStatus consignmentId={order.consignment_id} />}
                     </div>
                 </div>
             </div>
@@ -128,9 +136,15 @@ const Order = () => {
                     </button>
                     <button
                         onClick={() => { setSearchType("phone"); setTriggerSearch(false); setSearchValue(""); }}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${searchType === "phone" ? "bg-primary-green text-white" : "bg-gray-100 text-gray-600"}`}
+                        className={`px-3 py-2 rounded-lg font-medium text-sm transition-colors ${searchType === "phone" ? "bg-primary-green text-white" : "bg-gray-100 text-gray-600"}`}
                     >
-                        By Phone Number
+                        By Phone
+                    </button>
+                    <button
+                        onClick={() => { setSearchType("consignment"); setTriggerSearch(false); setSearchValue(""); }}
+                        className={`px-3 py-2 rounded-lg font-medium text-sm transition-colors ${searchType === "consignment" ? "bg-primary-green text-white" : "bg-gray-100 text-gray-600"}`}
+                    >
+                        By Steadfast ID
                     </button>
                 </div>
 
@@ -139,7 +153,11 @@ const Order = () => {
                         type={searchType === "phone" ? "tel" : "text"}
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
-                        placeholder={searchType === "id" ? "Enter Order ID" : "Enter Phone Number (e.g., 01XXXXXXXXX)"}
+                        placeholder={
+                            searchType === "id" ? "Enter Order ID" : 
+                            searchType === "consignment" ? "Enter Steadfast ID (e.g. CID...)" :
+                            "Enter Phone Number"
+                        }
                         className="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none"
                     />
                     <button

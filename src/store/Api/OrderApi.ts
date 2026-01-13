@@ -37,6 +37,10 @@ export const orderApi = baseApi.injectEndpoints({
       query: (phone) => `/order/track-order?phone=${phone}`,
       providesTags: ['Orders'],
     }),
+    trackOrderByConsignmentId: builder.query({
+      query: (id) => `/order/track-order?consignmentId=${id}`,
+      providesTags: ['Orders'],
+    }),
   }),
 });
 
@@ -47,4 +51,5 @@ export const {
   useDeleteOrderMutation,
   useGetAllOrdersQuery,
   useTrackOrderByPhoneQuery,
+  useTrackOrderByConsignmentIdQuery,
 } = orderApi;

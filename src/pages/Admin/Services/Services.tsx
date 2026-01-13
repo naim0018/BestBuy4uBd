@@ -26,6 +26,7 @@ import {
   Trash2,
   Settings2,
   Plus,
+  Truck
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -45,13 +46,17 @@ const Services = () => {
   const { register, handleSubmit, reset, setValue } = useForm();
   const [showKey, setShowKey] = useState<Record<string, boolean>>({});
 
-  const handleEdit = (serviceKey: string, currentVal: any) => {
+    const handleEdit = (serviceKey: string, currentVal: any) => {
     setActiveService(serviceKey);
     reset();
 
     if (serviceKey === "facebook") {
       setValue("facebookPixelId", currentVal?.facebookPixelId);
       setValue("facebookAccessToken", currentVal?.facebookAccessToken);
+    } else if (serviceKey === "steadfast") {
+      setValue("steadfastApiKey", currentVal?.steadfastApiKey);
+      setValue("steadfastSecretKey", currentVal?.steadfastSecretKey);
+      setValue("steadfastEnabled", currentVal?.steadfastEnabled);
     } else {
       setValue(serviceKey, currentVal);
     }
@@ -72,6 +77,10 @@ const Services = () => {
               if (key === "facebook") {
                 payload.facebookPixelId = "";
                 payload.facebookAccessToken = "";
+              } else if (key === "steadfast") {
+                payload.steadfastApiKey = "";
+                payload.steadfastSecretKey = "";
+                payload.steadfastEnabled = false;
               } else {
                 payload[key] = "";
               }
@@ -178,6 +187,15 @@ const Services = () => {
       link: "https://lookerstudio.google.com/",
       idLabel: "Embed URL",
     },
+    {
+      key: "steadfast",
+      title: "Steadfast Courier",
+      desc: "Automated shipping and delivery in Bangladesh.",
+      icon: <Truck className="text-emerald-600 w-6 h-6" />,
+      color: "bg-emerald-100",
+      link: "https://stedfast.com.bd/",
+      idLabel: "API Key",
+    },
   ];
 
   if (isLoading)
@@ -199,6 +217,8 @@ const Services = () => {
           const isConfigured =
             item.key === "facebook"
               ? !!settings.facebookPixelId
+              : item.key === "steadfast"
+              ? !!settings.steadfastApiKey
               : !!settings[item.key];
 
           const currentValue =
@@ -207,15 +227,27 @@ const Services = () => {
                   facebookPixelId: settings.facebookPixelId,
                   facebookAccessToken: settings.facebookAccessToken,
                 }
+              : item.key === "steadfast"
+              ? {
+                  steadfastApiKey: settings.steadfastApiKey,
+                  steadfastSecretKey: settings.steadfastSecretKey,
+                  steadfastEnabled: settings.steadfastEnabled,
+                }
               : settings[item.key];
 
           const displayValue =
             item.key === "facebook"
               ? settings.facebookPixelId
+              : item.key === "steadfast"
+              ? settings.steadfastApiKey
               : settings[item.key];
 
           const maskKey =
-            item.key === "facebook" ? "facebookPixelId" : item.key;
+            item.key === "facebook"
+              ? "facebookPixelId"
+              : item.key === "steadfast"
+              ? "steadfastApiKey"
+              : item.key;
 
           return (
             <Card
@@ -330,6 +362,30 @@ const Services = () => {
                       variant="bordered"
                       {...register("facebookAccessToken")}
                     />
+                  </>
+                ) : activeService === "steadfast" ? (
+                  <>
+                    <Input
+                      label="API Key"
+                      placeholder="Enter your Steadfast API Key"
+                      variant="bordered"
+                      {...register("steadfastApiKey")}
+                    />
+                    <Input
+                      label="Secret Key"
+                      placeholder="Enter your Steadfast Secret Key"
+                      variant="bordered"
+                      {...register("steadfastSecretKey")}
+                    />
+                    <div className="flex items-center gap-2 mt-2">
+                       <input 
+                           type="checkbox" 
+                           id="sf_enabled"
+                           {...register("steadfastEnabled")}
+                           className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                       />
+                       <label htmlFor="sf_enabled" className="text-sm text-gray-700">Enable Automation</label>
+                   </div>
                   </>
                 ) : (
                   <Input

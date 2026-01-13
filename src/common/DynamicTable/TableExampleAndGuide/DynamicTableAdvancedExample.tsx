@@ -146,11 +146,11 @@ const AdvancedTableExample = () => {
       let filteredUsers = [...mockUsers];
 
       // Apply search
-      if (searchQuery) {
+      if (debouncedSearchQuery) {
         filteredUsers = filteredUsers.filter(
           (user) =>
-            user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchQuery.toLowerCase())
+            user.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
         );
       }
 

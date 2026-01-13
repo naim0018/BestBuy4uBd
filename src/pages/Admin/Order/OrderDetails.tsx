@@ -4,7 +4,8 @@ import { Card, Chip, Button } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Printer, Package, User, MapPin, Phone, Mail } from "lucide-react";
+import { ArrowLeft, Save, Printer, Package, User, MapPin, Phone, Mail, Send } from "lucide-react";
+import { useCreateSteadfastOrderMutation } from "@/store/Api/SteadfastApi";
 import DashboardSkeleton from "@/common/Skeleton/DashboardSkeleton";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +34,25 @@ const OrderDetails = () => {
   const navigate = useNavigate();
   const { data: orderData, isLoading, refetch } = useGetOrderByIdQuery(id);
   const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
+  const [createSteadfastOrder, { isLoading: isSteadfastLoading }] = useCreateSteadfastOrderMutation();
+
+  const handleSendToSteadfast = async () => {
+      if(!order) return;
+      try {
+          const payload = {
+              invoice: order.orderId,
+              recipient_name: order.billingInformation?.name || order.name, // Fallback safely
+              recipient_phone: order.billingInformation?.phone || order.phone,
+              recipient_address: order.billingInformation?.address || order.address,
+              cod_amount: order.paymentMethod === 'cod' ? order.totalAmount : 0,
+              note: order.note || "Handle with care",
+          };
+          const result = await createSteadfastOrder(payload).unwrap();
+          toast.success(`Sent to Steadfast! Consignment ID: ${result?.consignment?.consignment_id}`);
+      } catch (err: any) {
+          toast.error(err?.data?.message || "Failed to send to Steadfast");
+      }
+    };
 
   const order = orderData?.data;
 
@@ -108,6 +128,15 @@ const OrderDetails = () => {
         <div className="flex gap-2">
             <Button color="secondary" variant="flat" startContent={<Printer className="w-4 h-4" />} onClick={handlePrint}>
                 Print Invoice
+            </Button>
+            <Button 
+                color="primary" 
+                variant="flat" 
+                startContent={<Send className="w-4 h-4" />} 
+                onClick={handleSendToSteadfast}
+                isLoading={isSteadfastLoading}
+            >
+                Send to Steadfast
             </Button>
             <Button color="primary" isLoading={isUpdating} startContent={<Save className="w-4 h-4" />} onClick={handleSubmit(onSubmit)}>
                 Save Changes
