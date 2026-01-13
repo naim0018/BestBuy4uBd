@@ -13,8 +13,8 @@ import {
   PackageSearch,
   Package2,
   LayoutTemplate,
-  Activity,
   ShoppingCart,
+  Briefcase,
 } from "lucide-react";
 
 export const adminRoutes = [
@@ -79,8 +79,8 @@ export const adminRoutes = [
         element: <CMS />,
       },
       {
-        label: "External Services",
-        icon: <Activity />,
+        label: "Services",
+        icon: <Briefcase />,
         path: "services",
         element: <Services />,
       },

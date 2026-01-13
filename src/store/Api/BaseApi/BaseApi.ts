@@ -66,6 +66,7 @@ const baseApi = createApi({
     "Banner",
     "GoogleAnalytics",
     "FacebookPixel",
+    "Tracking",
   ],
 });
 export default baseApi;
