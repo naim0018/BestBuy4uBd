@@ -3,20 +3,41 @@ import { useCreateSteadfastOrderMutation } from "@/store/Api/SteadfastApi";
 import { useGetDashboardStatsQuery } from "@/store/Api/DashboardApi";
 import DynamicTable from "@/common/DynamicTable/DynamicTable";
 import { toast } from "sonner";
-import { Eye, Trash2, CheckCircle, XCircle, Clock, Truck, Package, LayoutTemplate } from "lucide-react";
+import { Eye, Trash2, CheckCircle, XCircle, Clock, Truck, Package, LayoutTemplate, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, Select, SelectItem } from "@heroui/react";
 import { useState } from "react";
 
 const AllOrders = () => {
   const [selectedTemplates, setSelectedTemplates] = useState<Record<string, string>>({});
-  const { data: apiData, isLoading } = useGetAllOrdersQuery(undefined, {
+  const { data: apiData, isLoading, refetch } = useGetAllOrdersQuery(undefined, {
     pollingInterval: 60000,
   });
   const { data: statsData } = useGetDashboardStatsQuery(undefined);
   const [deleteOrder] = useDeleteOrderMutation();
   const [createSteadfastOrder] = useCreateSteadfastOrderMutation();
   const navigate = useNavigate();
+
+  const handleCheckStatus = async (consignmentId: string) => {
+    if (!consignmentId) return;
+    try {
+        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+        const response = await fetch(`${baseUrl}/steadfast/status/${consignmentId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            }
+        });
+        const result = await response.json();
+        if(result.success){
+            toast.success(`Status updated: ${result.data.delivery_status}`);
+            refetch(); // Refresh list to show updated status
+        } else {
+            toast.error(result.message || "Failed to sync status");
+        }
+    } catch {
+        toast.error("An error occurred while syncing status");
+    }
+  };
 
   const orders = apiData?.data || [];
   const stats = statsData?.data?.overview;
@@ -43,37 +64,77 @@ const AllOrders = () => {
 
   const getStatusBadge = (status: string) => {
     const s = status?.toLowerCase();
+    
+    // Helper to format text (remove underscores, capitalize)
+    const formatStatus = (str: string) => {
+        return str?.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    };
+
+    const formattedStatus = formatStatus(status);
+
     switch (s) {
       case "completed":
       case "delivered":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            <CheckCircle className="w-3 h-3" /> {status}
+            <CheckCircle className="w-3 h-3" /> {formattedStatus}
+          </span>
+        );
+      case "partial_delivered":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+            <CheckCircle className="w-3 h-3" /> {formattedStatus}
           </span>
         );
       case "processing":
+      case "in_review":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            <Truck className="w-3 h-3" /> {status}
+            <Truck className="w-3 h-3" /> {formattedStatus}
           </span>
         );
       case "pending":
+      case "hold":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-            <Clock className="w-3 h-3" /> {status}
+            <Clock className="w-3 h-3" /> {formattedStatus}
+          </span>
+        );
+      case "delivered_approval_pending":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+            <Clock className="w-3 h-3" /> {formattedStatus}
+          </span>
+        );
+      case "partial_delivered_approval_pending":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
+            <Clock className="w-3 h-3" /> {formattedStatus}
+          </span>
+        );
+      case "cancelled_approval_pending":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+            <Clock className="w-3 h-3" /> {formattedStatus}
+          </span>
+        );
+      case "unknown_approval_pending":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            <Clock className="w-3 h-3" /> {formattedStatus}
           </span>
         );
       case "cancelled":
       case "canceled":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-            <XCircle className="w-3 h-3" /> {status}
+            <XCircle className="w-3 h-3" /> {formattedStatus}
           </span>
         );
       default:
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            {status}
+            {formattedStatus || status}
           </span>
         );
     }
@@ -177,7 +238,6 @@ const AllOrders = () => {
     {
       label: "Send to Steadfast",
       onClick: async (row: any) => {
-          // If already sent, maybe show toast or disable?
           if(row.consignment_id) {
               toast.info(`Already sent! ID: ${row.consignment_id}`);
               return;
@@ -185,12 +245,21 @@ const AllOrders = () => {
           try {
             await createSteadfastOrder({ orderId: row._id }).unwrap();
             toast.success("Sent to Steadfast successfully!");
+            refetch();
           } catch (err: any) {
             toast.error(err?.data?.message || "Failed to send to Steadfast");
           }
       },
       icon: <Truck className="w-4 h-4" />,
-      variant: "primary" as const, // Or a dedicated 'success' variant if available, using primary for now
+      variant: "primary" as const,
+      hidden: (row: any) => !!row.consignment_id,
+    },
+    {
+      label: "Check Status",
+      onClick: (row: any) => handleCheckStatus(row.consignment_id),
+      icon: <RefreshCw className="w-4 h-4" />,
+      variant: "primary" as const,
+      hidden: (row: any) => !row.consignment_id,
     },
     {
       label: "Delete",

@@ -1,10 +1,24 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useGetOrderByIdQuery, useUpdateOrderMutation } from "@/store/Api/OrderApi";
+import {
+  useGetOrderByIdQuery,
+  useUpdateOrderMutation,
+} from "@/store/Api/OrderApi";
 import { Card, Chip, Button } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Printer, Package, User, MapPin, Phone, Mail, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Printer,
+  Package,
+  User,
+  MapPin,
+  Phone,
+  Mail,
+  Send,
+  RefreshCw,
+} from "lucide-react";
 import { useCreateSteadfastOrderMutation } from "@/store/Api/SteadfastApi";
 import DashboardSkeleton from "@/common/Skeleton/DashboardSkeleton";
 import { z } from "zod";
@@ -27,6 +41,23 @@ const STATUS_OPTIONS = [
   { value: "Shipped", label: "Shipped" },
   { value: "Delivered", label: "Delivered" },
   { value: "Cancelled", label: "Cancelled" },
+  {
+    value: "delivered_approval_pending",
+    label: "Delivered (Approval Pending)",
+  },
+  {
+    value: "partial_delivered_approval_pending",
+    label: "Partial Delivered (Approval Pending)",
+  },
+  {
+    value: "cancelled_approval_pending",
+    label: "Cancelled (Approval Pending)",
+  },
+  { value: "unknown_approval_pending", label: "Unknown (Approval Pending)" },
+  { value: "partial_delivered", label: "Partial Delivered" },
+  { value: "hold", label: "Hold" },
+  { value: "in_review", label: "In Review" },
+  { value: "unknown", label: "Unknown" },
 ];
 
 const OrderDetails = () => {
@@ -34,25 +65,53 @@ const OrderDetails = () => {
   const navigate = useNavigate();
   const { data: orderData, isLoading, refetch } = useGetOrderByIdQuery(id);
   const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
-  const [createSteadfastOrder, { isLoading: isSteadfastLoading }] = useCreateSteadfastOrderMutation();
+  const [createSteadfastOrder, { isLoading: isSteadfastLoading }] =
+    useCreateSteadfastOrderMutation();
 
   const handleSendToSteadfast = async () => {
-      if(!order) return;
-      try {
-          const payload = {
-              invoice: order.orderId,
-              recipient_name: order.billingInformation?.name || order.name, // Fallback safely
-              recipient_phone: order.billingInformation?.phone || order.phone,
-              recipient_address: order.billingInformation?.address || order.address,
-              cod_amount: order.paymentMethod === 'cod' ? order.totalAmount : 0,
-              note: order.note || "Handle with care",
-          };
-          const result = await createSteadfastOrder(payload).unwrap();
-          toast.success(`Sent to Steadfast! Consignment ID: ${result?.consignment?.consignment_id}`);
-      } catch (err: any) {
-          toast.error(err?.data?.message || "Failed to send to Steadfast");
-      }
-    };
+    if (!order) return;
+    try {
+      const payload = {
+        invoice: order.orderId.toString(),
+        recipient_name: order.billingInformation?.name || order.name, // Fallback safely
+        recipient_phone: order.billingInformation?.phone || order.phone,
+        recipient_address: order.billingInformation?.address || order.address,
+        cod_amount: order.paymentMethod === "cod" ? order.totalAmount : 0,
+        note: order.note || "Handle with care",
+      };
+      const result = await createSteadfastOrder(payload).unwrap();
+      toast.success(
+        `Sent to Steadfast! Consignment ID: ${result?.consignment?.consignment_id}`
+      );
+      refetch(); // Refresh order details to show new status and disable button
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to send to Steadfast");
+    }
+  };
+
+  const handleCheckStatus = async () => {
+    if (!order?.consignment_id) return;
+    try {
+        // We use fetch standardly but since checkSteadfastStatus is a query hook, 
+        // we can trigger it manually or just use the lazy query if we had one.
+        // For now, let's just use the fetch API directly to trigger the backend sync logic
+        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+        const response = await fetch(`${baseUrl}/steadfast/status/${order.consignment_id}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            }
+        });
+        const result = await response.json();
+        if(result.success){
+            toast.success(`Status updated: ${result.data.delivery_status}`);
+            refetch(); // Refresh order to show updated status
+        } else {
+            toast.error(result.message || "Failed to sync status");
+        }
+    } catch {
+        toast.error("An error occurred while syncing status");
+    }
+  };
 
   const order = orderData?.data;
 
@@ -85,7 +144,10 @@ const OrderDetails = () => {
           phone: data.phone,
           address: data.address,
           city: data.city,
-          paymentMethod: order.billingInformation?.paymentMethod || order.paymentMethod || "COD",
+          paymentMethod:
+            order.billingInformation?.paymentMethod ||
+            order.paymentMethod ||
+            "COD",
         },
       };
       await updateOrder(updatePayload).unwrap();
@@ -103,170 +165,291 @@ const OrderDetails = () => {
 
   if (isLoading) return <DashboardSkeleton />;
 
-  if (!order) return <div className="p-10 text-center text-red-500">Order not found</div>;
+  if (!order)
+    return <div className="p-10 text-center text-red-500">Order not found</div>;
 
   return (
     <div className="space-y-6 container mx-auto pb-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between no-print">
         <div className="flex items-center gap-3">
-          <Button isIconOnly variant="flat" onClick={() => navigate("/admin/orders")}>
+          <Button
+            isIconOnly
+            variant="flat"
+            onClick={() => navigate("/admin/orders")}
+          >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-             <h1 className="text-2xl font-bold flex items-center gap-2">
-                Order #{order._id?.slice(-6).toUpperCase()}
-                <Chip size="sm" color={order.status === 'Cancelled' ? 'danger' : order.status === 'Delivered' ? 'success' : 'warning'} variant="flat">
-                    {order.status}
-                </Chip>
-             </h1>
-             <p className="text-sm text-gray-500">
-                Placed on {new Date(order.createdAt).toLocaleString()}
-             </p>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              Order #{order._id?.slice(-6).toUpperCase()}
+              <Chip
+                size="sm"
+                color={(() => {
+                  const s = order.status?.toLowerCase();
+                  if (s?.includes("delivered")) return "success";
+                  if (s?.includes("cancelled") || s?.includes("canceled"))
+                    return "danger";
+                  if (
+                    s?.includes("processing") ||
+                    s?.includes("shipped") ||
+                    s === "in_review"
+                  )
+                    return "primary";
+                  return "warning";
+                })()}
+                variant="flat"
+              >
+                {order.status
+                  ?.split("_")
+                  .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                  .join(" ")}
+              </Chip>
+            </h1>
+            <p className="text-sm text-gray-500">
+              Placed on {new Date(order.createdAt).toLocaleString()}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
-            <Button color="secondary" variant="flat" startContent={<Printer className="w-4 h-4" />} onClick={handlePrint}>
-                Print Invoice
-            </Button>
-            <Button 
-                color="primary" 
-                variant="flat" 
-                startContent={<Send className="w-4 h-4" />} 
-                onClick={handleSendToSteadfast}
-                isLoading={isSteadfastLoading}
-            >
-                Send to Steadfast
-            </Button>
-            <Button color="primary" isLoading={isUpdating} startContent={<Save className="w-4 h-4" />} onClick={handleSubmit(onSubmit)}>
-                Save Changes
-            </Button>
+          <Button
+            color="secondary"
+            variant="flat"
+            startContent={<Printer className="w-4 h-4" />}
+            onClick={handlePrint}
+          >
+            Print Invoice
+          </Button>
+          <Button
+            color="primary"
+            variant="flat"
+            startContent={<Send className="w-4 h-4" />}
+            onClick={handleSendToSteadfast}
+            isLoading={isSteadfastLoading}
+            isDisabled={!!order.consignment_id}
+          >
+            {order.consignment_id ? "Sent to Steadfast" : "Send to Steadfast"}
+          </Button>
+          {order.consignment_id && (
+             <Button
+                color="success"
+                variant="flat"
+                startContent={<RefreshCw className="w-4 h-4" />}
+                onClick={handleCheckStatus}
+             >
+                Check Courier Status
+             </Button>
+          )}
+          <Button
+            color="primary"
+            isLoading={isUpdating}
+            startContent={<Save className="w-4 h-4" />}
+            onClick={handleSubmit(onSubmit)}
+          >
+            Save Changes
+          </Button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+      >
         {/* Left Column: Order Items */}
         <div className="lg:col-span-2 space-y-6">
-            <Card className="p-4 shadow-sm border border-gray-100">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-gray-500" /> Order Items
-                </h3>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                            <tr>
-                                <th className="px-4 py-3 rounded-l-lg">Product</th>
-                                <th className="px-4 py-3 text-center">Unit Price</th>
-                                <th className="px-4 py-3 text-center">Qty</th>
-                                <th className="px-4 py-3 text-right rounded-r-lg">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {order.products?.map((item: any, idx: number) => (
-                                <tr key={idx} className="hover:bg-gray-50/50">
-                                    <td className="px-4 py-4 flex items-center gap-3">
-                                        {/* Assuming item.product is loaded or we have name/image */}
-                                         <div className="w-12 h-12 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
-                                           {item.product?.images?.[0] && <img src={item.product.images[0]} alt={item.product.title} className="w-full h-full object-cover" />}
-                                         </div>
-                                         <div>
-                                            <p className="font-semibold text-gray-800">{item.product?.title || "Product Deleted"}</p>
-                                            <p className="text-xs text-gray-500">{item.product?.brand}</p>
-                                         </div>
-                                    </td>
-                                    <td className="px-4 py-4 text-center">৳{item.price?.toLocaleString()}</td>
-                                    <td className="px-4 py-4 text-center font-medium">x {item.quantity}</td>
-                                    <td className="px-4 py-4 text-right font-bold">৳{(item.price * item.quantity).toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                        <tfoot className="border-t-2 border-dashed border-gray-200">
-                            <tr>
-                                <td colSpan={3} className="px-4 py-3 text-right text-gray-600 font-medium">Subtotal</td>
-                                <td className="px-4 py-3 text-right font-bold">৳{order.totalAmount?.toLocaleString()}</td>
-                            </tr>
-                             <tr>
-                                <td colSpan={3} className="px-4 py-2 text-right text-gray-600 font-medium">Shipping</td>
-                                <td className="px-4 py-2 text-right font-bold text-gray-500">Free</td>
-                            </tr>
-                             <tr>
-                                <td colSpan={3} className="px-4 py-4 text-right text-gray-900 font-black text-lg">Total Amount</td>
-                                <td className="px-4 py-4 text-right font-black text-lg text-primary-blue">৳{order.totalAmount?.toLocaleString()}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </Card>
+          <Card className="p-4 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Package className="w-5 h-5 text-gray-500" /> Order Items
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                  <tr>
+                    <th className="px-4 py-3 rounded-l-lg">Product</th>
+                    <th className="px-4 py-3 text-center">Unit Price</th>
+                    <th className="px-4 py-3 text-center">Qty</th>
+                    <th className="px-4 py-3 text-right rounded-r-lg">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {order.products?.map((item: any, idx: number) => (
+                    <tr key={idx} className="hover:bg-gray-50/50">
+                      <td className="px-4 py-4 flex items-center gap-3">
+                        {/* Assuming item.product is loaded or we have name/image */}
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
+                          {item.product?.images?.[0] && (
+                            <img
+                              src={item.product.images[0]}
+                              alt={item.product.title}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800">
+                            {item.product?.title || "Product Deleted"}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {item.product?.brand}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        ৳{item.price?.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-4 text-center font-medium">
+                        x {item.quantity}
+                      </td>
+                      <td className="px-4 py-4 text-right font-bold">
+                        ৳{(item.price * item.quantity).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="border-t-2 border-dashed border-gray-200">
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="px-4 py-3 text-right text-gray-600 font-medium"
+                    >
+                      Subtotal
+                    </td>
+                    <td className="px-4 py-3 text-right font-bold">
+                      ৳{order.totalAmount?.toLocaleString()}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="px-4 py-2 text-right text-gray-600 font-medium"
+                    >
+                      Shipping
+                    </td>
+                    <td className="px-4 py-2 text-right font-bold text-gray-500">
+                      Free
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="px-4 py-4 text-right text-gray-900 font-black text-lg"
+                    >
+                      Total Amount
+                    </td>
+                    <td className="px-4 py-4 text-right font-black text-lg text-primary-blue">
+                      ৳{order.totalAmount?.toLocaleString()}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </Card>
         </div>
 
         {/* Right Column: Customer & Status */}
         <div className="space-y-6">
-             {/* Status Card */}
-             <Card className="p-5 shadow-sm border border-gray-100 border-l-4 border-l-primary-blue">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Order Status</h3>
+          {/* Status Card */}
+          <Card className="p-5 shadow-sm border border-gray-100 border-l-4 border-l-primary-blue">
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">
+              Order Status
+            </h3>
+            <div className="relative">
+              <select
+                {...register("status")}
+                className="w-full p-3 rounded-lg border border-gray-200 bg-gray-50 font-semibold text-gray-800 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all cursor-pointer"
+              >
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+              <span>Payment Method</span>
+              <span className="font-bold text-gray-700 capitalize">
+                {order.paymentMethod || "COD"}
+              </span>
+            </div>
+          </Card>
+
+          {/* Customer Info Card */}
+          <Card className="p-5 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <User className="w-5 h-5 text-gray-500" /> Customer Details
+            </h3>
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">
+                  Full Name
+                </label>
                 <div className="relative">
-                     <select 
-                        {...register("status")}
-                        className="w-full p-3 rounded-lg border border-gray-200 bg-gray-50 font-semibold text-gray-800 focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all cursor-pointer"
-                    >
-                        {STATUS_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </select>
+                  <User className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                  <input
+                    {...register("name")}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none"
+                    placeholder="Name"
+                  />
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                    <span>Payment Method</span>
-                    <span className="font-bold text-gray-700 capitalize">{order.paymentMethod || "COD"}</span>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                  <input
+                    {...register("email")}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none"
+                    placeholder="Email"
+                  />
                 </div>
-             </Card>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">
+                  Phone Number
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                  <input
+                    {...register("phone")}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none"
+                    placeholder="Phone"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
 
-             {/* Customer Info Card */}
-             <Card className="p-5 shadow-sm border border-gray-100">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <User className="w-5 h-5 text-gray-500" /> Customer Details
-                </h3>
-                <div className="space-y-4">
-                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">Full Name</label>
-                        <div className="relative">
-                            <User className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <input {...register("name")} className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="Name" />
-                        </div>
-                     </div>
-                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">Email Address</label>
-                         <div className="relative">
-                            <Mail className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <input {...register("email")} className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="Email" />
-                        </div>
-                     </div>
-                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">Phone Number</label>
-                         <div className="relative">
-                            <Phone className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <input {...register("phone")} className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="Phone" />
-                        </div>
-                     </div>
-                </div>
-             </Card>
-
-              {/* Shipping Address */}
-             <Card className="p-5 shadow-sm border border-gray-100">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-gray-500" /> Shipping Info
-                </h3>
-                  <div className="space-y-4">
-                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">Address</label>
-                        <textarea {...register("address")} rows={3} className="w-full p-3 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="Address"></textarea>
-                     </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">City / Region</label>
-                        <input {...register("city")} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none" placeholder="City" />
-                     </div>
-                </div>
-             </Card>
+          {/* Shipping Address */}
+          <Card className="p-5 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-gray-500" /> Shipping Info
+            </h3>
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">
+                  Address
+                </label>
+                <textarea
+                  {...register("address")}
+                  rows={3}
+                  className="w-full p-3 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none"
+                  placeholder="Address"
+                ></textarea>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">
+                  City / Region
+                </label>
+                <input
+                  {...register("city")}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 outline-none"
+                  placeholder="City"
+                />
+              </div>
+            </div>
+          </Card>
         </div>
       </form>
     </div>

@@ -39,11 +39,19 @@ import {
 const STATUS_COLORS: Record<string, string> = {
   completed: "#10b981",
   delivered: "#10b981",
-  processing: "#f59e0b",
-  pending: "#3b82f6",
+  processing: "#3b82f6", // Changed to blue to match AllOrders
+  pending: "#eab308", // Changed to yellow to match AllOrders
   cancelled: "#ef4444",
   canceled: "#ef4444",
   shipped: "#8b5cf6",
+  delivered_approval_pending: "#14b8a6",
+  partial_delivered_approval_pending: "#06b6d4",
+  cancelled_approval_pending: "#f97316",
+  unknown_approval_pending: "#a855f7",
+  partial_delivered: "#34d399",
+  hold: "#f59e0b",
+  in_review: "#6366f1",
+  unknown: "#6b7280",
 };
 
 import DashboardSkeleton from "@/common/Skeleton/DashboardSkeleton";
@@ -55,6 +63,12 @@ const Dashboard = () => {
       pollingInterval: 60000,
     }
   );
+  
+  // Helper to format status text
+  const formatStatus = (str: string) => {
+    return str?.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   if (isLoading) {
     return <DashboardSkeleton />;
   }
@@ -140,7 +154,7 @@ const Dashboard = () => {
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <h2 className="text-2xl font-bold capitalize text-white">
-                    {overview.lastOrder.status}
+                    {formatStatus(overview.lastOrder.status)}
                   </h2>
                   <Chip
                     variant="flat"
@@ -392,7 +406,7 @@ const Dashboard = () => {
                             color: getStatusColor(order.status || ""),
                           }}
                         >
-                          {order.status || "Unknown"}
+                          {formatStatus(order.status || "Unknown")}
                         </Chip>
                       </div>
                     </TableCell>
@@ -463,7 +477,7 @@ const Dashboard = () => {
                     }}
                   />
                   <span className="text-sm font-bold text-gray-700 capitalize">
-                    {entry.status || "Unknown"}
+                    {formatStatus(entry.status || "Unknown")}
                   </span>
                 </div>
                 <div className="text-right">

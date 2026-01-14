@@ -52,10 +52,15 @@ const Order = () => {
                 </div>
                 <div className="mt-2 md:mt-0">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold 
-                        ${order.status === 'delivered' ? 'bg-green-100 text-green-800' : 
-                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                          'bg-blue-100 text-blue-800'}`}>
-                        {order.status.toUpperCase()}
+                        ${(() => {
+                           const s = order.status?.toLowerCase();
+                           if (s.includes('delivered')) return 'bg-green-100 text-green-800';
+                           if (s.includes('pending') || s.includes('hold')) return 'bg-yellow-100 text-yellow-800';
+                           if (s.includes('cancel')) return 'bg-red-100 text-red-800';
+                           if (s.includes('processing') || s.includes('review')) return 'bg-blue-100 text-blue-800';
+                           return 'bg-gray-100 text-gray-800';
+                        })()}`}>
+                        {order.status?.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                     </span>
                 </div>
             </div>
