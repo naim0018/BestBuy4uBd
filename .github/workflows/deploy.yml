@@ -36,3 +36,14 @@ jobs:
           local-dir: dist/
           server-dir: /
           dangerous-clean-slate: false
+
+      - name: Deploy to domain B
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST_B }}
+          username: ${{ secrets.FTP_USERNAME_B }}
+          password: ${{ secrets.FTP_PASSWORD_B }}
+          port: 21
+          local-dir: dist/
+          server-dir: /
+          dangerous-clean-slate: false
