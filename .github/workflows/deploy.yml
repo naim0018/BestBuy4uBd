@@ -26,7 +26,7 @@ jobs:
         env:
           VITE_API_URL: https://spark-tech-server.vercel.app/api/v1
 
-      - name: Deploy to hosting via FTP
+      - name: Deploy TopDealsBd
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -37,7 +37,7 @@ jobs:
           server-dir: /
           dangerous-clean-slate: false
 
-      - name: Deploy to domain B
+      - name: Deploy BestBuy4uBd
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST_B }}
