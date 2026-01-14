@@ -4,6 +4,9 @@ import { adminRoutes } from "@/routes/AdminRoutes";
 import { menuGenerator, MenuItem } from "@/utils/Generator/MenuGenerator";
 import { Location } from "react-router-dom";
 import { userRoutes } from "@/routes/UserRoutes";
+import { useGetHost } from "@/utils/useGetHost";
+
+const host = useGetHost();
 // Sub-component to handle recursive levels and isolated hover states
 const NavItem = ({
   item,
@@ -106,7 +109,7 @@ const Sidebar = () => {
     <aside className="w-64 h-screen bg-gray-700 text-white sticky top-0 z-40 flex flex-col print:hidden">
       <div className="p-4 h-16 text-xl font-bold border-b border-gray-600 flex items-center">
         <Link to="/" className="no-underline">
-          <p className="text-xl font-bold text-white">BestBuy4uBD</p>
+          <p className="text-xl font-bold text-white">{host.title || "BestBuy4uBd"}</p>
         </Link>
       </div>
 

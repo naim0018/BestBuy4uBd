@@ -24,7 +24,8 @@ import { RootState } from "@/store/store";
 import { toggleCart, closeCart, toggleWishlist, closeWishlist } from "@/store/Slices/UISlice";
 import { logOut } from "@/store/Slices/AuthSlice/authSlice";
 import UserMenuDropdown from "./UserMenuDropdown";
-
+import { useGetHost } from "@/utils/useGetHost";
+const host = useGetHost();
 const Navbar = () => {
   const dispatch = useDispatch();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -99,7 +100,7 @@ const Navbar = () => {
               </div>
               <div className="flex flex-col leading-none">
                 <Link to="/" className="text-xl font-bold text-dark-blue hover:text-primary-green transition-colors">
-                  BESTBUY4UBD
+                  {host.title || "BestBuy4uBd"}
                 </Link>
               </div>
             </div>
