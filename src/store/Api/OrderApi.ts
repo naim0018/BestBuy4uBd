@@ -30,7 +30,11 @@ export const orderApi = baseApi.injectEndpoints({
       invalidatesTags: ['Orders'],
     }),
     getAllOrders: builder.query({
-      query: () => '/order',
+      query: (params) => ({
+        url: '/order',
+        method: 'GET',
+        params,
+      }),
       providesTags: ['Orders'],
     }),
     trackOrderByPhone: builder.query({

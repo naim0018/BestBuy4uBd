@@ -2,18 +2,53 @@ import { useGetAllOrdersQuery, useDeleteOrderMutation } from "@/store/Api/OrderA
 import { useCreateSteadfastOrderMutation } from "@/store/Api/SteadfastApi";
 import { useGetDashboardStatsQuery } from "@/store/Api/DashboardApi";
 import { toast } from "sonner";
-import { Eye, Trash2, CheckCircle, XCircle, Clock, Truck, Package, LayoutTemplate, RefreshCw } from "lucide-react";
+import { Eye, Trash2, CheckCircle, XCircle, Clock, Truck, Package, LayoutTemplate, RefreshCw, Search, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Card, Select, SelectItem, Button } from "@heroui/react";
-import { useState } from "react";
+import { Card, Select, SelectItem, Button, Input, Pagination } from "@heroui/react";
+import { useState, useEffect } from "react";
 
 const AllOrders = () => {
   const [selectedTemplates, setSelectedTemplates] = useState<Record<string, string>>({});
-  const { data: apiData, isLoading, refetch } = useGetAllOrdersQuery(undefined);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' | null }>({ key: 'createdAt', direction: 'desc' });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const { data: apiData, isLoading, refetch } = useGetAllOrdersQuery({
+    page,
+    limit,
+    search: debouncedSearch,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    sort: sortConfig.key,
+    order: sortConfig.direction,
+  });
   const { data: statsData } = useGetDashboardStatsQuery(undefined);
   const [deleteOrder] = useDeleteOrderMutation();
   const [createSteadfastOrder, { isLoading: isSendingToSteadfast }] = useCreateSteadfastOrderMutation();
   const navigate = useNavigate();
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    setPage(1); // Reset to first page on sort
+  };
+
+  const renderSortIcon = (key: string) => {
+    if (sortConfig.key !== key) return <ArrowUpDown className="w-3 h-3 text-gray-400" />;
+    return sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-blue-600" /> : <ChevronDown className="w-3 h-3 text-blue-600" />;
+  };
 
   const handleCheckStatus = async (consignmentId: string) => {
     if (!consignmentId) return;
@@ -37,6 +72,7 @@ const AllOrders = () => {
   };
 
   const orders = apiData?.data || [];
+  const meta = apiData?.meta || { page: 1, limit: 10, total: 0, totalPage: 1 };
   const stats = statsData?.data?.overview;
 
   const statCards = [
@@ -84,7 +120,6 @@ const AllOrders = () => {
     const formattedStatus = formatStatus(status);
 
     switch (s) {
-      case "completed":
       case "delivered":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -98,10 +133,16 @@ const AllOrders = () => {
           </span>
         );
       case "processing":
-      case "in_review":
+      case "shipped":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
             <Truck className="w-3 h-3" /> {formattedStatus}
+          </span>
+        );
+      case "in_review":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+            <Clock className="w-3 h-3" /> {formattedStatus}
           </span>
         );
       case "pending":
@@ -139,6 +180,12 @@ const AllOrders = () => {
       case "canceled":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            <XCircle className="w-3 h-3" /> {formattedStatus}
+          </span>
+        );
+      case "unknown":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
             <XCircle className="w-3 h-3" /> {formattedStatus}
           </span>
         );
@@ -292,6 +339,95 @@ const AllOrders = () => {
         ))}
       </div>
 
+      {/* Filters and Controls */}
+      <Card className="p-4 mb-6 shadow-sm border-none bg-gray-50/50">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1">
+            <Input
+              placeholder="Search by Order ID or Customer Name..."
+              startContent={<Search className="w-4 h-4 text-gray-400" />}
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              size="md"
+              className="w-full"
+              variant="bordered"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+            <div className="w-full sm:w-48">
+              <Select
+                aria-label="Status Filter"
+                placeholder="Status"
+                selectedKeys={[statusFilter]}
+                onSelectionChange={(keys) => {
+                  const val = Array.from(keys)[0] as string;
+                  setStatusFilter(val);
+                  setPage(1);
+                }}
+                size="md"
+                variant="bordered"
+              >
+                <SelectItem key="all" textValue="All Status">All Status</SelectItem>
+                <SelectItem key="pending" textValue="Pending">Pending</SelectItem>
+                <SelectItem key="delivered_approval_pending" textValue="Delivered (Approval Pending)">Delivered (Approval Pending)</SelectItem>
+                <SelectItem key="partial_delivered_approval_pending" textValue="Partial Delivered (Approval Pending)">Partial Delivered (Approval Pending)</SelectItem>
+                <SelectItem key="cancelled_approval_pending" textValue="Cancelled (Approval Pending)">Cancelled (Approval Pending)</SelectItem>
+                <SelectItem key="unknown_approval_pending" textValue="Unknown (Approval Pending)">Unknown (Approval Pending)</SelectItem>
+                <SelectItem key="delivered" textValue="Delivered">Delivered</SelectItem>
+                <SelectItem key="partial_delivered" textValue="Partial Delivered">Partial Delivered</SelectItem>
+                <SelectItem key="cancelled" textValue="Cancelled">Cancelled</SelectItem>
+                <SelectItem key="hold" textValue="Hold">Hold</SelectItem>
+                <SelectItem key="in_review" textValue="In Review">In Review</SelectItem>
+                <SelectItem key="unknown" textValue="Unknown">Unknown</SelectItem>
+              </Select>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Top Pagination and Controls */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-500">
+            Total {meta.total || 0} Orders
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 font-medium">SHOW:</span>
+            <Select
+              size="sm"
+              className="w-24"
+              selectedKeys={[limit.toString()]}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setPage(1);
+              }}
+              variant="flat"
+            >
+              {[10, 20, 50, 100].map((size) => (
+                <SelectItem key={size} textValue={size.toString()}>
+                  {size} items
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
+        </div>
+
+        {meta.totalPage > 1 && (
+          <Pagination
+            total={meta.totalPage}
+            page={page}
+            onChange={(newPage) => setPage(newPage)}
+            showControls
+            color="primary"
+            size="sm"
+          />
+        )}
+      </div>
+
       {/* Mobile View - Cards */}
       <div className="block lg:hidden">
         {isLoading ? (
@@ -313,11 +449,32 @@ const AllOrders = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase whitespace-nowrap">Order ID</th>
+                <th 
+                  className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => handleSort('_id')}
+                >
+                  <div className="flex items-center gap-1">
+                    Order ID {renderSortIcon('_id')}
+                  </div>
+                </th>
                 <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th>
                 <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase hidden xl:table-cell">Contact</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase whitespace-nowrap">Date</th>
-                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase whitespace-nowrap">Amount</th>
+                <th 
+                  className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => handleSort('createdAt')}
+                >
+                  <div className="flex items-center gap-1">
+                    Date {renderSortIcon('createdAt')}
+                  </div>
+                </th>
+                <th 
+                  className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => handleSort('totalAmount')}
+                >
+                  <div className="flex items-center gap-1 justify-end">
+                    Amount {renderSortIcon('totalAmount')}
+                  </div>
+                </th>
                 <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
                 <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Invoice</th>
                 <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Actions</th>
@@ -459,6 +616,47 @@ const AllOrders = () => {
           </table>
         </div>
       </Card>
+
+      {/* Bottom Pagination */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="text-sm text-gray-500">
+          Showing {Math.min((page - 1) * limit + 1, meta.total)} to{" "}
+          {Math.min(page * limit, meta.total)} of {meta.total} orders
+        </div>
+
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Rows per page:</span>
+            <Select
+              size="sm"
+              className="w-24"
+              selectedKeys={[limit.toString()]}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setPage(1);
+              }}
+              variant="flat"
+            >
+              {[10, 20, 50, 100].map((size) => (
+                <SelectItem key={size} textValue={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
+
+          {meta.totalPage > 1 && (
+            <Pagination
+              total={meta.totalPage}
+              page={page}
+              onChange={(newPage) => setPage(newPage)}
+              showControls
+              color="primary"
+              size="sm"
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };
