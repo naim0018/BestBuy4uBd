@@ -25,8 +25,8 @@ import { toggleCart, closeCart, toggleWishlist, closeWishlist } from "@/store/Sl
 import { logOut } from "@/store/Slices/AuthSlice/authSlice";
 import UserMenuDropdown from "./UserMenuDropdown";
 import { useGetHost } from "@/utils/useGetHost";
-const host = useGetHost();
 const Navbar = () => {
+  const host = useGetHost();
   const dispatch = useDispatch();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,12 +65,12 @@ const Navbar = () => {
               >
                 Sell on BestBuy
               </a>
-              <a
-                href="#"
+              <Link
+                to="/order-track"
                 className="hover:text-primary-blue transition-colors hidden md:inline"
               >
                 Order Track
-              </a>
+              </Link>
 
               {/* Currency Dropdown */}
               <button className="flex items-center gap-1 hover:text-primary-blue transition-colors">

@@ -51,9 +51,14 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
     setDeliveryChargeType(e.target.value);
   };
 
+  const deliveryCharge = product?.additionalInfo?.freeShipping 
+    ? 0 
+    : (deliveryChargeType === "insideDhaka" 
+        ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80) 
+        : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150));
+
   const calculateTotalPrice = () => {
     const subtotal = price * quantity;
-    const deliveryCharge = deliveryChargeType === "insideDhaka" ? 80 : 150;
     const total = subtotal + deliveryCharge - (discount || 0);
     return total > 0 ? total : 0;
   };
@@ -113,8 +118,6 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
 
     handleSubmit(formData);
   };
-
-  const deliveryCharge = deliveryChargeType === "insideDhaka" ? 80 : 150;
 
   return (
     <div id="checkout" className="bg-white rounded-3xl shadow-xl overflow-hidden border border-green-100">
@@ -185,9 +188,12 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                   onChange={handleDeliveryChargeChange}
                   value={deliveryChargeType}
                 >
-                  <option value="insideDhaka">ঢাকার ভিতরে (৳80)</option>
-                  <option value="outsideDhaka">ঢাকার বাইরে (৳150)</option>
+                  <option value="insideDhaka">ঢাকার ভিতরে (৳{product?.basicInfo?.deliveryChargeInsideDhaka ?? 80})</option>
+                  <option value="outsideDhaka">ঢাকার বাইরে (৳{product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150})</option>
                 </select>
+                {product?.additionalInfo?.freeShipping && (
+                  <p className="text-green-600 text-xs mt-1 font-bold italic">এই পণ্যটির জন্য শিপিং ফ্রি</p>
+                )}
               </div>
 
               <div className="bg-green-50 p-3 md:p-4 rounded-xl">
@@ -364,10 +370,16 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                   <span className="text-gray-600">সাবটোটাল:</span>
                   <span className="font-medium">৳{price * quantity}</span>
                 </div>
-                <div className="flex justify-between items-center text-sm md:text-base">
-                  <span className="text-gray-600">ডেলিভারি চার্জ:</span>
-                  <span className="font-medium">৳{deliveryCharge}</span>
+                <div className="flex justify-between items-center text-sm md:text-base text-gray-600">
+                  <span>ডেলিভারি চার্জ:</span>
+                  <span className={`font-medium ${product?.additionalInfo?.freeShipping ? 'text-green-600 line-through' : ''}`}>৳{deliveryChargeType === "insideDhaka" ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80) : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150)}</span>
                 </div>
+                {product?.additionalInfo?.freeShipping && (
+                  <div className="flex justify-between items-center text-sm md:text-base text-green-600 font-bold italic">
+                    <span>শিপিং:</span>
+                    <span>ফ্রি</span>
+                  </div>
+                )}
                 {(discount ?? 0) > 0 && (
                   <div className="flex justify-between items-center text-sm md:text-base text-green-600">
                     <span className="text-gray-600">কুপন ডিসকাউন্ট:</span>

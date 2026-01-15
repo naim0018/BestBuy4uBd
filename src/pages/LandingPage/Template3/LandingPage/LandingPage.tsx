@@ -79,7 +79,12 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const calculateTotal = (courierCharge: string | null) => {
     const base = currentPrice * quantity;
-    const shipping = courierCharge === "insideDhaka" ? 80 : 150;
+    if (product.additionalInfo?.freeShipping) {
+      return Math.max(0, base - discount);
+    }
+    const chargeInside = product.basicInfo.deliveryChargeInsideDhaka ?? 80;
+    const chargeOutside = product.basicInfo.deliveryChargeOutsideDhaka ?? 150;
+    const shipping = courierCharge === "insideDhaka" ? chargeInside : chargeOutside;
     return Math.max(0, base + shipping - discount);
   };
 
@@ -93,6 +98,7 @@ const LandingPage = ({ product }: { product: Product }) => {
             image: currentImage?.url,
             quantity,
             price: currentPrice,
+            itemKey: `${product._id}-${Date.now()}`,
             selectedVariants: Object.fromEntries(
                 Array.from(selectedVariants.entries()).map(([g, v]) => [g, { value: v.value, price: v.price || 0 }])
             ),
@@ -117,7 +123,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       setSuccessOrderDetails({
         orderId: (response as any).data._id,
         productPrice: currentPrice * quantity,
-        deliveryCharge: formData.courierCharge === "insideDhaka" ? 80 : 150,
+        deliveryCharge: product.additionalInfo?.freeShipping ? 0 : (formData.courierCharge === "insideDhaka" ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80) : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150)),
         totalAmount: total,
         appliedCoupon: appliedCoupon,
       });

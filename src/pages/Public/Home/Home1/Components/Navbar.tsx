@@ -1,20 +1,7 @@
 import { useState } from "react";
-import {
-  Search,
-  Heart,
-  ShoppingCart,
-  User,
-  ChevronDown,
-  Menu,
-  X,
-  Phone,
-  Globe,
-  GitCompare,
-  Shield,
-  Truck,
-  RefreshCw,
-} from "lucide-react";
+import { Phone, Globe, GitCompare, Shield, Truck, RefreshCw, ChevronDown, Menu, X, Search, Heart, ShoppingCart, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -45,12 +32,12 @@ const Navbar = () => {
               >
                 Sell on BestBuy
               </a>
-              <a
-                href="#"
+              <Link
+                to="/order-track"
                 className="hover:text-primary transition-colors hidden md:inline font-medium uppercase tracking-widest text-[10px]"
               >
                 Order Track
-              </a>
+              </Link>
 
               {/* Currency Dropdown */}
               <button className="flex items-center gap-1 hover:text-primary transition-colors font-medium uppercase tracking-widest text-[10px]">
