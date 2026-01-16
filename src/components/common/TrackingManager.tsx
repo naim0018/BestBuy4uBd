@@ -19,7 +19,9 @@ const TrackingManager = () => {
 
     // 0. Google Tag Manager (GTM)
     // Check for GTM ID explicitly or if GA ID is actually a GTM ID
-    const gtmId = settings.googleTagManagerId || (settings.googleAnalyticsId?.startsWith('GTM-') ? settings.googleAnalyticsId : null);
+    const gtmId = settings.googleTagManagerId || 
+                  (settings.googleAnalyticsId?.startsWith('GTM-') ? settings.googleAnalyticsId : null) ||
+                  (settings.googleAnalyticsId?.startsWith('GT-') ? settings.googleAnalyticsId : null);
 
     if (gtmId) {
         if (!document.querySelector(`script[src*="googletagmanager.com/gtm.js?id=${gtmId}"]`)) {
@@ -44,28 +46,9 @@ const TrackingManager = () => {
             iframe.style.visibility = "hidden";
             noscript.appendChild(iframe);
             document.body.prepend(noscript);
+            
+            console.log("GTM Injected with ID:", gtmId);
         }
-    }
-
-    // 1. Google Analytics 4
-    if (settings.googleAnalyticsId && !settings.googleAnalyticsId.startsWith('GTM-')) {
-       const gaId = settings.googleAnalyticsId;
-       // Check if script already exists to avoid duplicates
-       if (!document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`)) {
-           const script = document.createElement('script');
-           script.async = true;
-           script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-           document.head.appendChild(script);
-
-           const inlineScript = document.createElement('script');
-           inlineScript.innerHTML = `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${gaId}');
-           `;
-           document.head.appendChild(inlineScript);
-       }
     }
 
     // 2. Facebook Pixel
