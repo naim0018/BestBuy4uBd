@@ -9,6 +9,13 @@ const TrackingManager = () => {
   useEffect(() => {
     if (!trackingData?.data) return;
     const settings = trackingData.data;
+    // const settings = {
+    //     googleTagManagerId: "GTM-TEST1234",
+    //     googleAnalyticsId: "",
+    //     facebookPixelId: "",
+    //     tiktokPixelId: "",
+    //     clarityId: ""
+    // };
 
     // 0. Google Tag Manager (GTM)
     // Check for GTM ID explicitly or if GA ID is actually a GTM ID

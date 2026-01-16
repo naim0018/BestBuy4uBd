@@ -53,7 +53,7 @@ const Navbar = () => {
                 <span className="hidden sm:inline font-medium">
                   Hotline 24/7
                 </span>
-                <span className="font-semibold">(025) 3886 2516</span>
+                <span className="font-semibold">01610403011</span>
               </div>
             </div>
 
