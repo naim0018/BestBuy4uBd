@@ -42,7 +42,7 @@ const OrderStepper: React.FC<OrderStepperProps> = ({ status }) => {
             const Icon = step.icon;
             const isCompleted = index < currentIndex;
             const isCurrent = index === currentIndex;
-            const isPending = index > currentIndex;
+            // const isPending = index > currentIndex;
 
             return (
               <div key={step.id} className="flex flex-col items-center">
