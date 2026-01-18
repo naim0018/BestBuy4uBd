@@ -3,11 +3,11 @@ import { useGetTrackingSettingsQuery } from '@/store/Api/TrackingApi';
 import { useLocation } from 'react-router-dom';
 
 const TrackingManager = () => {
-  const { data: trackingData } = useGetTrackingSettingsQuery({});
+  const { data: trackingData, isLoading } = useGetTrackingSettingsQuery({});
   const location = useLocation();
-
+    console.log(trackingData)
   useEffect(() => {
-    if (!trackingData?.data) return;
+    if (isLoading || !trackingData?.data) return;
     const settings = trackingData.data;
     // const settings = {
     //     googleTagManagerId: "GTM-TEST1234",
@@ -18,8 +18,7 @@ const TrackingManager = () => {
     // };
 
     // 0. Google Tag Manager (GTM)
-    // Check for GTM ID explicitly or if GA ID is actually a GTM ID
-    const gtmId = settings.googleTagManagerId || 
+    const gtmId = settings.gtmId || 
                   (settings.googleAnalyticsId?.startsWith('GTM-') ? settings.googleAnalyticsId : null) ||
                   (settings.googleAnalyticsId?.startsWith('GT-') ? settings.googleAnalyticsId : null);
 
@@ -48,6 +47,43 @@ const TrackingManager = () => {
             document.body.prepend(noscript);
             
             console.log("GTM Injected with ID:", gtmId);
+        }
+
+        // Track virtual pageview in GTM for SPA route changes
+        if (window.dataLayer) {
+            window.dataLayer.push({
+                event: 'pageview',
+                page_path: location.pathname + location.search,
+                page_title: document.title
+            });
+        }
+    }
+
+    // 1. Google Analytics 4 (GA4) - standalone injection if not GTM
+    if (settings.googleAnalyticsId && settings.googleAnalyticsId.startsWith('G-')) {
+        const gaId = settings.googleAnalyticsId;
+        if (!document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`)) {
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+            document.head.appendChild(script);
+
+            const configScript = document.createElement('script');
+            configScript.innerHTML = `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');
+            `;
+            document.head.appendChild(configScript);
+            console.log("GA4 Injected with ID:", gaId);
+        }
+        
+        // Track pageview on route change
+        if (window.gtag) {
+            window.gtag('config', gaId, {
+                page_path: location.pathname + location.search,
+            });
         }
     }
 
@@ -91,6 +127,9 @@ const TrackingManager = () => {
              `;
              document.head.appendChild(script);
         }
+        if (window.ttq) {
+            window.ttq.page();
+        }
     }
 
     // 4. Microsoft Clarity
@@ -110,6 +149,16 @@ const TrackingManager = () => {
         }
     }
 
+    // 5. Google Search Console Verification
+    if (settings.searchConsoleVerificationCode) {
+        if (!document.querySelector('meta[name="google-site-verification"]')) {
+            const meta = document.createElement('meta');
+            meta.name = "google-site-verification";
+            meta.content = settings.searchConsoleVerificationCode;
+            document.head.appendChild(meta);
+        }
+    }
+
   }, [trackingData, location]);
 
   return null;
@@ -120,6 +169,8 @@ declare global {
     interface Window {
         fbq: any;
         ttq: any;
+        dataLayer: any[];
+        gtag: (...args: any[]) => void;
     }
 }
 
