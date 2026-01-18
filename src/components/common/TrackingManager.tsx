@@ -9,6 +9,7 @@ const TrackingManager = () => {
   useEffect(() => {
     if (isLoading || !trackingData?.data) return;
     const settings = trackingData.data;
+    window.dataLayer = window.dataLayer || [];
     // const settings = {
     //     googleTagManagerId: "GTM-TEST1234",
     //     googleAnalyticsId: "",

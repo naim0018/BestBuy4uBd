@@ -8,6 +8,7 @@ import { openCart, openWishlist } from "@/store/Slices/UISlice";
 import { addToWishlist, removeFromWishlist } from "@/store/Slices/wishlistSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { useTracking } from "@/hooks/useTracking";
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +16,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const dispatch = useDispatch();
+  const { trackAddToCart } = useTracking();
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
   const isWishlisted = wishlistItems.some(item => item._id === product._id);
 
@@ -32,6 +34,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
       quantity: 1,
       selectedVariants: []
     }));
+
+    trackAddToCart({
+      id: product._id,
+      name: basicInfo.title,
+      price: price.discounted || price.regular,
+      category: basicInfo.category,
+      quantity: 1
+    });
     
     dispatch(openCart());
   };

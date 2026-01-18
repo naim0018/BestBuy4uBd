@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { useNavigate } from 'react-router-dom';
+import { useTracking } from '@/hooks/useTracking';
 
 interface OrderDetails {
   orderId: string;
@@ -24,6 +25,7 @@ interface OrderSuccessModalProps {
 const OrderSuccessModal = ({ isOpen, onClose, orderDetails }: OrderSuccessModalProps) => {
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
+  const { trackPurchase } = useTracking();
 
   useEffect(() => {
     if (isOpen) {
@@ -33,8 +35,24 @@ const OrderSuccessModal = ({ isOpen, onClose, orderDetails }: OrderSuccessModalP
         origin: { y: 0.6 },
         colors: ['#4CAF50', '#FFC107', '#2196F3']
       });
+
+      // Track Purchase
+      trackPurchase({
+        transaction_id: orderDetails.orderId,
+        value: orderDetails.totalAmount,
+        shipping: orderDetails.deliveryCharge,
+        coupon: orderDetails.appliedCoupon?.code,
+        items: [
+           {
+              item_id: "order_" + orderDetails.orderId,
+              item_name: "Order Total", // Ideally we should pass items list here too
+              price: orderDetails.productPrice,
+              quantity: 1
+           }
+        ]
+      });
     }
-  }, [isOpen]);
+  }, [isOpen, orderDetails, trackPurchase]);
 
   if (!isOpen) {
     return null;
