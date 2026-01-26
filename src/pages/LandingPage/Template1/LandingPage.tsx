@@ -1,11 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import {
-  Button,
-  Chip,
-  Card,
-  CardBody,
-  Divider,
-} from "@heroui/react";
+import { Button, Chip, Card, CardBody, Divider } from "@heroui/react";
 import {
   Star,
   ShoppingCart,
@@ -37,7 +31,7 @@ const LandingPage = ({ product }: { product: Product }) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariants, setSelectedVariants] = useState<Map<string, any>>(
-    new Map()
+    new Map(),
   );
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [currentImage, setCurrentImage] = useState<any>(null);
@@ -130,7 +124,7 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const calculateTotalAmount = (
     courierChargeType: string | null,
-    currentDiscount: number
+    currentDiscount: number,
   ) => {
     const productTotal = currentPrice * quantity;
     if (product.additionalInfo?.freeShipping) {
@@ -138,7 +132,8 @@ const LandingPage = ({ product }: { product: Product }) => {
     }
     const chargeInside = product.basicInfo.deliveryChargeInsideDhaka ?? 80;
     const chargeOutside = product.basicInfo.deliveryChargeOutsideDhaka ?? 150;
-    const deliveryCharge = courierChargeType === "insideDhaka" ? chargeInside : chargeOutside;
+    const deliveryCharge =
+      courierChargeType === "insideDhaka" ? chargeInside : chargeOutside;
     const total = productTotal + deliveryCharge - currentDiscount;
     return total > 0 ? total : 0;
   };
@@ -169,7 +164,7 @@ const LandingPage = ({ product }: { product: Product }) => {
     try {
       const totalAmount = calculateTotalAmount(
         formData.courierCharge,
-        discount
+        discount,
       );
       const orderData = {
         body: {
@@ -185,8 +180,8 @@ const LandingPage = ({ product }: { product: Product }) => {
                   ([group, variant]) => [
                     group,
                     { value: variant.value, price: variant.price || 0 },
-                  ]
-                )
+                  ],
+                ),
               ),
             },
           ],
@@ -211,7 +206,11 @@ const LandingPage = ({ product }: { product: Product }) => {
       setSuccessOrderDetails({
         orderId: (response as any).data._id,
         productPrice: currentPrice * quantity,
-        deliveryCharge: product.additionalInfo?.freeShipping ? 0 : (formData.courierCharge === "insideDhaka" ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80) : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150)),
+        deliveryCharge: product.additionalInfo?.freeShipping
+          ? 0
+          : formData.courierCharge === "insideDhaka"
+            ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80)
+            : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150),
         totalAmount: totalAmount,
         appliedCoupon: appliedCoupon,
       });
@@ -227,7 +226,6 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   return (
     <div className="min-h-screen bg-white pb-20">
-
       {successOrderDetails && (
         <OrderSuccessModal
           isOpen={showSuccessModal}
@@ -268,10 +266,10 @@ const LandingPage = ({ product }: { product: Product }) => {
       </AnimatedContainer> */}
 
       <div className="container mx-auto px-4 mt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:max-h-[80vh]">
           {/* Left Column: Image Gallery */}
           <AnimatedContainer direction="right" className="space-y-4">
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group  max-h-[70vh]">
               <img
                 src={
                   images?.[selectedImage]?.url ||
@@ -367,7 +365,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                 )}
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
                 {basicInfo?.title}
               </h1>
 
