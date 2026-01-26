@@ -17,8 +17,8 @@
 ========================== */
 @theme {
   /* Brand Colors */
-  --color-primary: #0082fa;
-  --color-secondary: #4ade80;
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
   --color-accent: #facc15;
   --color-danger: #f87171;
   --color-warning: #fb923c;

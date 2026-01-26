@@ -7,6 +7,7 @@ import baseApi from "./Api/BaseApi/BaseApi";
 import cartReducer from "./Slices/CartSlice";
 import wishlistReducer from "./Slices/wishlistSlice";
 import uiReducer from "./Slices/UISlice";
+import storeReducer from "./Slices/StoreSlice";
 
 const persistConfig = {
   key: "root",
@@ -21,6 +22,7 @@ export const store = configureStore({
     cart: cartReducer,
     wishlist: wishlistReducer,
     ui: uiReducer,
+    store: storeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
