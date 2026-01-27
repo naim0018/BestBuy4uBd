@@ -4,14 +4,17 @@ import { toast } from "sonner";
 import { clearCart } from "@/store/Slices/CartSlice";
 import { useCreateOrderMutation } from "@/store/Api/OrderApi";
 import { Product } from "@/types/Product/Product";
+import { useGetHost } from "@/utils/useGetHost";
 import AnimatedContainer from "../../Components/AnimatedContainer";
 import CountdownTimer from "../Components/CountdownTimer";
 import CheckoutSection from "../../Template2/LandingPage/CheckoutSection";
 import OrderSuccessModal from "../../Template2/LandingPage/OrderSuccessModal";
 import RelatedProducts from "../../Components/RelatedProducts";
+import WhyBuyFromUs from "../Components/WhyBuyFromUs";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
+  const host = useGetHost();
   const [quantity, setQuantity] = useState(1);
   const [selectedVariants, setSelectedVariants] = useState<Map<string, any>>(
     new Map(),
@@ -195,7 +198,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                 <span className="text-xl text-gray-400 line-through font-bold">
                   ৳{product.price.regular.toLocaleString()}
                 </span>
-                <span className="text-4xl md:text-5xl font-black text-red-600">
+                <span className="text-4xl md:text-5xl font-black text-green-600">
                   ৳
                   {product.price.discounted?.toLocaleString() ||
                     product.price.regular.toLocaleString()}
@@ -218,13 +221,13 @@ const LandingPage = ({ product }: { product: Product }) => {
         <AnimatedContainer direction="left">
           <div className="bg-green-600 text-white p-4 rounded-t-2xl text-center">
             <h2 className="text-xl md:text-3xl font-black uppercase">
-              {product.basicInfo.title} কেন খাবেন?
+              {product.basicInfo.title}
             </h2>
           </div>
           <div className="bg-white p-6 md:p-10 rounded-b-2xl shadow-lg border-x border-b border-green-100">
             {product.basicInfo.description ? (
               <div
-                className="prose prose-base max-w-none text-gray-700 leading-relaxed space-y-3"
+                className="prose prose-base max-w-none text-gray-700 leading-relaxed space-y-3 whitespace-pre-line [&>p]:mb-4 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-4 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:mb-4 [&>li]:mb-2"
                 dangerouslySetInnerHTML={{
                   __html: product.basicInfo.description,
                 }}
@@ -243,9 +246,9 @@ const LandingPage = ({ product }: { product: Product }) => {
               </div>
             )}
 
-            <div className="text-center mt-10 bg-gray-100 py-4 rounded-xl border-2 border-dashed border-green-300">
-              <h3 className="text-2xl md:text-3xl font-black text-green-700">
-                ১ কেজি ৯০০ টাকা মাত্র
+            <div className="text-center mt-10 bg-green-100 py-4 rounded-xl border-2 border-dashed border-green-300">
+              <h3 className="text-2xl md:text-4xl font-black text-green-700">
+                {product.price.discounted || product.price.regular}
               </h3>
             </div>
 
@@ -270,24 +273,7 @@ const LandingPage = ({ product }: { product: Product }) => {
             </h2>
           </div>
           <div className="bg-white p-6 md:p-10 rounded-b-2xl shadow-lg border-x border-b border-green-100 space-y-4">
-            {[
-              "আজওয়াই বিচি এই খোরমার বেশ স্বাস্থ্যকর হিসেবে পরিচিত",
-              "আমাদের খেজুর এ কোনো প্রকার ঝামেলা বা উপায় নেই",
-              "সারা বাংলাদেশে ৭২ ঘণ্টায় হোম ডেলিভারি করা হয়",
-              "সারা বাংলাদেশে ক্যাশ অন ডেলিভারি সুবিধা",
-              "পণ্য হাতে পাওয়ার পর মূল্য পরিশোধ করার সুবিধা",
-              "আমাদের কাছে কোনো প্রোডাক্টের বা সেবার মানের সম্পূর্ণ নিশ্চয়তা রয়েছে",
-            ].map((text, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 text-base font-bold text-green-800"
-              >
-                <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-white shrink-0 shadow-sm text-xs">
-                  {i + 1}
-                </div>
-                <p className="text-sm md:text-base">{text}</p>
-              </div>
-            ))}
+            <WhyBuyFromUs features={product.basicInfo.keyFeatures} />
 
             <div className="mt-8 rounded-2xl overflow-hidden border-4 border-green-600 shadow-xl">
               <img
@@ -304,7 +290,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       <div className="bg-green-600 text-white py-3 sticky top-0 z-40 mb-8 shadow-md">
         <div className="container mx-auto px-4 text-center">
           <p className="text-lg md:text-2xl font-black tracking-wide">
-            যে কোন প্রয়োজনে যোগাযোগ করুন 01610403011
+            যে কোন প্রয়োজনে যোগাযোগ করুন {host.phone || "01610403011"}
           </p>
         </div>
       </div>

@@ -7,6 +7,8 @@ export const useGetHost = (): BrandConfig => {
     BRAND_CONFIG[host] || {
       title: "BestBuy4uBd",
       logo: "/logos/bestbuy4ubd.png",
+      phone: "01610403011",
+      email: "support@bestbuy4ubd.com",
     }
   );
 };
