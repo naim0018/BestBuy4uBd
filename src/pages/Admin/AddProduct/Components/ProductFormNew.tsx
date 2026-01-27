@@ -11,6 +11,7 @@ import {
 } from "../ProductFormConfig";
 import {
   ImagesField,
+  VideosField,
   KeyFeaturesField,
   VariantsField,
   SpecificationsField,
@@ -288,6 +289,7 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       stockStatus: "In Stock",
       sold: 0,
       images: [{ url: "", alt: "" }],
+      videos: [],
       variants: [],
       specifications: [],
       reviews: [],
@@ -366,8 +368,13 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       </CollapsibleSection>
 
       {/* Images */}
-      <CollapsibleSection title="🖼️ Product Images" defaultOpen={true}>
-        <ImagesField control={control} register={register} errors={errors} />
+      <CollapsibleSection title="🖼️ Product Images & Videos" defaultOpen={true}>
+        <div className="space-y-8">
+          <ImagesField control={control} register={register} errors={errors} />
+          <div className="border-t border-border pt-8">
+            <VideosField control={control} register={register} errors={errors} />
+          </div>
+        </div>
       </CollapsibleSection>
 
       {/* Price & Stock */}

@@ -18,6 +18,14 @@ export interface ProductImage {
   alt: string;
 }
 
+// Product Videos
+export interface ProductVideo {
+  url: string; // YouTube, Vimeo, or direct video URL
+  title: string; // Video title/description
+  thumbnail?: string; // Optional custom thumbnail
+  platform?: 'youtube' | 'vimeo' | 'direct'; // Video platform
+}
+
 // Product Variants
 export interface ProductVariantItem {
   value: string;
@@ -109,6 +117,7 @@ export interface Product {
 
   // Product Details
   images: ProductImage[];
+  videos?: ProductVideo[]; // Optional product videos
   variants?: ProductVariant[];
   specifications?: ProductSpecification[];
 

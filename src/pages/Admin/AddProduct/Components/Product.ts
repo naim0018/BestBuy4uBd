@@ -13,6 +13,13 @@ const ProductImageSchema = z.object({
   alt: z.string().min(1, "Alt text is required"),
 });
 
+const ProductVideoSchema = z.object({
+  url: z.string().url("Invalid video URL"),
+  title: z.string().min(1, "Video title is required"),
+  thumbnail: z.string().url().optional().or(z.literal("")),
+  platform: z.enum(["youtube", "vimeo", "direct"]).optional(),
+});
+
 const ProductVariantItemSchema = z.object({
   value: z.string().min(1, "Value is required"),
   price: z.number().nonnegative().optional(),
@@ -98,6 +105,7 @@ export const ProductFormSchema = z.object({
   stockQuantity: z.number().int().nonnegative().optional(),
   sold: z.number().int().nonnegative().default(0),
   images: z.array(ProductImageSchema).min(1, "At least one image is required"),
+  videos: z.array(ProductVideoSchema).optional(),
   variants: z.array(ProductVariantSchema).optional(),
   specifications: z.array(ProductSpecGroupSchema).optional(),
   reviews: z.array(ProductReviewSchema).optional(),

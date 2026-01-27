@@ -83,6 +83,7 @@ export default function ProductAdminPage() {
         stockQuantity: draft.stockQuantity ? Number(draft.stockQuantity) : 0,
         sold: draft.sold ? Number(draft.sold) : 0,
         images: draft.images.filter((image) => image.url.trim() !== ""),
+        videos: draft.videos?.filter((video) => video.url.trim() !== "") || [],
         variants:
           draft.variants
             ?.filter((variant) => variant.group.trim() !== "")

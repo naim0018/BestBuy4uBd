@@ -113,6 +113,134 @@ export const ImagesField = memo(({ control, register, errors }: ImagesFieldProps
 ImagesField.displayName = "ImagesField";
 
 // ============================================
+// 🎥 Videos Array Component
+// ============================================
+interface VideosFieldProps {
+  control: Control<ProductFormValues>;
+  register: UseFormRegister<ProductFormValues>;
+  errors: FieldErrors<ProductFormValues>;
+}
+
+export const VideosField = memo(({ control, register, errors }: VideosFieldProps) => {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "videos",
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-800">Product Videos</h3>
+        <button
+          type="button"
+          onClick={() => append({ url: "", title: "", platform: "youtube", thumbnail: "" })}
+          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Add Video
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {fields.map((field, index) => (
+          <div
+            key={field.id}
+            className="p-4 border border-border rounded-xl bg-white shadow-sm"
+          >
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-primary-blue">Video #{index + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Remove video"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Video Title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    {...register(`videos.${index}.title`)}
+                    type="text"
+                    placeholder="Review Video, Unboxing, etc."
+                    className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  />
+                  {errors.videos?.[index]?.title && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.videos[index]?.title?.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Platform
+                  </label>
+                  <select
+                    {...register(`videos.${index}.platform`)}
+                    className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white"
+                  >
+                    <option value="youtube">YouTube</option>
+                    <option value="vimeo">Vimeo</option>
+                    <option value="direct">Direct URL</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Video URL <span className="text-red-500">*</span>
+                </label>
+                <input
+                  {...register(`videos.${index}.url`)}
+                  type="url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+                {errors.videos?.[index]?.url && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.videos[index]?.url?.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Thumbnail URL (Optional)
+                </label>
+                <input
+                  {...register(`videos.${index}.thumbnail`)}
+                  type="url"
+                  placeholder="Custom thumbnail image URL"
+                  className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {fields.length === 0 && (
+        <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-xl">
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+            <Plus className="w-6 h-6 text-gray-400" />
+          </div>
+          <p className="text-gray-500">No videos added yet</p>
+        </div>
+      )}
+    </div>
+  );
+});
+
+VideosField.displayName = "VideosField";
+
+// ============================================
 // 🔑 Key Features Array Component
 // ============================================
 interface KeyFeaturesFieldProps {

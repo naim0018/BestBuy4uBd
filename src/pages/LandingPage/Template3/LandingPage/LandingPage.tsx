@@ -11,6 +11,7 @@ import CheckoutSection from "../../Template2/LandingPage/CheckoutSection";
 import OrderSuccessModal from "../../Template2/LandingPage/OrderSuccessModal";
 import RelatedProducts from "../../Components/RelatedProducts";
 import WhyBuyFromUs from "../Components/WhyBuyFromUs";
+import VideoGallery from "../Components/VideoGallery";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
@@ -186,6 +187,60 @@ const LandingPage = ({ product }: { product: Product }) => {
                 />
               </div>
             </div>
+
+            {/* Image Thumbnails */}
+            {product.images && product.images.length > 1 && (
+              <div className="flex flex-wrap justify-center gap-2 mb-8">
+                {product.images.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImage(img)}
+                    className={`size-16 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                      currentImage?.url === img.url
+                        ? "border-green-600 ring-2 ring-green-300 scale-110"
+                        : "border-gray-200 hover:border-green-400"
+                    }`}
+                  >
+                    <img
+                      src={img.url}
+                      alt={`${product.basicInfo.title} thumb ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+                {/* Scroll to Video Link */}
+                {product.videos && product.videos.length > 0 && (
+                  <button
+                    onClick={() =>
+                      document
+                        .getElementById("product-video")
+                        ?.scrollIntoView({ behavior: "smooth" })
+                    }
+                    className="size-16 rounded-xl overflow-hidden border-2 border-green-200 bg-green-50 flex items-center justify-center hover:bg-green-100 transition-all group"
+                  >
+                    <div className="flex flex-col items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-green-600 group-hover:scale-110 transition-transform"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                        />
+                      </svg>
+                      <span className="text-[10px] font-bold text-green-600">
+                        VIDEO
+                      </span>
+                    </div>
+                  </button>
+                )}
+              </div>
+            )}
           </AnimatedContainer>
 
           <AnimatedContainer direction="up" delay={0.2}>
@@ -285,6 +340,22 @@ const LandingPage = ({ product }: { product: Product }) => {
           </div>
         </AnimatedContainer>
       </div>
+
+      {/* Video Demonstration Section */}
+      {product.videos && product.videos.length > 0 && (
+        <div id="product-video" className="container mx-auto px-4 py-8 max-w-4xl">
+          <AnimatedContainer direction="up">
+            <div className="bg-green-600 text-white p-4 rounded-t-2xl text-center">
+              <h2 className="text-xl md:text-3xl font-black uppercase">
+                Product Video Review
+              </h2>
+            </div>
+            <div className="bg-white p-4 md:p-8 rounded-b-2xl shadow-lg border-x border-b border-green-100">
+              <VideoGallery videos={product.videos} />
+            </div>
+          </AnimatedContainer>
+        </div>
+      )}
 
       {/* Contact Bar */}
       <div className="bg-green-600 text-white py-3 sticky top-0 z-40 mb-8 shadow-md">

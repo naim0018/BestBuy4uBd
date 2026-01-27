@@ -8,6 +8,7 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  Video,
 } from "lucide-react";
 import { memo, useMemo } from "react";
 
@@ -22,6 +23,7 @@ const ProductPreviewNew = memo(({ data }: ProductPreviewProps) => {
     stockStatus,
     stockQuantity,
     images,
+    videos,
     variants,
     specifications,
     tags,
@@ -85,6 +87,42 @@ const ProductPreviewNew = memo(({ data }: ProductPreviewProps) => {
               ) : (
                 <div className="text-center py-8 text-gray-400">
                   No images added
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Videos Preview */}
+          <div className="bg-white rounded-xl shadow-sm border border-border p-6 mt-6">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Video className="w-5 h-5 text-primary-blue" />
+              Product Videos
+            </h2>
+            <div className="space-y-4">
+              {videos && videos.length > 0 ? (
+                videos.map((vid, idx) => (
+                  <div
+                    key={idx}
+                    className="border border-border rounded-lg overflow-hidden bg-gray-50"
+                  >
+                    <div className="p-3">
+                      <p className="text-sm font-bold text-gray-800 truncate mb-1">
+                        {vid.title || "Untitled Video"}
+                      </p>
+                      <p className="text-xs text-primary-blue truncate mb-2">
+                        {vid.url}
+                      </p>
+                      <div className="flex gap-2">
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase">
+                          {vid.platform || "Direct"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  No videos added
                 </div>
               )}
             </div>
