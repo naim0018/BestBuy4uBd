@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { logOut, setUser } from "@/store/Slices/AuthSlice/authSlice";
 import {
   BaseQueryFn,
