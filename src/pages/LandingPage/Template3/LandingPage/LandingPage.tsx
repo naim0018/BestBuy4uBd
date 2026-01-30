@@ -13,11 +13,58 @@ import RelatedProducts from "../../Components/RelatedProducts";
 import WhyBuyFromUs from "../Components/WhyBuyFromUs";
 import VideoGallery from "../Components/VideoGallery";
 
+// Helper function to check if a variant group is a pricing variant
+const isPricingVariant = (groupName: string): boolean => {
+  const name = groupName.toLowerCase();
+  return name.includes("qty") ||
+         name.includes("quantity") ||
+         name.includes("টা") ||
+         name.includes("প্যাকেজ");
+};
+
+// Helper function to find a pricing variant that matches the current quantity
+const findMatchingPricingVariant = (selectedVariants: Record<string, any[]>, quantity: number) => {
+  for (const [groupName, items] of Object.entries(selectedVariants)) {
+    if (isPricingVariant(groupName)) {
+      for (const item of items) {
+        const match = item.value.match(/\d+/);
+        const variantQty = match ? parseInt(match[0]) : 1;
+
+        if (variantQty === quantity && item.price && item.price > 0) {
+          return item;
+        }
+      }
+    }
+  }
+  return null;
+};
+
+// Helper function to calculate price based on non-pricing variants
+const calculateNonPricingVariantsPrice = (selectedVariants: Record<string, any[]>, basePrice: number) => {
+  let nonPricingVariantSum = 0;
+  let nonPricingCount = 0;
+
+  for (const [groupName, items] of Object.entries(selectedVariants)) {
+    if (!isPricingVariant(groupName)) {
+      for (const item of items) {
+        nonPricingCount++;
+        if (item.price && item.price > 0) {
+          nonPricingVariantSum += item.price;
+        } else {
+          nonPricingVariantSum += basePrice;
+        }
+      }
+    }
+  }
+
+  return { nonPricingVariantSum, nonPricingCount };
+};
+
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
   const host = useGetHost();
-  const [selectedVariants, setSelectedVariants] = useState<Map<string, any[]>>(
-    new Map(),
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, any[]>>(
+    {},
   );
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [currentImage, setCurrentImage] = useState<any>(null);
@@ -35,18 +82,11 @@ const LandingPage = ({ product }: { product: Product }) => {
   const [createOrder, { isLoading: isOrderLoading }] = useCreateOrderMutation();
 
   useEffect(() => {
-    if (product?.variants && selectedVariants.size === 0) {
-      const defaults = new Map<string, any[]>();
+    if (product?.variants && Object.keys(selectedVariants).length === 0) {
+      const defaults: Record<string, any[]> = {};
       product.variants.forEach((vg) => {
-        const name = vg.group.toLowerCase();
-        const isPricing =
-          name.includes("qty") ||
-          name.includes("quantity") ||
-          name.includes("টা") ||
-          name.includes("প্যাকেজ");
-
-        if (!isPricing && vg.items.length > 0) {
-          defaults.set(vg.group, [vg.items[0]]);
+        if (!isPricingVariant(vg.group) && vg.items.length > 0) {
+          defaults[vg.group] = [vg.items[0]];
         }
       });
       setSelectedVariants(defaults);
@@ -54,179 +94,52 @@ const LandingPage = ({ product }: { product: Product }) => {
   }, [product, selectedVariants]);
   console.log(selectedVariants, product.price.regular);
   // Sync Quantity with Selection
-  // Sync Quantity with Selection
   useEffect(() => {
-
-      
       // If we have distinct variant selections (e.g. Red, Blue), quantity should match
       // Note: We need to avoid counting "Size" if it's attached to "Color".
-      // But structure is Map<Group, Items[]>. 
+      // But structure is Record<Group, Items[]>.
       // If I select Red (Color) and Large (Size), totalItems is 2. But Qty is 1.
       // Heuristic: Max count of any single group.
       let maxGroupSelection = 1;
-      selectedVariants.forEach((items) => {
+      Object.values(selectedVariants).forEach((items) => {
           if (items.length > maxGroupSelection) maxGroupSelection = items.length;
       });
 
       if (maxGroupSelection > 1) {
           setQuantity(maxGroupSelection);
       }
-
   }, [selectedVariants]);
 
   useEffect(() => {
     if (product) {
       const basePrice = product.price.discounted || product.price.regular;
-      let totalVariantPrice = 0;
-      let totalSelectedCount = 0;
 
-      
-      // Calculate total price based on selected variants
-      selectedVariants.forEach((items, groupName) => {
-        const name = groupName.toLowerCase();
-        const isPricing =
-          name.includes("qty") ||
-          name.includes("quantity") ||
-          name.includes("টা") ||
-          name.includes("প্যাকেজ");
+      // Find any pricing variant that matches the current quantity
+      const matchedPricingVariant = findMatchingPricingVariant(selectedVariants, quantity);
 
-        items.forEach((item) => {
-          totalSelectedCount++;
-          if (item.price && item.price > 0) {
-              if (isPricing) {
-                  // For "Pricing" variants (like Pack of 2), the price is usually total
-                  // We treat it as a unit price effectively for calculations if qty matches?
-                  // Actually, let's treat item.price as the price contribution of this item
-                  totalVariantPrice += item.price;
-              } else {
-                  // e.g. Color with price override
-                  totalVariantPrice += item.price;
-              }
-          } else {
-              // No specific price, add base price
-              totalVariantPrice += basePrice;
-          }
-        });
-      });
+      // Calculate price based on selected variants
+      let finalTotal = basePrice * quantity; // Default to base price * quantity
 
-      // If no variants selected (shouldn't happen if defaults set), use base * qty
-      if (totalSelectedCount === 0) {
-        totalVariantPrice = basePrice * quantity;
+      if (matchedPricingVariant) {
+        // If we found a matching pricing variant, use its price
+        finalTotal = matchedPricingVariant.price;
       } else {
-         // If user manually increased quantity beyond selected variants
-         // e.g. Selected Red (1 item), but Qty is 2. We assume the second item is same configuration?
-         // Or simple multiplier
-         if (quantity > totalSelectedCount) {
-             const avgPrice = totalVariantPrice / totalSelectedCount;
-             totalVariantPrice += avgPrice * (quantity - totalSelectedCount);
-         }
+        // Otherwise, calculate based on non-pricing variants
+        const { nonPricingVariantSum, nonPricingCount } = calculateNonPricingVariantsPrice(selectedVariants, basePrice);
+
+        // If non-pricing variants were selected, use their sum
+        if (nonPricingCount > 0) {
+          finalTotal = nonPricingVariantSum;
+        }
       }
 
-      let finalTotal = 0;
-      let usedComboPrice = false;
+      // Calculate unit price for display
+      const finalUnitPrice = finalTotal / (quantity || 1);
 
-      // Check if there is a specific "Pricing Variant" selected that matches the current quantity
-      // e.g. "Pack of 2" (qty 2) -> Price 650.
-      let matchingComboVariantPrice = 0;
-
-      selectedVariants.forEach((items, groupName) => {
-          const name = groupName.toLowerCase();
-          const isPricing =
-            name.includes("qty") ||
-            name.includes("quantity") ||
-            name.includes("টা") ||
-            name.includes("প্যাকেজ");
-
-          if (isPricing) {
-              items.forEach(item => {
-                  // Only treat as combo override if it looks like a package deal
-                  // Heuristic: If item name contains the number equal to quantity? 
-                  // Or just trust the user selected the right one. 
-                  // User rule: "if user select multiple variant or quantity if that quantity matches the Combo quantity then update the price to combo price"
-                  // Actually, if "2 Ta" is selected, and Qty is 2.
-                  // We should use 2 Ta price.
-                  
-                  // Extract number from variant name
-                   const match = item.value.match(/\d+/);
-                   const variantQty = match ? parseInt(match[0]) : 1;
-
-                   if (variantQty === quantity && item.price && item.price > 0) {
-                       matchingComboVariantPrice = item.price;
-                       usedComboPrice = true;
-                   }
-              })
-          }
-      });
-
-      if (usedComboPrice) {
-          finalTotal = matchingComboVariantPrice;
-      } else {
-          // Fallback: Sum of selected non-pricing variants (e.g. Colors)
-          // If I select Red (350), Black (350). Sum = 700.
-          // If Qty is 2. Total should be 700.
-          // If I select Red (350). Qty 2. Total 700.
-          
-          // Re-calculate sum of non-pricing variants
-           let nonPricingVariantSum = 0;
-           let nonPricingCount = 0;
-           
-           selectedVariants.forEach((items, groupName) => {
-              const name = groupName.toLowerCase();
-              const isPricing =
-                name.includes("qty") ||
-                name.includes("quantity") ||
-                name.includes("টা") ||
-                name.includes("প্যাকেজ");
-
-              if (!isPricing) {
-                  items.forEach(item => {
-                     nonPricingCount++;
-                     if (item.price && item.price > 0) {
-                         // If variant price is set, use it. Is it Full Price or Surcharge?
-                         // Screenshot shows "+350". Base is 410.
-                         // But if user says "Product Price 350 and showing 700" earlier.
-                         // This implies 350 IS the price.
-                         // Let's assume item.price is the Unit Price for that variant.
-                         nonPricingVariantSum += item.price;
-                     } else {
-                         nonPricingVariantSum += basePrice;
-                     }
-                  });
-              }
-           });
-           
-           if (nonPricingCount === 0) {
-               finalTotal = basePrice * quantity;
-           } else {
-               // If we selected Red and Black (2 items), sum is 700.
-               // If Qty is 2 -> Total 700.
-               if (quantity === nonPricingCount) {
-                   finalTotal = nonPricingVariantSum;
-               } else if (quantity > nonPricingCount) {
-                   // Extrapolate average
-                   const avg = nonPricingVariantSum / nonPricingCount;
-                   finalTotal = nonPricingVariantSum + (avg * (quantity - nonPricingCount));
-               } else {
-                   // quantity < selected count? (Shouldn't happen if auto-sync works)
-                   // Just take average * qty
-                   const avg = nonPricingVariantSum / nonPricingCount;
-                   finalTotal = avg * quantity;
-               }
-           }
-      }
-
-      // Calculate Unit Price for display context (though we track Total usually)
-      // CheckoutSection expects 'price' as Unit Price usually? 
-      // User complaint: "2050". (410 * 5).
-      // If I return Total here, CheckoutSection might multiply it again?
-      // CheckoutSection logic: const base = currentPrice * quantity;
-      // So 'currentPrice' MUST be Unit Price.
-      
-      let finalUnitPrice = finalTotal / (quantity || 1);
-      
       setCurrentPrice(finalUnitPrice);
       setCurrentImage(product.images[0]);
     }
+
     return () => {
       if (product) dispatch(clearCart());
     };
@@ -235,8 +148,9 @@ const LandingPage = ({ product }: { product: Product }) => {
   if (!product) return null;
 
   const handleVariantChange = (groupName: string, variant: any) => {
-    const newVariants = new Map(selectedVariants);
-    const currentItems = newVariants.get(groupName) || [];
+    // Create a new object to ensure React triggers a re-render
+    const newVariants = { ...selectedVariants };
+    const currentItems = newVariants[groupName] || [];
 
     // Toggle selection
     const index = currentItems.findIndex((i) => i.value === variant.value);
@@ -248,15 +162,14 @@ const LandingPage = ({ product }: { product: Product }) => {
     }
 
     if (updatedItems.length === 0) {
-      newVariants.delete(groupName);
+      delete newVariants[groupName];
     } else {
-      newVariants.set(groupName, updatedItems);
+      newVariants[groupName] = updatedItems;
     }
 
     if (variant.image?.url) {
       setCurrentImage(variant.image);
     }
-
 
     setSelectedVariants(newVariants);
   };
@@ -281,11 +194,11 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const calculateTotal = (courierCharge: string | null) => {
     const base = currentPrice * quantity;
-    if (product.additionalInfo?.freeShipping) {
+    if (product?.additionalInfo?.freeShipping) {
       return Math.max(0, base - discount);
     }
-    const chargeInside = product.basicInfo.deliveryChargeInsideDhaka ?? 80;
-    const chargeOutside = product.basicInfo.deliveryChargeOutsideDhaka ?? 150;
+    const chargeInside = product?.basicInfo?.deliveryChargeInsideDhaka ?? 80;
+    const chargeOutside = product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150;
     const shipping =
       courierCharge === "insideDhaka" ? chargeInside : chargeOutside;
     return Math.max(0, base + shipping - discount);
@@ -304,7 +217,7 @@ const LandingPage = ({ product }: { product: Product }) => {
               price: currentPrice,
               itemKey: `${product._id}-${Date.now()}`,
               selectedVariants: Object.fromEntries(
-                Array.from(selectedVariants.entries()).map(([group, items]) => [
+                Object.entries(selectedVariants).map(([group, items]) => [
                   group,
                   items.map((i) => ({ value: i.value, price: i.price || 0 })),
                 ]),
@@ -331,11 +244,11 @@ const LandingPage = ({ product }: { product: Product }) => {
       setSuccessOrderDetails({
         orderId: (response as any).data._id,
         productPrice: currentPrice * quantity,
-        deliveryCharge: product.additionalInfo?.freeShipping
+        deliveryCharge: product?.additionalInfo?.freeShipping
           ? 0
           : formData.courierCharge === "insideDhaka"
-            ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80)
-            : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150),
+            ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
+            : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150),
         totalAmount: total,
         appliedCoupon: appliedCoupon,
       });
@@ -364,7 +277,7 @@ const LandingPage = ({ product }: { product: Product }) => {
         <div className="container mx-auto px-4 py-8 max-w-4xl text-center">
           <AnimatedContainer direction="down">
             <h1 className="text-2xl md:text-4xl font-black text-green-700 mb-6 leading-tight">
-              {product.basicInfo.title}
+              {product?.basicInfo?.title || "Product Title"}
             </h1>
           </AnimatedContainer>
 
@@ -376,14 +289,14 @@ const LandingPage = ({ product }: { product: Product }) => {
                     currentImage?.url ||
                     "https://placehold.co/800x800?text=No+Image"
                   }
-                  alt={product.basicInfo.title}
+                  alt={product?.basicInfo?.title || "Product image"}
                   className="w-full h-full object-cover rounded-[1rem]"
                 />
               </div>
             </div>
 
             {/* Image Thumbnails */}
-            {product.images && product.images.length > 1 && (
+            {product?.images && product.images.length > 1 && (
               <div className="flex flex-wrap justify-center gap-2 mb-8">
                 {product.images.map((img, index) => (
                   <button
@@ -397,13 +310,13 @@ const LandingPage = ({ product }: { product: Product }) => {
                   >
                     <img
                       src={img.url}
-                      alt={`${product.basicInfo.title} thumb ${index + 1}`}
+                      alt={`${product?.basicInfo?.title || "Product"} thumb ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </button>
                 ))}
                 {/* Scroll to Video Link */}
-                {product.videos && product.videos.length > 0 && (
+                {product?.videos && product.videos.length > 0 && (
                   <button
                     onClick={() =>
                       document
@@ -445,7 +358,7 @@ const LandingPage = ({ product }: { product: Product }) => {
             <div className="flex flex-col items-center gap-4 mt-4">
                 <div className="flex flex-col items-center">
                     <span className="text-xl text-gray-400 line-through font-bold mb-1">
-                      Start: ৳{product.price.regular.toLocaleString()}
+                      Start: ৳{(product?.price?.regular || 0).toLocaleString()}
                     </span>
                     <span className="text-4xl md:text-5xl font-black text-green-600">
                       Total: ৳{(currentPrice * quantity).toLocaleString()}
@@ -474,11 +387,11 @@ const LandingPage = ({ product }: { product: Product }) => {
         <AnimatedContainer direction="left">
           <div className="bg-green-600 text-white p-4 rounded-t-2xl text-center">
             <h2 className="text-xl md:text-3xl font-black uppercase">
-              {product.basicInfo.title}
+              {product?.basicInfo?.title || "Product Title"}
             </h2>
           </div>
           <div className="bg-white p-6 md:p-10 rounded-b-2xl shadow-lg border-x border-b border-green-100">
-            {product.basicInfo.description ? (
+            {product?.basicInfo?.description ? (
               <div
                 className="prose prose-base max-w-none text-gray-700 leading-relaxed space-y-3 whitespace-pre-line [&>p]:mb-4 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-4 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:mb-4 [&>li]:mb-2"
                 dangerouslySetInnerHTML={{
@@ -487,7 +400,7 @@ const LandingPage = ({ product }: { product: Product }) => {
               />
             ) : (
               <div className="grid gap-3">
-                {product.basicInfo.keyFeatures?.map((feature, i) => (
+                {(product?.basicInfo?.keyFeatures || []).map((feature, i) => (
                   <div
                     key={i}
                     className="flex items-start gap-3 p-3 bg-green-50 rounded-xl border border-green-100 italic font-medium"
@@ -526,11 +439,11 @@ const LandingPage = ({ product }: { product: Product }) => {
             </h2>
           </div>
           <div className="bg-white p-6 md:p-10 rounded-b-2xl shadow-lg border-x border-b border-green-100 space-y-4">
-            <WhyBuyFromUs features={product.basicInfo.keyFeatures} />
+            <WhyBuyFromUs features={product?.basicInfo?.keyFeatures || []} />
 
             <div className="mt-8 rounded-2xl overflow-hidden border-4 border-green-600 shadow-xl">
               <img
-                src={product.images[0]?.url}
+                src={product?.images?.[0]?.url}
                 alt="Quality assurance"
                 className="w-full h-auto"
               />
@@ -540,7 +453,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       </div>
 
       {/* Video Demonstration Section */}
-      {product.videos && product.videos.length > 0 && (
+      {product?.videos && product.videos.length > 0 && (
         <div
           id="product-video"
           className="container mx-auto px-4 py-8 max-w-4xl"
@@ -562,7 +475,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       <div className="bg-green-600 text-white py-3 sticky top-0 z-40 mb-8 shadow-md">
         <div className="container mx-auto px-4 text-center">
           <p className="text-lg md:text-2xl font-black tracking-wide">
-            যে কোন প্রয়োজনে যোগাযোগ করুন {host.phone || "01610403011"}
+            যে কোন প্রয়োজনে যোগাযোগ করুন {host?.phone || "01610403011"}
           </p>
         </div>
       </div>
@@ -604,8 +517,8 @@ const LandingPage = ({ product }: { product: Product }) => {
       {/* Related Products */}
       <div className="container mx-auto px-4 py-20">
         <RelatedProducts
-          category={product.basicInfo.category}
-          currentProductId={product._id}
+          category={product?.basicInfo?.category}
+          currentProductId={product?._id}
         />
       </div>
 
