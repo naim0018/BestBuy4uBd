@@ -272,14 +272,13 @@ const OrderDetails = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {order.products?.map((item: any, idx: number) => (
+                  {order.items?.map((item: any, idx: number) => (
                     <tr key={idx} className="hover:bg-gray-50/50">
                       <td className="px-4 py-4 flex items-center gap-3">
-                        {/* Assuming item.product is loaded or we have name/image */}
                         <div className="w-12 h-12 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
                           {item.product?.images?.[0] && (
                             <img
-                              src={item.product.images[0]}
+                              src={typeof item.product.images[0] === 'string' ? item.product.images[0] : item.product.images[0].url}
                               alt={item.product.title}
                               className="w-full h-full object-cover"
                             />
@@ -287,10 +286,19 @@ const OrderDetails = () => {
                         </div>
                         <div>
                           <p className="font-semibold text-gray-800">
-                            {item.product?.title || "Product Deleted"}
+                            {item.product?.basicInfo?.title || item.product?.title || "Product Deleted"}
                           </p>
-                          <p className="text-xs text-gray-500">
-                            {item.product?.brand}
+                          {item.selectedVariants && Object.entries(item.selectedVariants).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {Object.entries(item.selectedVariants).map(([group, variant]: [string, any]) => (
+                                <Chip key={group} size="sm" variant="flat" color="secondary" className="text-[10px] h-5">
+                                  {group}: {variant.value}
+                                </Chip>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            {item.product?.basicInfo?.brand}
                           </p>
                         </div>
                       </td>

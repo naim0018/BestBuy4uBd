@@ -16,8 +16,6 @@ import {
 import { useState, useEffect } from "react";
 import { Product } from "@/types/Product/Product";
 import { useCreateOrderMutation } from "@/store/Api/OrderApi";
-import { useDispatch } from "react-redux";
-import { clearCart } from "@/store/Slices/CartSlice";
 import { toast } from "sonner";
 import OrderSuccessModal from "../Template2/LandingPage/OrderSuccessModal";
 import CheckoutSection from "../Template2/LandingPage/CheckoutSection";
@@ -27,14 +25,19 @@ import DynamicBanner from "../Components/DynamicBanner";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [selectedVariants, setSelectedVariants] = useState<Map<string, any>>(
-    new Map(),
+  const [selectedVariants, setSelectedVariants] = useState<Map<string, any[]>>(
+    new Map()
   );
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [currentImage, setCurrentImage] = useState<any>(null);
+  const [isManualQty, setIsManualQty] = useState<boolean>(false);
+
+  const parseQty = (value: string) => {
+    const match = value.match(/\d+/);
+    return match ? parseInt(match[0]) : 1;
+  };
 
   const [createOrder, { isLoading: isOrderLoading }] = useCreateOrderMutation();
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
@@ -50,15 +53,90 @@ const LandingPage = ({ product }: { product: Product }) => {
   const [discount, setDiscount] = useState<number>(0);
 
   useEffect(() => {
+    if (product?.variants && selectedVariants.size === 0) {
+      const defaults = new Map<string, any[]>();
+      product.variants.forEach(vg => {
+        if (vg.items.length > 0) {
+          defaults.set(vg.group, [vg.items[0]]);
+        }
+      });
+      setSelectedVariants(defaults);
+    }
+  }, [product, selectedVariants]);
+
+  // Sync Quantity with Selection
+  useEffect(() => {
+    if (!isManualQty) {
+      let totalQty = 1;
+      let hasPricingSelection = false;
+      selectedVariants.forEach((groupItems, groupName) => {
+        const name = groupName.toLowerCase();
+        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+        if (isPricing) {
+          groupItems.forEach(item => {
+            totalQty *= parseQty(item.value);
+            hasPricingSelection = true;
+          });
+        }
+      });
+      if (hasPricingSelection) {
+        setQuantity(Math.max(1, totalQty));
+      }
+    }
+  }, [selectedVariants, isManualQty]);
+
+  useEffect(() => {
     if (product) {
-      const initialPrice = product.price.discounted || product.price.regular;
-      setCurrentPrice(initialPrice);
+      const basePrice = product.price.discounted || product.price.regular;
+      let pricingVariantPrice = 0;
+      let totalSurcharges = 0;
+      let hasPricingVariant = false;
+
+      selectedVariants.forEach((items, groupName) => {
+        const name = groupName.toLowerCase();
+        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+        
+        items.forEach(item => {
+          if (item.price && item.price > 0) {
+            if (isPricing) {
+              pricingVariantPrice = item.price;
+              hasPricingVariant = true;
+            } else {
+              totalSurcharges += item.price;
+            }
+          }
+        });
+      });
+
+      let unitPrice = 0;
+      if (hasPricingVariant) {
+        unitPrice = (pricingVariantPrice / quantity) + totalSurcharges;
+      } else {
+        unitPrice = basePrice + totalSurcharges;
+      }
+
+      setCurrentPrice(unitPrice);
       setCurrentImage(product.images[0]);
     }
-    return () => {
-      if (product) dispatch(clearCart());
-    };
-  }, [product, dispatch]);
+  }, [product, quantity, selectedVariants]);
+
+
+  const handleManualQuantityChange = (newQty: number) => {
+    setIsManualQty(true);
+    setQuantity(newQty);
+    
+    // Deselect pricing variants
+    const newVariants = new Map(selectedVariants);
+    const keysToDelete: string[] = [];
+    newVariants.forEach((_, key) => {
+        const name = key.toLowerCase();
+        if (name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ")) {
+            keysToDelete.push(key);
+        }
+    });
+    keysToDelete.forEach(k => newVariants.delete(k));
+    setSelectedVariants(newVariants);
+  };
 
   if (!product) {
     return (
@@ -126,7 +204,7 @@ const LandingPage = ({ product }: { product: Product }) => {
     courierChargeType: string | null,
     currentDiscount: number,
   ) => {
-    const productTotal = currentPrice * quantity;
+    const productTotal = currentPrice;
     if (product.additionalInfo?.freeShipping) {
       return Math.max(0, productTotal - currentDiscount);
     }
@@ -134,29 +212,35 @@ const LandingPage = ({ product }: { product: Product }) => {
     const chargeOutside = product.basicInfo.deliveryChargeOutsideDhaka ?? 150;
     const deliveryCharge =
       courierChargeType === "insideDhaka" ? chargeInside : chargeOutside;
-    const total = productTotal + deliveryCharge - currentDiscount;
+    const total = (currentPrice * quantity) + deliveryCharge - currentDiscount;
     return total > 0 ? total : 0;
   };
 
   const handleVariantChange = (groupName: string, variant: any) => {
     const newVariants = new Map(selectedVariants);
-    if (newVariants.get(groupName)?.value === variant.value) {
-      newVariants.delete(groupName);
+    const currentItems = newVariants.get(groupName) || [];
+    
+    // Toggle selection
+    const index = currentItems.findIndex(i => i.value === variant.value);
+    let updatedItems;
+    if (index > -1) {
+      updatedItems = currentItems.filter(i => i.value !== variant.value);
     } else {
-      newVariants.set(groupName, variant);
+      updatedItems = [...currentItems, variant];
     }
-
-    let price = product.price.discounted || product.price.regular;
-    newVariants.forEach((v) => {
-      if (v.price) price = v.price;
-    });
-    setCurrentPrice(price);
+    
+    if (updatedItems.length === 0) {
+        newVariants.delete(groupName);
+    } else {
+        newVariants.set(groupName, updatedItems);
+    }
 
     if (variant.image?.url) {
       const imgIndex = images.findIndex((img) => img.url === variant.image.url);
       if (imgIndex !== -1) setSelectedImage(imgIndex);
     }
 
+    setIsManualQty(false);
     setSelectedVariants(newVariants);
   };
 
@@ -176,12 +260,10 @@ const LandingPage = ({ product }: { product: Product }) => {
               itemKey: `${product._id}-${Date.now()}`,
               price: currentPrice,
               selectedVariants: Object.fromEntries(
-                Array.from(selectedVariants.entries()).map(
-                  ([group, variant]) => [
-                    group,
-                    { value: variant.value, price: variant.price || 0 },
-                  ],
-                ),
+                Array.from(selectedVariants.entries()).map(([group, items]) => [
+                  group,
+                  items.map(i => ({ value: i.value, price: i.price || 0 }))
+                ])
               ),
             },
           ],
@@ -385,16 +467,48 @@ const LandingPage = ({ product }: { product: Product }) => {
 
             <Divider className="my-6" />
 
-            <div className="space-y-6">
-              <div className="flex items-end gap-3">
-                <span className="text-4xl font-bold text-primary-green">
-                  ৳{(currentPrice || discountedPrice).toLocaleString()}
-                </span>
-                {regularPrice > currentPrice && (
-                  <div className="flex flex-col mb-1">
-                    <span className="text-lg text-gray-400 line-through decoration-1">
-                      ৳{regularPrice.toLocaleString()}
-                    </span>
+              <div className="flex flex-col gap-6">
+                <div className="flex items-end gap-3">
+                  <span className="text-4xl font-bold text-primary-green">
+                    ৳{currentPrice.toLocaleString()}
+                  </span>
+                  {regularPrice > currentPrice && (
+                    <div className="flex flex-col mb-1">
+                      <span className="text-lg text-gray-400 line-through decoration-1">
+                        ৳{regularPrice.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Variant Selection in Hero */}
+                {product.variants && product.variants.length > 0 && (
+                  <div className="space-y-4">
+                    {product.variants.map((vg: any) => (
+                      <div key={vg.group} className="space-y-2">
+                        <p className="text-sm font-semibold text-gray-700">{vg.group}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {vg.items.map((item: any) => {
+                            const selections = selectedVariants.get(vg.group) || [];
+                            const isActive = selections.some(s => s.value === item.value);
+                            return (
+                              <button
+                                key={item.value}
+                                onClick={() => handleVariantChange(vg.group, item)}
+                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                                  isActive
+                                    ? "bg-primary-green text-white shadow-md scale-105"
+                                    : "bg-gray-50 text-gray-700 border border-gray-200 hover:border-primary-green hover:bg-green-50"
+                                }`}
+                              >
+                                {item.value}
+                                {item.price > 0 && <span className="ml-2 opacity-70">+৳{item.price}</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -402,7 +516,7 @@ const LandingPage = ({ product }: { product: Product }) => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex items-center border border-gray-300 rounded-xl h-12 w-fit">
                   <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    onClick={() => handleManualQuantityChange(Math.max(1, quantity - 1))}
                     className="px-4 hover:text-primary-green transition"
                     disabled={quantity <= 1}
                   >
@@ -413,7 +527,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                   </span>
                   <button
                     onClick={() =>
-                      setQuantity(Math.min(stockQuantity || 99, quantity + 1))
+                      handleManualQuantityChange(Math.min(stockQuantity || 99, quantity + 1))
                     }
                     className="px-4 hover:text-primary-green transition"
                     disabled={quantity >= (stockQuantity || 99)}
@@ -443,7 +557,6 @@ const LandingPage = ({ product }: { product: Product }) => {
                   </Button>
                 </div>
               </div>
-            </div>
 
             {/* Features Card */}
             <div className="grid grid-cols-2 bg-gray-50 rounded-xl p-4 gap-4 border border-gray-100">

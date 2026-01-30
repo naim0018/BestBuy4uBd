@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 interface OrderDetails {
   title: string;
-  variants: Map<string, any>;
+  variants: Map<string, any[]>;
   price: number;
   quantity: number;
   image?: { url: string; alt?: string };
@@ -33,6 +33,8 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
   setCouponCode,
   applyCoupon,
 }) => {
+
+
   const { title, variants, price, quantity, image, product, discount } =
     orderDetails;
   const [formValid, setFormValid] = useState(false);
@@ -394,21 +396,30 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                   ভেরিয়েন্ট নির্বাচন করুন
                 </h3>
                 <div className="space-y-4 md:space-y-6">
-                  {product.variants.map((variantGroup: any) => (
+                  {product.variants.filter((vg: any) => {
+                    const name = vg.group.toLowerCase();
+                    const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+                    return !isPricing;
+                  }).map((variantGroup: any) => {
+
+                    return (
                     <div key={variantGroup.group}>
                       <p className="text-gray-700 font-medium mb-2">
                         {variantGroup.group}
                       </p>
-                      <div className="flex flex-wrap gap-2 md:gap-3">
-                        {variantGroup.items.map((variant: any) => (
+                      <div className={`flex flex-wrap gap-2 md:gap-3`}>
+                        {variantGroup.items.map((variant: any) => {
+                          const groupSelections = variants.get(variantGroup.group) || [];
+                          const isActive = groupSelections.some((item: any) => item.value === variant.value);
+
+                          return (
                           <button
                             key={variant.value}
-                            onClick={() =>
-                              onVariantChange(variantGroup.group, variant)
-                            }
+                            onClick={() => {
+                              onVariantChange(variantGroup.group, variant);
+                            }}
                             className={`px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition-all duration-200 ${
-                              variants.get(variantGroup.group)?.value ===
-                              variant.value
+                              isActive
                                 ? "bg-green-500 text-white shadow-lg transform scale-105"
                                 : "bg-gray-50 hover:bg-gray-100 text-gray-700"
                             }`}
@@ -420,10 +431,12 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                               </span>
                             )}
                           </button>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

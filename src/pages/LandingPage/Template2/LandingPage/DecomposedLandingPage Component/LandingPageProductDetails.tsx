@@ -11,14 +11,12 @@ import AnimatedContainer from "../../../Components/AnimatedContainer";
 
 interface LandingPageProductDetailsProps {
   product: Product;
-  currentPrice: number;
-  currentImage: ProductImage | null;
-  selectedVariants: Map<string, any>;
-  quantity: number;
-  hasDiscount: boolean;
-  savings: number;
-  savingsPercent: number;
-  scrollToCheckout: () => void;
+  currentPrice?: number;
+  currentImage?: ProductImage | null;
+  selectedVariants?: Record<string, any>;
+  quantity?: number;
+  onVariantChange?: (groupName: string, variant: any) => void;
+  onQuantityChange?: (qty: number) => void;
 }
 
 const LandingPageProductDetails: React.FC<LandingPageProductDetailsProps> = ({

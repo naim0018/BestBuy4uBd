@@ -40,7 +40,27 @@ const Checkout = () => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const deliveryCharge = deliveryChargeType === "insideDhaka" ? 80 : 150;
+
+  // Dynamic delivery charge calculation
+  let maxDeliveryChargeInside = 0;
+  let maxDeliveryChargeOutside = 0;
+  let hasFreeShipping = false;
+
+  cartItems.forEach((item) => {
+    // These fields are now available in CartItem thanks to the interface update
+    const chargeInside = item.deliveryChargeInsideDhaka ?? 80;
+    const chargeOutside = item.deliveryChargeOutsideDhaka ?? 150;
+    const itemFreeShipping = item.freeShipping ?? false;
+
+    if (itemFreeShipping) hasFreeShipping = true;
+    maxDeliveryChargeInside = Math.max(maxDeliveryChargeInside, chargeInside);
+    maxDeliveryChargeOutside = Math.max(maxDeliveryChargeOutside, chargeOutside);
+  });
+
+  const deliveryCharge = hasFreeShipping 
+    ? 0 
+    : (deliveryChargeType === "insideDhaka" ? maxDeliveryChargeInside : maxDeliveryChargeOutside);
+  
   const total = subtotal + deliveryCharge - discount;
 
   const handleDeliveryChargeChange = (

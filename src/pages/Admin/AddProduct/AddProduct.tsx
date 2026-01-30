@@ -103,6 +103,13 @@ export default function ProductAdminPage() {
                     : undefined,
                 })),
             })) || [],
+        bulkPricing:
+          draft.bulkPricing
+            ?.filter((tier) => tier.minQuantity > 0 && tier.price > 0)
+            .map((tier) => ({
+              minQuantity: Number(tier.minQuantity),
+              price: Number(tier.price),
+            })) || [],
         specifications:
           draft.specifications
             ?.filter((spec) => spec.group.trim() !== "")

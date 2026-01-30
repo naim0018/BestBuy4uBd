@@ -16,12 +16,13 @@ import VideoGallery from "../Components/VideoGallery";
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
   const host = useGetHost();
-  const [quantity, setQuantity] = useState(1);
-  const [selectedVariants, setSelectedVariants] = useState<Map<string, any>>(
+  const [selectedVariants, setSelectedVariants] = useState<Map<string, any[]>>(
     new Map(),
   );
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [currentImage, setCurrentImage] = useState<any>(null);
+  const [quantity, setQuantity] = useState(1);
+
   const [couponCode, setCouponCode] = useState<string>("");
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
@@ -34,35 +35,228 @@ const LandingPage = ({ product }: { product: Product }) => {
   const [createOrder, { isLoading: isOrderLoading }] = useCreateOrderMutation();
 
   useEffect(() => {
+    if (product?.variants && selectedVariants.size === 0) {
+      const defaults = new Map<string, any[]>();
+      product.variants.forEach((vg) => {
+        const name = vg.group.toLowerCase();
+        const isPricing =
+          name.includes("qty") ||
+          name.includes("quantity") ||
+          name.includes("টা") ||
+          name.includes("প্যাকেজ");
+
+        if (!isPricing && vg.items.length > 0) {
+          defaults.set(vg.group, [vg.items[0]]);
+        }
+      });
+      setSelectedVariants(defaults);
+    }
+  }, [product, selectedVariants]);
+  console.log(selectedVariants, product.price.regular);
+  // Sync Quantity with Selection
+  // Sync Quantity with Selection
+  useEffect(() => {
+
+      
+      // If we have distinct variant selections (e.g. Red, Blue), quantity should match
+      // Note: We need to avoid counting "Size" if it's attached to "Color".
+      // But structure is Map<Group, Items[]>. 
+      // If I select Red (Color) and Large (Size), totalItems is 2. But Qty is 1.
+      // Heuristic: Max count of any single group.
+      let maxGroupSelection = 1;
+      selectedVariants.forEach((items) => {
+          if (items.length > maxGroupSelection) maxGroupSelection = items.length;
+      });
+
+      if (maxGroupSelection > 1) {
+          setQuantity(maxGroupSelection);
+      }
+
+  }, [selectedVariants]);
+
+  useEffect(() => {
     if (product) {
-      setCurrentPrice(product.price.discounted || product.price.regular);
+      const basePrice = product.price.discounted || product.price.regular;
+      let totalVariantPrice = 0;
+      let totalSelectedCount = 0;
+
+      
+      // Calculate total price based on selected variants
+      selectedVariants.forEach((items, groupName) => {
+        const name = groupName.toLowerCase();
+        const isPricing =
+          name.includes("qty") ||
+          name.includes("quantity") ||
+          name.includes("টা") ||
+          name.includes("প্যাকেজ");
+
+        items.forEach((item) => {
+          totalSelectedCount++;
+          if (item.price && item.price > 0) {
+              if (isPricing) {
+                  // For "Pricing" variants (like Pack of 2), the price is usually total
+                  // We treat it as a unit price effectively for calculations if qty matches?
+                  // Actually, let's treat item.price as the price contribution of this item
+                  totalVariantPrice += item.price;
+              } else {
+                  // e.g. Color with price override
+                  totalVariantPrice += item.price;
+              }
+          } else {
+              // No specific price, add base price
+              totalVariantPrice += basePrice;
+          }
+        });
+      });
+
+      // If no variants selected (shouldn't happen if defaults set), use base * qty
+      if (totalSelectedCount === 0) {
+        totalVariantPrice = basePrice * quantity;
+      } else {
+         // If user manually increased quantity beyond selected variants
+         // e.g. Selected Red (1 item), but Qty is 2. We assume the second item is same configuration?
+         // Or simple multiplier
+         if (quantity > totalSelectedCount) {
+             const avgPrice = totalVariantPrice / totalSelectedCount;
+             totalVariantPrice += avgPrice * (quantity - totalSelectedCount);
+         }
+      }
+
+      let finalTotal = 0;
+      let usedComboPrice = false;
+
+      // Check if there is a specific "Pricing Variant" selected that matches the current quantity
+      // e.g. "Pack of 2" (qty 2) -> Price 650.
+      let matchingComboVariantPrice = 0;
+
+      selectedVariants.forEach((items, groupName) => {
+          const name = groupName.toLowerCase();
+          const isPricing =
+            name.includes("qty") ||
+            name.includes("quantity") ||
+            name.includes("টা") ||
+            name.includes("প্যাকেজ");
+
+          if (isPricing) {
+              items.forEach(item => {
+                  // Only treat as combo override if it looks like a package deal
+                  // Heuristic: If item name contains the number equal to quantity? 
+                  // Or just trust the user selected the right one. 
+                  // User rule: "if user select multiple variant or quantity if that quantity matches the Combo quantity then update the price to combo price"
+                  // Actually, if "2 Ta" is selected, and Qty is 2.
+                  // We should use 2 Ta price.
+                  
+                  // Extract number from variant name
+                   const match = item.value.match(/\d+/);
+                   const variantQty = match ? parseInt(match[0]) : 1;
+
+                   if (variantQty === quantity && item.price && item.price > 0) {
+                       matchingComboVariantPrice = item.price;
+                       usedComboPrice = true;
+                   }
+              })
+          }
+      });
+
+      if (usedComboPrice) {
+          finalTotal = matchingComboVariantPrice;
+      } else {
+          // Fallback: Sum of selected non-pricing variants (e.g. Colors)
+          // If I select Red (350), Black (350). Sum = 700.
+          // If Qty is 2. Total should be 700.
+          // If I select Red (350). Qty 2. Total 700.
+          
+          // Re-calculate sum of non-pricing variants
+           let nonPricingVariantSum = 0;
+           let nonPricingCount = 0;
+           
+           selectedVariants.forEach((items, groupName) => {
+              const name = groupName.toLowerCase();
+              const isPricing =
+                name.includes("qty") ||
+                name.includes("quantity") ||
+                name.includes("টা") ||
+                name.includes("প্যাকেজ");
+
+              if (!isPricing) {
+                  items.forEach(item => {
+                     nonPricingCount++;
+                     if (item.price && item.price > 0) {
+                         // If variant price is set, use it. Is it Full Price or Surcharge?
+                         // Screenshot shows "+350". Base is 410.
+                         // But if user says "Product Price 350 and showing 700" earlier.
+                         // This implies 350 IS the price.
+                         // Let's assume item.price is the Unit Price for that variant.
+                         nonPricingVariantSum += item.price;
+                     } else {
+                         nonPricingVariantSum += basePrice;
+                     }
+                  });
+              }
+           });
+           
+           if (nonPricingCount === 0) {
+               finalTotal = basePrice * quantity;
+           } else {
+               // If we selected Red and Black (2 items), sum is 700.
+               // If Qty is 2 -> Total 700.
+               if (quantity === nonPricingCount) {
+                   finalTotal = nonPricingVariantSum;
+               } else if (quantity > nonPricingCount) {
+                   // Extrapolate average
+                   const avg = nonPricingVariantSum / nonPricingCount;
+                   finalTotal = nonPricingVariantSum + (avg * (quantity - nonPricingCount));
+               } else {
+                   // quantity < selected count? (Shouldn't happen if auto-sync works)
+                   // Just take average * qty
+                   const avg = nonPricingVariantSum / nonPricingCount;
+                   finalTotal = avg * quantity;
+               }
+           }
+      }
+
+      // Calculate Unit Price for display context (though we track Total usually)
+      // CheckoutSection expects 'price' as Unit Price usually? 
+      // User complaint: "2050". (410 * 5).
+      // If I return Total here, CheckoutSection might multiply it again?
+      // CheckoutSection logic: const base = currentPrice * quantity;
+      // So 'currentPrice' MUST be Unit Price.
+      
+      let finalUnitPrice = finalTotal / (quantity || 1);
+      
+      setCurrentPrice(finalUnitPrice);
       setCurrentImage(product.images[0]);
     }
     return () => {
       if (product) dispatch(clearCart());
     };
-  }, [product, dispatch]);
+  }, [product, quantity, selectedVariants, dispatch]);
 
   if (!product) return null;
 
   const handleVariantChange = (groupName: string, variant: any) => {
     const newVariants = new Map(selectedVariants);
-    if (newVariants.get(groupName)?.value === variant.value) {
+    const currentItems = newVariants.get(groupName) || [];
+
+    // Toggle selection
+    const index = currentItems.findIndex((i) => i.value === variant.value);
+    let updatedItems;
+    if (index > -1) {
+      updatedItems = currentItems.filter((i) => i.value !== variant.value);
+    } else {
+      updatedItems = [...currentItems, variant];
+    }
+
+    if (updatedItems.length === 0) {
       newVariants.delete(groupName);
     } else {
-      newVariants.set(groupName, variant);
+      newVariants.set(groupName, updatedItems);
     }
-
-    let price = product.price.discounted || product.price.regular;
-    newVariants.forEach((v) => {
-      if (v.price) price = v.price;
-    });
-    setCurrentPrice(price);
 
     if (variant.image?.url) {
-      const img = product.images.find((i) => i.url === variant.image.url);
-      if (img) setCurrentImage(img);
+      setCurrentImage(variant.image);
     }
+
 
     setSelectedVariants(newVariants);
   };
@@ -110,9 +304,9 @@ const LandingPage = ({ product }: { product: Product }) => {
               price: currentPrice,
               itemKey: `${product._id}-${Date.now()}`,
               selectedVariants: Object.fromEntries(
-                Array.from(selectedVariants.entries()).map(([g, v]) => [
-                  g,
-                  { value: v.value, price: v.price || 0 },
+                Array.from(selectedVariants.entries()).map(([group, items]) => [
+                  group,
+                  items.map((i) => ({ value: i.value, price: i.price || 0 })),
                 ]),
               ),
             },
@@ -249,16 +443,20 @@ const LandingPage = ({ product }: { product: Product }) => {
 
           <AnimatedContainer direction="up" delay={0.3}>
             <div className="flex flex-col items-center gap-4 mt-4">
-              <div className="flex items-center gap-4">
-                <span className="text-xl text-gray-400 line-through font-bold">
-                  ৳{product.price.regular.toLocaleString()}
-                </span>
-                <span className="text-4xl md:text-5xl font-black text-green-600">
-                  ৳
-                  {product.price.discounted?.toLocaleString() ||
-                    product.price.regular.toLocaleString()}
-                </span>
-              </div>
+                <div className="flex flex-col items-center">
+                    <span className="text-xl text-gray-400 line-through font-bold mb-1">
+                      Start: ৳{product.price.regular.toLocaleString()}
+                    </span>
+                    <span className="text-4xl md:text-5xl font-black text-green-600">
+                      Total: ৳{(currentPrice * quantity).toLocaleString()}
+                    </span>
+                    <span className="text-sm font-medium text-gray-500 mt-1">
+                        (৳{currentPrice.toLocaleString()} / unit)
+                    </span>
+                </div>
+
+
+
 
               <button
                 onClick={scrollToCheckout}
@@ -343,7 +541,10 @@ const LandingPage = ({ product }: { product: Product }) => {
 
       {/* Video Demonstration Section */}
       {product.videos && product.videos.length > 0 && (
-        <div id="product-video" className="container mx-auto px-4 py-8 max-w-4xl">
+        <div
+          id="product-video"
+          className="container mx-auto px-4 py-8 max-w-4xl"
+        >
           <AnimatedContainer direction="up">
             <div className="bg-green-600 text-white p-4 rounded-t-2xl text-center">
               <h2 className="text-xl md:text-3xl font-black uppercase">

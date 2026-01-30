@@ -11,7 +11,7 @@ interface LandingPageHeroSectionProps {
   setCurrentImage: (img: ProductImage) => void;
   quantity: number;
   handleVariantSelect: (groupName: string, variant: ProductVariantItem) => void;
-  selectedVariants: Map<string, ProductVariantItem>;
+  selectedVariants: Map<string, ProductVariantItem[]>;
   handleIncrement: () => void;
   handleDecrement: () => void;
   scrollToCheckout: () => void;
@@ -29,6 +29,7 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
   handleDecrement,
   scrollToCheckout,
 }) => {
+
   const { title } = product.basicInfo;
   const { regular: regularPrice, discounted: discountedPrice } = product.price;
 
@@ -151,11 +152,11 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-100">
                 <div className="flex items-baseline gap-4 mb-2">
                   <span className="text-4xl lg:text-5xl font-bold text-green-600">
-                    ৳{(currentPrice * quantity).toLocaleString()}
+                    ৳{currentPrice.toLocaleString()}
                   </span>
                   {hasDiscount && (
                     <span className="text-xl text-gray-400 line-through">
-                      ৳{(product.price.regular * quantity).toLocaleString()}
+                      ৳{product.price.regular.toLocaleString()}
                     </span>
                   )}
                 </div>
@@ -191,21 +192,31 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
               {/* Variants */}
               {product?.variants && product.variants.length > 0 && (
                 <div className="space-y-4">
-                  {product.variants.map((variantGroup) => (
+                  {product.variants.map((variantGroup: any) => {
+                    const isPricing = (groupName: string) => {
+                        const name = groupName.toLowerCase();
+                        return name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+                    };
+                    const isPricingGrp = isPricing(variantGroup.group);
+
+                    return (
                     <div key={variantGroup.group}>
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        Choose {variantGroup.group}
+                        Choose {variantGroup.group} {isPricingGrp && "(Updates with Quantity)"}
                       </h3>
-                      <div className="flex flex-wrap gap-3">
-                        {variantGroup.items.map((variant) => (
+                      <div className={`flex flex-wrap gap-3`}>
+                        {variantGroup.items.map((variant: ProductVariantItem) => {
+                          const groupSelections = selectedVariants.get(variantGroup.group) || [];
+                          const isActive = groupSelections.some(item => item.value === variant.value);
+
+                          return (
                           <button
                             key={variant.value}
-                            onClick={() =>
-                              handleVariantSelect(variantGroup.group, variant)
-                            }
+                            onClick={() => {
+                              handleVariantSelect(variantGroup.group, variant);
+                            }}
                             className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
-                              selectedVariants.get(variantGroup.group)?.value ===
-                              variant.value
+                              isActive
                                 ? "border-green-500 bg-green-50 text-green-700 shadow-lg scale-105"
                                 : "border-gray-200 hover:border-green-300 hover:shadow-md hover:scale-105"
                             }`}
@@ -213,14 +224,16 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                             <span>{variant.value}</span>
                             {variant.price !== undefined && variant.price > 0 && (
                               <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                +৳{variant.price}
+                                {isPricingGrp ? "" : "+"}৳{variant.price}
                               </span>
                             )}
                           </button>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 

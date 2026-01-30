@@ -142,4 +142,6 @@ export interface Product {
   createdAt: string | Date;
   updatedAt: string | Date;
 
+  // Bulk Pricing
+  bulkPricing?: { minQuantity: number; price: number }[];
 }

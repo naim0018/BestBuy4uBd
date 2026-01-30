@@ -15,6 +15,7 @@ import {
   KeyFeaturesField,
   VariantsField,
   SpecificationsField,
+  BulkPricingField,
 } from "./NestedArrayFields";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
@@ -389,6 +390,15 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
               watch={watch} 
             />
           ))}
+        </div>
+
+        <div className="mt-8 border-t border-border pt-8">
+          <BulkPricingField 
+            control={control} 
+            register={register} 
+            errors={errors} 
+            watch={watch} 
+          />
         </div>
       </CollapsibleSection>
 

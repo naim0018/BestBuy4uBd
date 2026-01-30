@@ -629,3 +629,102 @@ function SpecificationGroup({
     </div>
   );
 }
+// ============================================
+// 💰 Bulk Pricing Array Component
+// ============================================
+interface BulkPricingFieldProps {
+  control: Control<ProductFormValues>;
+  register: UseFormRegister<ProductFormValues>;
+  errors: FieldErrors<ProductFormValues>;
+  watch: any;
+}
+
+export const BulkPricingField = memo(({ control, register, errors, watch }: BulkPricingFieldProps) => {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "bulkPricing",
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-800">Bulk Pricing (Quantity Discounts)</h3>
+        <button
+          type="button"
+          onClick={() => append({ minQuantity: 2, price: 0 })}
+          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Add Tier
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {fields.map((field, index) => (
+          <div
+            key={field.id}
+            className="p-4 border border-border rounded-xl bg-white shadow-sm"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Min Quantity <span className="text-red-500">*</span>
+                </label>
+                <input
+                  {...register(`bulkPricing.${index}.minQuantity`, { valueAsNumber: true })}
+                  type="number"
+                  placeholder="2"
+                  className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+                {errors.bulkPricing?.[index]?.minQuantity && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.bulkPricing[index]?.minQuantity?.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Unit Price (৳) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  {...register(`bulkPricing.${index}.price`, { valueAsNumber: true })}
+                  type="number"
+                  placeholder="0"
+                  className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+                {errors.bulkPricing?.[index]?.price && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.bulkPricing[index]?.price?.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Remove tier"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2 italic">
+              User will pay ৳{watch(`bulkPricing.${index}.price`) || 0} per item if they buy {watch(`bulkPricing.${index}.minQuantity`) || 0} or more.
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {fields.length === 0 && (
+        <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+          <p className="text-gray-500">No bulk pricing tiers defined.</p>
+        </div>
+      )}
+    </div>
+  );
+});
+
+BulkPricingField.displayName = "BulkPricingField";

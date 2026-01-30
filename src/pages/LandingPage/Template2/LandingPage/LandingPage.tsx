@@ -1,14 +1,10 @@
 "use client";
 
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { useDispatch } from "react-redux";
-import { clearCart } from "../../../../store/Slices/CartSlice";
 import { useCreateOrderMutation } from "../../../../store/Api/OrderApi";
 import { toast } from "sonner";
 import OrderSuccessModal from "./OrderSuccessModal";
-import { FaHome } from "react-icons/fa";
 import { Product } from "@/types/Product/Product";
 import CheckoutSection from "./CheckoutSection";
 import LandingPageProductDetails from "./DecomposedLandingPage Component/LandingPageProductDetails";
@@ -18,13 +14,13 @@ import DynamicBanner from "../../Components/DynamicBanner";
 import AnimatedContainer from "../../Components/AnimatedContainer";
 
 const LandingPage = ({ product }: { product: Product }) => {
-  const dispatch = useDispatch();
-  const [selectedVariants, setSelectedVariants] = useState<Map<string, any>>(
+  const [selectedVariants, setSelectedVariants] = useState<Map<string, any[]>>(
     new Map()
   );
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [currentImage, setCurrentImage] = useState<any>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [isManualQty, setIsManualQty] = useState<boolean>(false);
   const [createOrder, { isLoading: isOrderLoading }] = useCreateOrderMutation();
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [successOrderDetails, setSuccessOrderDetails] = useState<any>(null);
@@ -34,6 +30,13 @@ const LandingPage = ({ product }: { product: Product }) => {
     discount: number;
   }>({ code: "", discount: 0 });
   const [discount, setDiscount] = useState<number>(0);
+
+
+  const parseQty = (value: string) => {
+    const match = value.match(/\d+/);
+    return match ? parseInt(match[0]) : 1;
+  };
+
 
   const applyCoupon = () => {
     const availableCoupons: Record<string, number> = {
@@ -65,20 +68,74 @@ const LandingPage = ({ product }: { product: Product }) => {
   }, [appliedCoupon]);
 
   useEffect(() => {
+    if (product?.variants && selectedVariants.size === 0) {
+      const defaults = new Map<string, any[]>();
+      product.variants.forEach(vg => {
+        if (vg.items.length > 0) {
+          defaults.set(vg.group, [vg.items[0]]);
+        }
+      });
+      setSelectedVariants(defaults);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product, selectedVariants]);
+
+  // Sync Quantity with Selection
+  useEffect(() => {
+    if (!isManualQty) {
+      let totalQty = 1;
+      let hasPricingSelection = false;
+      selectedVariants.forEach((groupItems, groupName) => {
+        const name = groupName.toLowerCase();
+        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+        if (isPricing) {
+          groupItems.forEach(item => {
+            totalQty *= parseQty(item.value);
+            hasPricingSelection = true;
+          });
+        }
+      });
+      if (hasPricingSelection) {
+        setQuantity(Math.max(1, totalQty));
+      }
+    }
+  }, [selectedVariants, isManualQty]);
+
+  useEffect(() => {
     if (product) {
-      const initialPrice = product.price.discounted || product.price.regular;
-      setCurrentPrice(
-        typeof initialPrice === "number" && !isNaN(initialPrice)
-          ? initialPrice
-          : 0
-      );
-      setSelectedVariants(new Map());
+      const basePrice = product.price.discounted || product.price.regular;
+      let totalSurcharges = 0;
+      let pricingVariantPrice = 0;
+      let hasPricingVariant = false;
+
+      selectedVariants.forEach((items, groupName) => {
+        const name = groupName.toLowerCase();
+        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+        
+        items.forEach(item => {
+          if (item.price && item.price > 0) {
+            if (isPricing) {
+              pricingVariantPrice = item.price;
+              hasPricingVariant = true;
+            } else {
+              totalSurcharges += item.price;
+            }
+          }
+        });
+      });
+
+      let unitPrice = 0;
+      if (hasPricingVariant) {
+        // If pricing variant is selected (e.g. Pack of 2 for 600), calculate unit price for consistent scaling
+        unitPrice = (pricingVariantPrice / quantity) + totalSurcharges;
+      } else {
+        unitPrice = basePrice + totalSurcharges;
+      }
+
+      setCurrentPrice(unitPrice);
       setCurrentImage(product.images[0]);
     }
-    return () => {
-      if (product) dispatch(clearCart());
-    };
-  }, [product, dispatch]);
+  }, [product, quantity, selectedVariants]);
 
 
 
@@ -95,34 +152,41 @@ const LandingPage = ({ product }: { product: Product }) => {
   // --- Variant Selection Logic ---
   const handleVariantSelect = (groupName: string, variant: any) => {
     const newSelectedVariants = new Map(selectedVariants);
-    if (selectedVariants.get(groupName)?.value === variant.value) {
-      newSelectedVariants.delete(groupName);
+    const currentItems = newSelectedVariants.get(groupName) || [];
+    
+    // Toggle selection
+    const index = currentItems.findIndex(i => i.value === variant.value);
+    let updatedItems;
+    if (index > -1) {
+      updatedItems = currentItems.filter(i => i.value !== variant.value);
     } else {
-      newSelectedVariants.set(groupName, {
-        value: variant.value,
-        price: variant.price,
-        image: variant.image,
-      });
+      updatedItems = [...currentItems, variant];
+    }
+    
+    if (updatedItems.length === 0) {
+        newSelectedVariants.delete(groupName);
+    } else {
+        newSelectedVariants.set(groupName, updatedItems);
     }
 
-    // Price calculation: base + sum of variant prices
-    let price = product.price.discounted || product.price.regular;
-    newSelectedVariants.forEach((v) => {
-      if (typeof v.price === "number" && !isNaN(v.price)) price = v.price;
-    });
-    setCurrentPrice(price);
-
-    // Image update: last selected variant with image, else main image
-    const lastWithImage = Array.from(newSelectedVariants.values())
-      .reverse()
-      .find((v) => v.image?.url);
-    setCurrentImage(lastWithImage?.image || product.images[0]);
+    // Image update: use variant image if available
+    if (variant.image?.url) {
+      setCurrentImage(variant.image);
+    }
+    
+    setIsManualQty(false); // Reset to auto-sync when interacting with variants
     setSelectedVariants(newSelectedVariants);
   };
 
   // --- Quantity Logic ---
-  const handleIncrement = () => setQuantity((q) => q + 1);
-  const handleDecrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+  const handleIncrement = () => {
+      setIsManualQty(true);
+      setQuantity((q) => q + 1);
+  };
+  const handleDecrement = () => {
+      setIsManualQty(true);
+      setQuantity((q) => (q > 1 ? q - 1 : 1));
+  };
 
   const calculateTotalAmount = (
     courierChargeType: string | null,
@@ -130,25 +194,14 @@ const LandingPage = ({ product }: { product: Product }) => {
   ) => {
     const productTotal = currentPrice * quantity;
     if (product.additionalInfo?.freeShipping) {
-        return Math.max(0, productTotal - currentDiscount);
+      return Math.max(0, productTotal - currentDiscount);
     }
     const chargeInside = product.basicInfo.deliveryChargeInsideDhaka ?? 80;
     const chargeOutside = product.basicInfo.deliveryChargeOutsideDhaka ?? 150;
-    const deliveryCharge = courierChargeType === "insideDhaka" ? chargeInside : chargeOutside;
+    const deliveryCharge =
+      courierChargeType === "insideDhaka" ? chargeInside : chargeOutside;
     const total = productTotal + deliveryCharge - currentDiscount;
     return total > 0 ? total : 0;
-  };
-
-  // --- Order Logic ---
-  const orderDetails = {
-    title: product?.basicInfo?.title,
-    price: currentPrice,
-    variants: selectedVariants,
-    quantity,
-    image: currentImage,
-    product,
-    discount,
-    totalAmount: calculateTotalAmount(null, discount),
   };
 
   const handleSubmit = async (formData: any) => {
@@ -168,9 +221,9 @@ const LandingPage = ({ product }: { product: Product }) => {
               price: currentPrice,
               selectedVariants: Object.fromEntries(
                 Array.from(selectedVariants.entries()).map(
-                  ([group, variant]) => [
+                  ([group, items]) => [
                     group,
-                    { value: variant.value, price: variant.price || 0 },
+                    items.map(i => ({ value: i.value, price: i.price || 0 }))
                   ]
                 )
               ),
@@ -197,82 +250,33 @@ const LandingPage = ({ product }: { product: Product }) => {
       setSuccessOrderDetails({
         orderId: (response as any).data._id,
         productPrice: currentPrice * quantity,
-        deliveryCharge: product.additionalInfo?.freeShipping ? 0 : (formData.courierCharge === "insideDhaka" ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80) : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150)),
+        deliveryCharge: product.additionalInfo?.freeShipping
+          ? 0
+          : formData.courierCharge === "insideDhaka"
+          ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80)
+          : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150),
         totalAmount: totalAmount,
         appliedCoupon: appliedCoupon,
       });
       setShowSuccessModal(true);
-      setQuantity(1);
-      setSelectedVariants(new Map());
-      setCurrentPrice(product.price.discounted || product.price.regular);
-      setCurrentImage(product.images[0]);
-      setCouponCode("");
-      setAppliedCoupon({ code: "", discount: 0 });
-      setDiscount(0);
-    } catch (error: any) {
-      toast.error(
-        <div>
-          <h3 className="font-bold">
-            দুঃখিত! অর্ডার সম্পন্ন করা যায়নি।
-          </h3>
-          {error.data?.message && (
-            <p className="text-sm mt-1">
-              কারণ: {error.data.message}
-            </p>
-          )}
-        </div>
-      );
+    } catch {
+      toast.error("দুঃখিত! অর্ডার সম্পন্ন করা যায়নি।");
     }
   };
 
-  // --- Scroll to Checkout ---
   const scrollToCheckout = () => {
-    const checkoutSection = document.getElementById("checkout");
-    if (checkoutSection) checkoutSection.scrollIntoView({ behavior: "smooth" });
+    const el = document.getElementById("checkout");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
-  // --- Helper: Savings ---
-  const hasDiscount = !!(
-    product.price.discounted && product.price.discounted < product.price.regular
-  );
-  const savings = hasDiscount
-    ? product.price.regular - (product.price.discounted || 0)
-    : 0;
-  const savingsPercent = hasDiscount
-    ? Math.round((savings / product.price.regular) * 100)
-    : 0;
 
-  // --- Main Render ---
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Home Icon Button */}
-      <div className="fixed top-6 left-6 z-50">
-        <Link
-          to="/"
-          className="flex items-center gap-2 bg-white border border-gray-200 shadow-lg rounded-full px-4 py-2 hover:bg-green-50 transition-colors"
-          title="হোম পেজে যান"
-        >
-          <FaHome className="h-6 w-6 text-green-600" />
-          <span className="hidden md:inline text-green-700 font-bold">হোম</span>
-        </Link>
-      </div>
-
-      {/* Toast notifications are handled globally via Toaster in main.tsx */}
-
-      <Helmet>
-        <title>{product?.seo?.metaTitle || product?.basicInfo?.title}</title>
-        <meta name="description" content={product?.seo?.metaDescription} />
-        <meta name="slug" content={product?.seo?.slug} />
+    <div className="bg-white min-h-screen">
+       <Helmet>
+        <title>{product.basicInfo.title} | BestBuy4U</title>
+        <meta name="description" content={product.basicInfo.description} />
       </Helmet>
-
-      {/* Dynamic Banner */}
-      <DynamicBanner
-        title={product.basicInfo.title}
-        regularPrice={product.price.regular}
-        discountedPrice={currentPrice}
-        onShopNow={scrollToCheckout}
-        backgroundImage={product.images?.[0]?.url}
-      />
 
       {successOrderDetails && (
         <OrderSuccessModal
@@ -282,58 +286,107 @@ const LandingPage = ({ product }: { product: Product }) => {
         />
       )}
 
-      {/* Hero Section with Product */}
-      <AnimatedContainer>
-        <LandingPageHeroSection
-          product={product}
-          currentImage={currentImage}
-          currentPrice={currentPrice}
-          setCurrentImage={setCurrentImage}
-          quantity={quantity}
-          handleVariantSelect={handleVariantSelect}
-          selectedVariants={selectedVariants}
-          handleIncrement={handleIncrement}
-          handleDecrement={handleDecrement}
-          scrollToCheckout={scrollToCheckout}
-        />
-      </AnimatedContainer>
-
-      {/* Product Details Sections */}
-      <LandingPageProductDetails
+      {/* Hero Section */}
+      <LandingPageHeroSection
         product={product}
-        currentPrice={currentPrice}
         currentImage={currentImage}
+        currentPrice={currentPrice}
+        setCurrentImage={setCurrentImage}
         selectedVariants={selectedVariants}
+        handleVariantSelect={handleVariantSelect}
         quantity={quantity}
-        hasDiscount={hasDiscount}
-        savings={savings}
-        savingsPercent={savingsPercent}
+        handleIncrement={handleIncrement}
+        handleDecrement={handleDecrement}
         scrollToCheckout={scrollToCheckout}
       />
 
-      {/* Checkout Section */}
-      <div className="bg-gray-50 py-16" id="checkout">
+      {/* Dynamic Banner */}
+      <div className="my-12">
+      <DynamicBanner
+        title={product.basicInfo.title}
+        regularPrice={product.price.regular}
+        discountedPrice={currentPrice}
+        onShopNow={scrollToCheckout}
+        backgroundImage={product.images[0]?.url}
+      />
+      </div>
+
+       {/* Navigation Bar */}
+       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm hidden md:block">
         <div className="container mx-auto px-4">
-          <AnimatedContainer direction="none" delay={0.1}>
-            <CheckoutSection
-              orderDetails={orderDetails}
-              handleSubmit={handleSubmit}
-              onQuantityChange={setQuantity}
-              onVariantChange={handleVariantSelect}
-              isLoading={isOrderLoading}
-              couponCode={couponCode}
-              setCouponCode={setCouponCode}
-              applyCoupon={applyCoupon}
-            />
-          </AnimatedContainer>
+          <div className="flex items-center justify-between h-16">
+            <div className="flex gap-8">
+              {["Features", "Specifications", "Description", "Reviews"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => document.getElementById(tab.toLowerCase())?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                  className="text-sm font-semibold text-gray-600 hover:text-green-600 transition-colors uppercase tracking-wider"
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+            <button
+               onClick={scrollToCheckout}
+               className="bg-green-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all uppercase tracking-widest"
+            >
+              Order Now
+            </button>
+          </div>
         </div>
       </div>
-      
-      {/* Related Products */}
-      <div className="container mx-auto px-4 pb-20">
-        <AnimatedContainer delay={0.2}>
-          <RelatedProducts category={product.basicInfo.category} currentProductId={product._id} />
-        </AnimatedContainer>
+
+      {/* Product Information Sections */}
+      <div className="container mx-auto px-4 py-12 space-y-24">
+        <LandingPageProductDetails 
+            product={product} 
+            selectedVariants={Object.fromEntries(selectedVariants)}
+            currentPrice={currentPrice}
+            currentImage={currentImage}
+            quantity={quantity}
+            onVariantChange={handleVariantSelect}
+            onQuantityChange={setQuantity}
+        />
+
+        {/* Checkout Section Integration */}
+        <AnimatedContainer direction="none" delay={0.1}>
+            <div id="checkout" className="pt-20">
+              <CheckoutSection
+                orderDetails={{
+                  title: product.basicInfo.title,
+                  price: currentPrice,
+                  variants: selectedVariants,
+                  quantity: quantity,
+                  image: product.images[0],
+                  product: product,
+                  discount: discount,
+                }}
+                handleSubmit={handleSubmit}
+                onQuantityChange={setQuantity}
+                onVariantChange={handleVariantSelect}
+                isLoading={isOrderLoading}
+                couponCode={couponCode}
+                setCouponCode={setCouponCode}
+                applyCoupon={applyCoupon}
+              />
+            </div>
+          </AnimatedContainer>
+
+          {/* Related Products */}
+          <div className="pt-20">
+             <RelatedProducts currentProductId={product._id} category={product.basicInfo.category} />
+          </div>
+      </div>
+
+      {/* Floating Order Button for Mobile */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] md:hidden">
+         <button
+            onClick={scrollToCheckout}
+            className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-2xl shadow-green-200 border-2 border-white/20 backdrop-blur-lg flex items-center justify-center gap-3 active:scale-95 transition-transform"
+         >
+            <span className="animate-pulse w-2 h-2 bg-white rounded-full" />
+            অর্ডার করতে চাই
+         </button>
       </div>
     </div>
   );
