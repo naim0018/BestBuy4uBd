@@ -7,32 +7,41 @@ import { Product } from "@/types/Product/Product";
 import { useGetHost } from "@/utils/useGetHost";
 import AnimatedContainer from "../../Components/AnimatedContainer";
 import CountdownTimer from "../Components/CountdownTimer";
+import { useVariantQuantity } from "@/hooks/useVariantQuantity";
+import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import CheckoutSection from "../../Template2/LandingPage/CheckoutSection";
 import OrderSuccessModal from "../../Template2/LandingPage/OrderSuccessModal";
 import RelatedProducts from "../../Components/RelatedProducts";
 import WhyBuyFromUs from "../Components/WhyBuyFromUs";
 import VideoGallery from "../Components/VideoGallery";
 
-// Helper function to check if a variant group is a pricing variant
-const isPricingVariant = (groupName: string): boolean => {
-  const name = groupName.toLowerCase();
-  return name.includes("qty") ||
-         name.includes("quantity") ||
-         name.includes("টা") ||
-         name.includes("প্যাকেজ");
-};
+
 
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
   const host = useGetHost();
-  const [selectedVariants, setSelectedVariants] = useState<Record<string, any[]>>(
-    {},
-  );
-  const [currentPrice, setCurrentPrice] = useState<number>(0);
-  const [currentImage, setCurrentImage] = useState<any>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [isManualQty, setIsManualQty] = useState<boolean>(false);
 
+  // Hooks
+  const {
+      selectedVariants,
+      totalQuantity,
+      addVariant,
+      initVariants
+  } = useVariantQuantity(product?.variants, product);
+
+  useEffect(() => {
+     if(product?.variants) initVariants(product.variants, product);
+  }, [product, initVariants]);
+
+  const [manualQuantity, setManualQuantity] = useState(1);
+  const effectiveQuantity = (product?.variants?.length ?? 0) > 0 ? totalQuantity : manualQuantity;
+
+  const {
+      finalTotal
+  } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
+
+  const [currentImage, setCurrentImage] = useState<any>(null);
+  
   const [couponCode, setCouponCode] = useState<string>("");
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
@@ -45,111 +54,27 @@ const LandingPage = ({ product }: { product: Product }) => {
   const [createOrder, { isLoading: isOrderLoading }] = useCreateOrderMutation();
 
   useEffect(() => {
-    if (product?.variants && Object.keys(selectedVariants).length === 0) {
-      const defaults: Record<string, any[]> = {};
-      product.variants.forEach((vg) => {
-        if (!isPricingVariant(vg.group) && vg.items.length > 0) {
-          defaults[vg.group] = [vg.items[0]];
-        }
-      });
-      setSelectedVariants(defaults);
-    }
-  }, [product, selectedVariants]);
-  console.log(selectedVariants, product.price.regular);
-  // Sync Quantity with Selection
-  useEffect(() => {
-    if (!isManualQty) {
-      let maxGroupSelection = 1;
-      let pricingVariantQty = 1;
-      let hasPricingVariant = false;
-
-      Object.entries(selectedVariants).forEach(([groupName, items]) => {
-        const name = groupName.toLowerCase();
-        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
-        
-        if (isPricing) {
-          items.forEach(item => {
-            const match = item.value.match(/\d+/);
-            const variantQty = match ? parseInt(match[0]) : 1;
-            pricingVariantQty *= variantQty;
-            hasPricingVariant = true;
-          });
-        } else {
-          if (items.length > maxGroupSelection) {
-            maxGroupSelection = items.length;
-          }
-        }
-      });
-
-      if (hasPricingVariant) {
-        setQuantity(Math.max(1, pricingVariantQty));
-      } else {
-        setQuantity(Math.max(1, maxGroupSelection));
-      }
-    }
-  }, [selectedVariants, isManualQty]);
-
-  useEffect(() => {
     if (product) {
-      const regularPrice = product.price.regular;
-      const discountedPrice = product.price.discounted || regularPrice;
-
-      // Determine price per unit based on quantity and bulk pricing tiers
-      let pricePerUnit = discountedPrice;
-
-      // Check bulk pricing tiers (these are PER-UNIT prices)
-      if (product.bulkPricing && product.bulkPricing.length > 0) {
-        const sortedBulk = [...product.bulkPricing].sort((a, b) => b.minQuantity - a.minQuantity);
-        const tier = sortedBulk.find(t => quantity >= t.minQuantity);
-        if (tier) {
-          pricePerUnit = tier.price; // This is the per-unit price for this tier
-        }
-      }
-
-      // Set the per-unit price (will be multiplied by quantity in the UI)
-      setCurrentPrice(pricePerUnit);
       setCurrentImage(product.images[0]);
     }
 
     return () => {
       if (product) dispatch(clearCart());
     };
-  }, [product, quantity, selectedVariants, dispatch]);
+  }, [product, dispatch]);
 
   if (!product) return null;
 
   const handleVariantChange = (groupName: string, variant: any) => {
-    // Create a new object to ensure React triggers a re-render
-    const newVariants = { ...selectedVariants };
-    const currentItems = newVariants[groupName] || [];
-
-    // Toggle selection
-    const index = currentItems.findIndex((i) => i.value === variant.value);
-    let updatedItems;
-    if (index > -1) {
-      updatedItems = currentItems.filter((i) => i.value !== variant.value);
-    } else {
-      updatedItems = [...currentItems, variant];
-    }
-
-    if (updatedItems.length === 0) {
-      delete newVariants[groupName];
-    } else {
-      newVariants[groupName] = updatedItems;
-    }
-
-    if (variant.image?.url) {
-      setCurrentImage(variant.image);
-    }
-    
-    setIsManualQty(false);
-    setSelectedVariants(newVariants);
+      addVariant(groupName, variant);
+      if (variant.image?.url) setCurrentImage(variant.image);
   };
 
   const handleManualQuantityChange = (newQty: number) => {
-    setIsManualQty(true);
-    setQuantity(newQty);
+    setManualQuantity(newQty);
   };
+
+
 
   const applyCoupon = () => {
     const availableCoupons: Record<string, number> = {
@@ -170,7 +95,7 @@ const LandingPage = ({ product }: { product: Product }) => {
   };
 
   const calculateTotal = (courierCharge: string | null) => {
-    const base = currentPrice * quantity;
+    const base = finalTotal;
     if (product?.additionalInfo?.freeShipping) {
       return Math.max(0, base - discount);
     }
@@ -184,21 +109,28 @@ const LandingPage = ({ product }: { product: Product }) => {
   const handleSubmit = async (formData: any) => {
     try {
       const total = calculateTotal(formData.courierCharge);
+
+      // Transform variants for Order API
+      const variantsPayload: Record<string, any[]> = {};
+      selectedVariants.forEach(sv => {
+          if (!variantsPayload[sv.group]) variantsPayload[sv.group] = [];
+          variantsPayload[sv.group].push({
+              value: sv.item.value,
+              price: sv.item.price,
+              quantity: sv.quantity
+          });
+      });
+
       const orderData = {
         body: {
           items: [
             {
               product: product._id,
               image: currentImage?.url,
-              quantity,
-              price: currentPrice,
+              quantity: effectiveQuantity,
+              price: finalTotal / effectiveQuantity,
               itemKey: `${product._id}-${Date.now()}`,
-              selectedVariants: Object.fromEntries(
-                Object.entries(selectedVariants).map(([group, items]) => [
-                  group,
-                  items.map((i) => ({ value: i.value, price: i.price || 0 })),
-                ]),
-              ),
+              selectedVariants: variantsPayload,
             },
           ],
           totalAmount: total,
@@ -220,7 +152,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       const response = await createOrder(orderData).unwrap();
       setSuccessOrderDetails({
         orderId: (response as any).data._id,
-        productPrice: currentPrice * quantity,
+        productPrice: finalTotal,
         deliveryCharge: product?.additionalInfo?.freeShipping
           ? 0
           : formData.courierCharge === "insideDhaka"
@@ -338,30 +270,14 @@ const LandingPage = ({ product }: { product: Product }) => {
                       Start: ৳{(product?.price?.regular || 0).toLocaleString()}
                     </span>
                     <span className="text-4xl md:text-5xl font-black text-green-600">
-                      Total: ৳{(currentPrice * quantity).toLocaleString()}
+                      Total: ৳{finalTotal.toLocaleString()}
                     </span>
                     <span className="text-sm font-medium text-gray-500 mt-1">
-                        (৳{currentPrice.toLocaleString()} / unit)
+                        (৳{(finalTotal / (effectiveQuantity || 1)).toLocaleString()} / unit)
                     </span>
                 </div>
 
-                {/* Bulk Pricing UI */}
-                {product.bulkPricing && product.bulkPricing.length > 0 && (
-                  <div className="bg-green-50 rounded-2xl p-6 border border-green-100 space-y-4 max-w-md mx-auto">
-                    <h3 className="text-[10px] font-bold text-green-700 uppercase tracking-[0.2em] flex items-center gap-2 justify-center">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
-                      Bulk Pricing Details
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {product.bulkPricing.map((tier, idx) => (
-                        <div key={idx} className="bg-white p-3 rounded-xl border border-green-100 flex justify-between items-center shadow-sm">
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Buy {tier.minQuantity}+</span>
-                          <span className="text-green-600 font-bold">৳{tier.price.toLocaleString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+
 
 
 
@@ -489,9 +405,9 @@ const LandingPage = ({ product }: { product: Product }) => {
               <CheckoutSection
                 orderDetails={{
                   title: product.basicInfo.title,
-                  price: currentPrice,
+                  price: finalTotal,
                   variants: selectedVariants,
-                  quantity: quantity,
+                  quantity: effectiveQuantity,
                   image: currentImage,
                   product: product,
                   discount: discount,

@@ -9,18 +9,36 @@ import { Product } from "@/types/Product/Product";
 import CheckoutSection from "./CheckoutSection";
 import LandingPageProductDetails from "./DecomposedLandingPage Component/LandingPageProductDetails";
 import LandingPageHeroSection from "./DecomposedLandingPage Component/LandingPageHeroSection";
+import { useVariantQuantity } from "@/hooks/useVariantQuantity";
+import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import RelatedProducts from "../../Components/RelatedProducts";
 import DynamicBanner from "../../Components/DynamicBanner";
 import AnimatedContainer from "../../Components/AnimatedContainer";
 
 const LandingPage = ({ product }: { product: Product }) => {
-  const [selectedVariants, setSelectedVariants] = useState<Map<string, any[]>>(
-    new Map()
-  );
-  const [currentPrice, setCurrentPrice] = useState<number>(0);
+  // Hooks
+  const {
+    selectedVariants,
+    totalQuantity,
+    addVariant,
+    initVariants
+  } = useVariantQuantity(product?.variants, product);
+
+  useEffect(() => {
+    if (product?.variants) {
+      initVariants(product.variants, product);
+    }
+  }, [product, initVariants]);
+
+  const [manualQuantity, setManualQuantity] = useState(1);
+  const effectiveQuantity = (product?.variants?.length ?? 0) > 0 ? totalQuantity : manualQuantity;
+
+  const {
+      finalTotal
+  } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
+
   const [currentImage, setCurrentImage] = useState<any>(null);
-  const [quantity, setQuantity] = useState<number>(1);
-  const [isManualQty, setIsManualQty] = useState<boolean>(false);
+  
   const [createOrder, { isLoading: isOrderLoading }] = useCreateOrderMutation();
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [successOrderDetails, setSuccessOrderDetails] = useState<any>(null);
@@ -31,11 +49,6 @@ const LandingPage = ({ product }: { product: Product }) => {
   }>({ code: "", discount: 0 });
   const [discount, setDiscount] = useState<number>(0);
 
-
-  const parseQty = (value: string) => {
-    const match = value.match(/\d+/);
-    return match ? parseInt(match[0]) : 1;
-  };
 
 
   const applyCoupon = () => {
@@ -58,139 +71,29 @@ const LandingPage = ({ product }: { product: Product }) => {
   };
 
   useEffect(() => {
-    localStorage.setItem(
-      "appliedCoupon",
-      JSON.stringify({
-        code: appliedCoupon.code,
-        discount: appliedCoupon.discount,
-      })
-    );
-  }, [appliedCoupon]);
-
-  useEffect(() => {
-    if (product?.variants && selectedVariants.size === 0) {
-      const defaults = new Map<string, any[]>();
-      product.variants.forEach(vg => {
-        if (vg.items.length > 0) {
-          defaults.set(vg.group, [vg.items[0]]);
-        }
-      });
-      setSelectedVariants(defaults);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product, selectedVariants]);
-
-  // Sync Quantity with Selection
-  useEffect(() => {
-    if (!isManualQty) {
-      let maxGroupSelection = 1;
-      let pricingVariantQty = 1;
-      let hasPricingVariant = false;
-
-      selectedVariants.forEach((groupItems, groupName) => {
-        const name = groupName.toLowerCase();
-        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
-        
-        if (isPricing) {
-          groupItems.forEach(item => {
-            pricingVariantQty *= parseQty(item.value);
-            hasPricingVariant = true;
-          });
-        } else {
-          if (groupItems.length > maxGroupSelection) {
-            maxGroupSelection = groupItems.length;
-          }
-        }
-      });
-
-      if (hasPricingVariant) {
-        setQuantity(Math.max(1, pricingVariantQty));
-      } else {
-        setQuantity(Math.max(1, maxGroupSelection));
-      }
-    }
-  }, [selectedVariants, isManualQty]);
-
-
-  useEffect(() => {
     if (product) {
-      const regularPrice = product.price.regular;
-      const discountedPrice = product.price.discounted || regularPrice;
-
-      // Determine price per unit based on quantity and bulk pricing tiers
-      let pricePerUnit = discountedPrice;
-
-      // Check bulk pricing tiers (these are PER-UNIT prices)
-      if (product.bulkPricing && product.bulkPricing.length > 0) {
-        const sortedBulk = [...product.bulkPricing].sort((a, b) => b.minQuantity - a.minQuantity);
-        const tier = sortedBulk.find(t => quantity >= t.minQuantity);
-        if (tier) {
-          pricePerUnit = tier.price; // This is the per-unit price for this tier
-        }
-      }
-
-      // Set the per-unit price (will be multiplied by quantity in the UI)
-      setCurrentPrice(pricePerUnit);
       setCurrentImage(product.images[0]);
     }
-  }, [product, quantity, selectedVariants]);
+  }, [product]);
 
-
-
-  if (!product) {
-    return (
-      <div className="min-h-screen flex justify-center items-center bg-gray-50">
-        <div className="bg-yellow-100 p-6 rounded-lg">
-          <p className="text-yellow-700 text-lg">Product not found</p>
-        </div>
-      </div>
-    );
-  }
-
-  // --- Variant Selection Logic ---
-  const handleVariantSelect = (groupName: string, variant: any) => {
-    const newSelectedVariants = new Map(selectedVariants);
-    const currentItems = newSelectedVariants.get(groupName) || [];
-    
-    // Toggle selection
-    const index = currentItems.findIndex(i => i.value === variant.value);
-    let updatedItems;
-    if (index > -1) {
-      updatedItems = currentItems.filter(i => i.value !== variant.value);
-    } else {
-      updatedItems = [...currentItems, variant];
-    }
-    
-    if (updatedItems.length === 0) {
-        newSelectedVariants.delete(groupName);
-    } else {
-        newSelectedVariants.set(groupName, updatedItems);
-    }
-
-    // Image update: use variant image if available
-    if (variant.image?.url) {
-      setCurrentImage(variant.image);
-    }
-    
-    setIsManualQty(false); // Reset to auto-sync when interacting with variants
-    setSelectedVariants(newSelectedVariants);
-  };
-
-  // --- Quantity Logic ---
   const handleIncrement = () => {
-      setIsManualQty(true);
-      setQuantity((q) => q + 1);
+       if ((product?.variants?.length ?? 0) === 0) {
+           setManualQuantity(q => q + 1);
+       }
   };
   const handleDecrement = () => {
-      setIsManualQty(true);
-      setQuantity((q) => (q > 1 ? q - 1 : 1));
+       if ((product?.variants?.length ?? 0) === 0) {
+           setManualQuantity(q => Math.max(1, q - 1));
+       }
   };
+
+
 
   const calculateTotalAmount = (
     courierChargeType: string | null,
     currentDiscount: number
   ) => {
-    const productTotal = currentPrice * quantity;
+    const productTotal = finalTotal;
     if (product.additionalInfo?.freeShipping) {
       return Math.max(0, productTotal - currentDiscount);
     }
@@ -208,23 +111,28 @@ const LandingPage = ({ product }: { product: Product }) => {
         formData.courierCharge,
         discount
       );
+
+      // Transform variants for Order API
+      const variantsPayload: Record<string, any[]> = {};
+      selectedVariants.forEach(sv => {
+          if (!variantsPayload[sv.group]) variantsPayload[sv.group] = [];
+          variantsPayload[sv.group].push({
+              value: sv.item.value,
+              price: sv.item.price,
+              quantity: sv.quantity
+          });
+      });
+
       const orderData = {
         body: {
           items: [
             {
               product: product._id,
               image: currentImage?.url,
-              quantity,
+              quantity: effectiveQuantity,
               itemKey: `${product._id}-${Date.now()}`,
-              price: currentPrice,
-              selectedVariants: Object.fromEntries(
-                Array.from(selectedVariants.entries()).map(
-                  ([group, items]) => [
-                    group,
-                    items.map(i => ({ value: i.value, price: i.price || 0 }))
-                  ]
-                )
-              ),
+              price: finalTotal / effectiveQuantity, // Unit price
+              selectedVariants: variantsPayload,
             },
           ],
           totalAmount: totalAmount,
@@ -247,7 +155,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       const response = await createOrder(orderData).unwrap();
       setSuccessOrderDetails({
         orderId: (response as any).data._id,
-        productPrice: currentPrice * quantity,
+        productPrice: finalTotal,
         deliveryCharge: product.additionalInfo?.freeShipping
           ? 0
           : formData.courierCharge === "insideDhaka"
@@ -267,7 +175,15 @@ const LandingPage = ({ product }: { product: Product }) => {
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
-
+  if (!product) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+        <div className="bg-yellow-100 p-6 rounded-lg">
+          <p className="text-yellow-700 text-lg">Product not found</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -288,11 +204,11 @@ const LandingPage = ({ product }: { product: Product }) => {
       <LandingPageHeroSection
         product={product}
         currentImage={currentImage}
-        currentPrice={currentPrice}
+        currentPrice={finalTotal}
         setCurrentImage={setCurrentImage}
         selectedVariants={selectedVariants}
-        handleVariantSelect={handleVariantSelect}
-        quantity={quantity}
+        handleVariantSelect={addVariant}
+        quantity={effectiveQuantity}
         handleIncrement={handleIncrement}
         handleDecrement={handleDecrement}
         scrollToCheckout={scrollToCheckout}
@@ -303,7 +219,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       <DynamicBanner
         title={product.basicInfo.title}
         regularPrice={product.price.regular}
-        discountedPrice={currentPrice}
+        discountedPrice={finalTotal}
         onShopNow={scrollToCheckout}
         backgroundImage={product.images[0]?.url}
       />
@@ -338,12 +254,12 @@ const LandingPage = ({ product }: { product: Product }) => {
       <div className="container mx-auto px-4 py-12 space-y-24">
         <LandingPageProductDetails 
             product={product} 
-            selectedVariants={Object.fromEntries(selectedVariants)}
-            currentPrice={currentPrice}
+            selectedVariants={selectedVariants}
+            currentPrice={finalTotal}
             currentImage={currentImage}
-            quantity={quantity}
-            onVariantChange={handleVariantSelect}
-            onQuantityChange={setQuantity}
+            quantity={effectiveQuantity}
+            onVariantChange={addVariant}
+            onQuantityChange={setManualQuantity}
         />
 
         {/* Checkout Section Integration */}
@@ -352,16 +268,16 @@ const LandingPage = ({ product }: { product: Product }) => {
               <CheckoutSection
                 orderDetails={{
                   title: product.basicInfo.title,
-                  price: currentPrice,
+                  price: finalTotal,
                   variants: selectedVariants,
-                  quantity: quantity,
+                  quantity: effectiveQuantity,
                   image: product.images[0],
                   product: product,
                   discount: discount,
                 }}
                 handleSubmit={handleSubmit}
-                onQuantityChange={setQuantity}
-                onVariantChange={handleVariantSelect}
+                onQuantityChange={setManualQuantity}
+                onVariantChange={addVariant}
                 isLoading={isOrderLoading}
                 couponCode={couponCode}
                 setCouponCode={setCouponCode}

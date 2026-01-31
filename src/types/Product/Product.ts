@@ -141,7 +141,7 @@ export interface Product {
   // Timestamps
   createdAt: string | Date;
   updatedAt: string | Date;
-
-  // Bulk Pricing
-  bulkPricing?: { minQuantity: number; price: number }[];
+  
+  // Combo Pricing
+  comboPricing?: { minQuantity: number; discount: number }[];
 }

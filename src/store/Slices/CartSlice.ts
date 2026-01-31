@@ -3,18 +3,20 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface SelectedVariant {
   group: string;
   value: string;
+  price?: number;
+  quantity?: number;
 }
 
 export interface CartItem {
   id: string;
   itemKey: string;
   name: string;
-  price: number; // Current adjusted unit price
-  basePrice: number; // Original base price (without variants or bulk)
+  price: number; // Current adjusted unit price (effective price)
+  basePrice: number; // Original base price (without variants)
   image: string;
   quantity: number;
-  selectedVariants?: any[];
-  bulkPricing?: { minQuantity: number; price: number }[];
+  selectedVariants?: any[]; // Keep as any[] to support legacy structure or specific payload
+  comboPricing?: { minQuantity: number; discount: number }[];
   deliveryChargeInsideDhaka?: number;
   deliveryChargeOutsideDhaka?: number;
   freeShipping?: boolean;
@@ -24,49 +26,44 @@ interface CartState {
   cartItems: CartItem[];
 }
 
-// Helper to calculate bulk price
-const calculateBulkPrice = (item: CartItem): number => {
-  let basePriceToUse = item.basePrice;
+// Helper to calculate effective unit price (considering variants and combo pricing)
+const calculateEffectiveUnitPrice = (item: CartItem): number => {
+  const totalQuantity = item.quantity;
+  if (totalQuantity <= 0) return 0;
 
-  // Apply bulk discount if available
-  if (item.bulkPricing && item.bulkPricing.length > 0) {
-    const sortedBulk = [...item.bulkPricing].sort(
-      (a, b) => b.minQuantity - a.minQuantity
-    );
-    const tier = sortedBulk.find((t) => item.quantity >= t.minQuantity);
-    if (tier) {
-      basePriceToUse = tier.price;
-    }
-  }
+  // 1. Calculate Total Base Cost
+  let totalCost = item.basePrice * totalQuantity;
 
-  let finalPrice = basePriceToUse;
-
-  // Add variant prices on top of the base price
+  // 2. Add Variant Costs
   if (item.selectedVariants) {
-    const variantsToIterate = Array.isArray(item.selectedVariants) 
+     const variantsToIterate = Array.isArray(item.selectedVariants) 
       ? item.selectedVariants 
       : Object.entries(item.selectedVariants).map(([group, items]) => ({ group, items }));
 
-    variantsToIterate.forEach((variant: any) => {
-      // If it's the {group, items: [{value, price}]} format
-      if (variant.items && Array.isArray(variant.items)) {
-        variant.items.forEach((subItem: any) => {
-          finalPrice += (subItem.price || 0);
-        });
-      } else if (Array.isArray(variant)) {
-          // If it's a direct array of items from a group (from Object.entries value)
-           variant.forEach((subItem: any) => {
-            finalPrice += (subItem.price || 0);
-          });
-      } else {
-        // Old format or single select
-        const variantPrice = variant.price || 0;
-        finalPrice += variantPrice;
-      }
-    });
+     variantsToIterate.forEach((group: any) => {
+        if (group.items && Array.isArray(group.items)) {
+            group.items.forEach((v: any) => {
+                const variantQty = v.quantity ?? totalQuantity; 
+                totalCost += (v.price || 0) * variantQty;
+            });
+        } else if (typeof group.price === 'number') {
+            // Flattened single variant structure fallback
+             totalCost += group.price * totalQuantity;
+        }
+     });
   }
 
-  return finalPrice;
+  // 3. Apply Combo Discount (Flat discount on total)
+  if (item.comboPricing && item.comboPricing.length > 0) {
+      const sortedCombo = [...item.comboPricing].sort((a, b) => b.minQuantity - a.minQuantity);
+      const tier = sortedCombo.find(t => totalQuantity >= t.minQuantity);
+      if (tier) {
+          totalCost -= tier.discount;
+      }
+  }
+
+  // Return effective unit price
+  return Math.max(0, totalCost / totalQuantity);
 };
 
 // Load cart items from localStorage if they exist
@@ -96,17 +93,18 @@ const cartSlice = createSlice({
         image,
         quantity,
         selectedVariants,
-        bulkPricing,
+        comboPricing,
         deliveryChargeInsideDhaka,
         deliveryChargeOutsideDhaka,
         freeShipping,
       } = action.payload;
-      // Create a unique key that includes all variants
+
+      // Unique key: ProductID + Sorted Variant Values
       const variantKey =
         selectedVariants?.length > 0
           ? `${id}-${selectedVariants
-              .map((v: any) => `${v.group}-${v.value}`)
-              .join("-")}`
+              .map((g: any) => `${g.group}-${g.items.map((i:any) => i.value).sort().join('_')}`)
+              .sort().join("-")}`
           : id;
 
       const existingItemIndex = state.cartItems.findIndex(
@@ -115,8 +113,31 @@ const cartSlice = createSlice({
 
       if (existingItemIndex >= 0) {
         state.cartItems[existingItemIndex].quantity += quantity;
-        // Recalculate price based on new quantity
-        state.cartItems[existingItemIndex].price = calculateBulkPrice(
+        
+        // Merge variant quantities
+        if (selectedVariants && state.cartItems[existingItemIndex].selectedVariants) {
+            const existingVars = state.cartItems[existingItemIndex].selectedVariants;
+            
+            selectedVariants.forEach((newGroup: any) => {
+                // Ensure existingVars is treated as array of groups
+                // Note: existingVars might be `any` type, we assume consistent structure
+                const existingGroup = existingVars.find((g: any) => g.group === newGroup.group);
+                if (existingGroup) {
+                    newGroup.items.forEach((newItem: any) => {
+                        const existingItem = existingGroup.items.find((i: any) => i.value === newItem.value);
+                        if (existingItem) {
+                            existingItem.quantity = (existingItem.quantity || 0) + (newItem.quantity || 0);
+                        } else {
+                            existingGroup.items.push(newItem);
+                        }
+                    });
+                } else {
+                    existingVars.push(newGroup);
+                }
+            });
+        }
+        
+        state.cartItems[existingItemIndex].price = calculateEffectiveUnitPrice(
           state.cartItems[existingItemIndex]
         );
       } else {
@@ -128,13 +149,13 @@ const cartSlice = createSlice({
           price: 0, // Will be calculated
           image,
           quantity,
-          selectedVariants,
-          bulkPricing,
+          selectedVariants: selectedVariants || [],
+          comboPricing,
           deliveryChargeInsideDhaka,
           deliveryChargeOutsideDhaka,
           freeShipping,
         };
-        newItem.price = calculateBulkPrice(newItem);
+        newItem.price = calculateEffectiveUnitPrice(newItem);
         state.cartItems.push(newItem);
       }
       localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
@@ -147,7 +168,7 @@ const cartSlice = createSlice({
       const item = state.cartItems.find((item) => item.itemKey === itemKey);
       if (item) {
         item.quantity = quantity;
-        item.price = calculateBulkPrice(item);
+        item.price = calculateEffectiveUnitPrice(item);
         localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
       }
     },
@@ -163,7 +184,7 @@ const cartSlice = createSlice({
       const item = state.cartItems.find((item) => item.itemKey === itemKey);
       if (item) {
         item.quantity++;
-        item.price = calculateBulkPrice(item);
+        item.price = calculateEffectiveUnitPrice(item);
         localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
       }
     },
@@ -172,7 +193,7 @@ const cartSlice = createSlice({
       const item = state.cartItems.find((item) => item.itemKey === itemKey);
       if (item && item.quantity > 1) {
         item.quantity--;
-        item.price = calculateBulkPrice(item);
+        item.price = calculateEffectiveUnitPrice(item);
         localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
       }
     },

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
   Star,
   Minus,
@@ -155,6 +156,11 @@ const ForYouCard = ({ product }: { product: any }) => (
   </Link>
 );
 
+  /* New Hooks Integration */
+  import { useVariantQuantity } from "@/hooks/useVariantQuantity";
+  import { usePriceCalculation } from "@/hooks/usePriceCalculation";
+  /* End New Hooks Integration */
+
 const ProductDetails = () => {
   const dispatch = useDispatch();
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
@@ -167,82 +173,41 @@ const ProductDetails = () => {
   });
 
   const [selectedImage, setSelectedImage] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedVariants, setSelectedVariants] = useState<Record<string, any[]>>({});
-  const [isManualQty, setIsManualQty] = useState<boolean>(false);
+  const [, setIsManualQty] = useState<boolean>(false);
+  const [manualQuantity, setManualQuantity] = useState(1);
   
   const product = productResponse?.data;
 
-  const parseQty = (value: string) => {
-    const match = value.match(/\d+/);
-    return match ? parseInt(match[0]) : 1;
-  };
+  // Utilize new hooks
+  const {
+    selectedVariants,
+    totalQuantity,
+    addVariant,
+    updateVariantQuantity,
+    initVariants
+  } = useVariantQuantity(product?.variants, product);
 
-
+  // Initialize variants when product loads
   useEffect(() => {
-    if (product?.variants && Object.keys(selectedVariants).length === 0) {
-      const defaults: Record<string, any[]> = {};
-      product.variants.forEach(vg => {
-        if (vg.items.length > 0) {
-          defaults[vg.group] = [vg.items[0]];
-        }
-      });
-      setSelectedVariants(defaults);
+    if (product?.variants) {
+      initVariants(product.variants, product);
     }
-  }, [product, selectedVariants]);
+  }, [product, initVariants]);
 
-  // Sync Quantity with Selection
-  // Sync Quantity with Selection
-  useEffect(() => {
-    if (!isManualQty) {
-      let maxGroupSelection = 1;
-      let pricingVariantQty = 1;
-      let hasPricingVariant = false;
+  // Sync manual quantity with variant quantity
+  // Only if manual quantity interaction happened?
+  // Actually, we should probably rely on `totalQuantity` from variants principally.
+  // But if there are no variants, we fallback to manualQuantity.
+  const effectiveQuantity = (product?.variants?.length ?? 0) > 0 ? totalQuantity : manualQuantity;
 
-      Object.entries(selectedVariants).forEach(([groupName, items]) => {
-        const name = groupName.toLowerCase();
-        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
-        
-        if (isPricing) {
-          items.forEach(item => {
-            pricingVariantQty *= parseQty(item.value);
-            hasPricingVariant = true;
-          });
-        } else {
-          if (items.length > maxGroupSelection) {
-            maxGroupSelection = items.length;
-          }
-        }
-      });
+  const {
+    basePrice,
+    variantTotal,
+    comboDiscount,
+    finalTotal,
+    appliedComboTier
+  } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
 
-      if (hasPricingVariant) {
-        setQuantity(Math.max(1, pricingVariantQty));
-      } else {
-        setQuantity(Math.max(1, maxGroupSelection));
-      }
-    }
-  }, [selectedVariants, isManualQty]);
-
-  const displayPrice = useMemo(() => {
-    if (!product) return 0;
-    
-    const regularPrice = product.price.regular;
-    const discountedPrice = product.price.discounted || regularPrice;
-
-    // Determine price per unit based on quantity and bulk pricing tiers
-    let pricePerUnit = discountedPrice;
-
-    // Check bulk pricing tiers (these are PER-UNIT prices)
-    if (product.bulkPricing && product.bulkPricing.length > 0) {
-      const sortedBulk = [...product.bulkPricing].sort((a, b) => b.minQuantity - a.minQuantity);
-      const tier = sortedBulk.find(t => quantity >= t.minQuantity);
-      if (tier) {
-        pricePerUnit = tier.price; // This is the per-unit price for this tier
-      }
-    }
-
-    return pricePerUnit;
-  }, [product, quantity]);
 
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -257,9 +222,43 @@ const ProductDetails = () => {
   const handleAddToCart = () => {
     if (!product) return;
 
-    const variantsPayload = Object.entries(selectedVariants).map(([group, items]) => ({
+    // Validate that at least one variant is selected
+    if (totalQuantity === 0 || selectedVariants.length === 0) {
+      toast.error('Please select at least one variant with quantity greater than 0', {
+        position: 'top-right',
+        autoClose: 3000
+      });
+      return;
+    }
+
+    // Transform selectedVariants to cart format if needed
+    // Assuming backend/cart supports this structure or we flatten it.
+    // For now, let's keep consistency with existing structure but with quantity.
+    
+    // Group variants by group name for CartSlice compatibility if needed?
+    // The CartSlice likely expects `selectedVariants` as array of objects.
+    // Let's modify the payload to include quantity info.
+    
+    // Convert to Group -> Items[] structure for backward compatibility if needed, 
+    // OR update CartSlice to handle flat list with quantities.
+    // The previous structure was: { group, items: [{value, price}] }
+    // We can group them back.
+    
+    const groupedVariants: Record<string, any[]> = {};
+    selectedVariants.forEach(sv => {
+        if (!groupedVariants[sv.group]) {
+            groupedVariants[sv.group] = [];
+        }
+        groupedVariants[sv.group].push({
+            value: sv.item.value,
+            price: sv.item.price,
+            quantity: sv.quantity // Add quantity here
+        });
+    });
+
+    const variantsPayload = Object.entries(groupedVariants).map(([group, items]) => ({
       group,
-      items: items.map(i => ({ value: i.value, price: i.price || 0 }))
+      items
     }));
 
     dispatch(
@@ -268,12 +267,13 @@ const ProductDetails = () => {
         name: product.basicInfo.title,
         price: product.price.discounted || product.price.regular,
         image: product.images[0]?.url,
-        quantity: quantity,
+        quantity: effectiveQuantity,
         selectedVariants: variantsPayload || [],
-        bulkPricing: product.bulkPricing || [],
         deliveryChargeInsideDhaka: product.basicInfo.deliveryChargeInsideDhaka,
         deliveryChargeOutsideDhaka: product.basicInfo.deliveryChargeOutsideDhaka,
         freeShipping: product.additionalInfo?.freeShipping,
+        // Add combo pricing info if needed in cart
+        comboPricing: product.comboPricing
       })
     );
 
@@ -475,99 +475,177 @@ const ProductDetails = () => {
                   ({product.rating?.count || 0})
                 </span>
               </div>
-              <div className="flex items-baseline gap-4">
-                {product.price.discounted ? (
-                  <>
-                    <span className="text-3xl font-semibold text-danger">
-                      ৳{displayPrice.toLocaleString()}
-                    </span>
-                    <span className="text-xl font-medium text-text-muted line-through">
-                      ৳{product.price.regular.toLocaleString()}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-3xl font-semibold text-text-primary">
-                    ৳{displayPrice.toLocaleString()}
-                  </span>
-                )}
+              
+              {/* Price Display */}
+              <div className="flex flex-col gap-2">
+                  <div className="flex items-baseline gap-4">
+                    {product.price.discounted ? (
+                      <>
+                        <span className="text-3xl font-semibold text-danger">
+                          ৳{finalTotal.toLocaleString()}
+                        </span>
+                        <span className="text-xl font-medium text-text-muted line-through">
+                          ৳{((product.price.regular * effectiveQuantity) + variantTotal).toLocaleString()}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-3xl font-semibold text-text-primary">
+                        ৳{finalTotal.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  {(variantTotal > 0 || comboDiscount > 0) && (
+                      <div className="text-xs text-text-muted flex flex-col gap-1">
+                          {product.price.regular > 0 && <span>Base Price ({basePrice} X {effectiveQuantity}): ৳{(basePrice * effectiveQuantity).toLocaleString()}</span>}
+                          {/* {variantTotal > 0 && <span>Variants Extra: +৳{((variantTotal-basePrice)/effectiveQuantity).toLocaleString()}</span>} */}
+                          {comboDiscount > 0 && <span className="text-secondary font-bold">Combo Discount: -৳{comboDiscount.toLocaleString()}</span>}
+                      </div>
+                  )}
               </div>
               
-              {/* Bulk Pricing Section */}
-              {product.bulkPricing && product.bulkPricing.length > 0 && (
-                <div className="bg-secondary/5 rounded-2xl p-6 border border-secondary/10 space-y-4">
-                  <h3 className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-                    Bulk Pricing Details
+              {/* Combo Pricing Section */}
+              {product.comboPricing && product.comboPricing.length > 0 && (
+                <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 space-y-4">
+                   <h3 className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    Combo Savings
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {product.bulkPricing.map((tier, idx) => (
-                      <div key={idx} className="bg-white p-3 rounded-xl border border-secondary/10 flex justify-between items-center shadow-sm">
+                    {product.comboPricing.map((tier: { minQuantity: number; discount: number }, idx: number) => {
+                      // Check if this tier is the currently applied one
+                      const isApplied = appliedComboTier && appliedComboTier.minQuantity === tier.minQuantity;
+                      // Or check if this tier is met (candidate)
+                      const isMet = effectiveQuantity >= tier.minQuantity;
+
+                      return (
+                      <div key={idx} className={`bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm ${isApplied ? "border-primary ring-2 ring-primary bg-primary/5" : isMet ? "border-primary/50" : "border-primary/10"}`}>
                         <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Buy {tier.minQuantity}+</span>
-                        <span className="text-secondary font-bold">৳{tier.price.toLocaleString()}</span>
+                        <span className={`font-bold ${isApplied ? "text-primary scale-110" : "text-primary opacity-80"}`}>-৳{tier.discount.toLocaleString()} OFF</span>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 </div>
               )}
 
                 <div className="space-y-4">
-                  {product?.variants?.map((variantGroup: any) => {
-                    const isPricingGrp = (groupName: string) => {
-                      const name = groupName.toLowerCase();
-                      return name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
-                    };
-                    const isPricing = isPricingGrp(variantGroup.group);
+                  {/* Base Variant - Auto-injected quantity option */}
+                  {selectedVariants.find(v => v.isBaseVariant) && (
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] pl-1">
+                        Select Quantity
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedVariants
+                          .filter(v => v.isBaseVariant)
+                          .map((variant) => {
+                            const quantity = variant.quantity;
+                            const isActive = quantity > 0;
 
+                            return (
+                              <button
+                                key={variant.item.value}
+                                onClick={() => {
+                                  // Base variant is always selected, clicking increments quantity
+                                  updateVariantQuantity(variant.group, variant.item.value, quantity + 1);
+                                }}
+                                className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
+                                  isActive
+                                    ? "border-secondary bg-secondary text-white shadow-lg"
+                                    : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
+                                }`}
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span>{variant.item.value}</span>
+                                  <span className="opacity-60 text-[8px]">Base Price</span>
+                                </div>
+                                
+                                {/* Quantity Badge on Variant */}
+                                {isActive && (
+                                  <div className="absolute -top-2 -right-2 bg-white text-secondary text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-secondary shadow-sm z-10">
+                                    {quantity}
+                                  </div>
+                                )}
+                                
+                                {/* Decrease Control - Allow deselecting base variant */}
+                                {isActive && (
+                                  <div 
+                                    className="absolute -top-2 -left-2 bg-white text-danger text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-danger shadow-sm z-10 hover:bg-danger hover:text-white transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateVariantQuantity(variant.group, variant.item.value, quantity - 1);
+                                    }}
+                                  >
+                                    <Minus className="w-3 h-3" />
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Product Variants */}
+                  {product?.variants?.map((variantGroup: any) => {
                     return (
                     <div key={variantGroup.group} className="space-y-3">
                       <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] pl-1">
-                        Select {variantGroup.group} {isPricing && "(Updates with Quantity)"}
+                        Select {variantGroup.group}
                       </label>
                       <div className={`flex flex-wrap gap-2`}>
                         {variantGroup.items.map((item: any) => {
-                          const groupSelections = selectedVariants[variantGroup.group] || [];
-                          const isActive = groupSelections.some((i: any) => i.value === item.value);
+                          // Check if currently selected
+                          // Logic: find if this exact Item is in selectedVariants
+                          const selection = selectedVariants.find(v => v.group === variantGroup.group && v.item.value === item.value);
+                          const quantity = selection?.quantity || 0;
+                          const isActive = quantity > 0;
 
                           return (
                             <button
                               key={item.value}
                               onClick={() => {
-                                const currentItems = selectedVariants[variantGroup.group] || [];
-                                const index = currentItems.findIndex((i: any) => i.value === item.value);
-                                let updatedItems;
-                                if (index > -1) {
-                                  updatedItems = currentItems.filter((i: any) => i.value !== item.value);
-                                } else {
-                                  updatedItems = [...currentItems, item];
-                                }
+                                // Add variant (or replace logic? default behavior is usually replace for single-choice groups)
+                                // But user asked specifically for "Variant is a quantity... select multiple variant"
+                                // So we treat this as "Adding to cart configuration"
+                                addVariant(variantGroup.group, item);
                                 
-                                const newVariants: Record<string, any[]> = {
-                                  ...selectedVariants,
-                                  [variantGroup.group]: updatedItems
-                                };
-                                
-                                if (updatedItems.length === 0) {
-                                  delete newVariants[variantGroup.group];
-                                }
-                                
-                                setIsManualQty(false);
-                                setSelectedVariants(newVariants);
-
                                 if (item.image?.url) {
                                   const imgIdx = product.images.findIndex((img: any) => img.url === item.image.url);
                                   if (imgIdx !== -1) setSelectedImage(imgIdx);
                                 }
                               }}
-                              className={`px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
+                              className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
                                 isActive
                                   ? "border-secondary bg-secondary text-white shadow-lg"
                                   : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
                               }`}
                             >
-                              {item.value}
-                              {(item.price ?? 0) > 0 && <span className="ml-2 opacity-60">
-                                {isPricing ? "" : "+" }৳{item.price}
-                              </span>}
+                              <div className="flex flex-col items-center">
+                                  <span>{item.value}</span>
+                                  {(item.price ?? 0) > 0 && <span className="opacity-60 text-[8px]">
+                                    +৳{item.price}
+                                  </span>}
+                              </div>
+                              
+                              {/* Quantity Badge on Variant */}
+                              {isActive && (
+                                  <div className="absolute -top-2 -right-2 bg-white text-secondary text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-secondary shadow-sm z-10">
+                                      {quantity}
+                                  </div>
+                              )}
+                              
+                              {/* Decrease Control - Only visible if active/hovered? Or maybe handle quantity update differently? */}
+                              {isActive && (
+                                  <div 
+                                      className="absolute -top-2 -left-2 bg-white text-danger text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-danger shadow-sm z-10 hover:bg-danger hover:text-white transition-colors"
+                                      onClick={(e) => {
+                                          e.stopPropagation(); // Prevent re-adding
+                                          updateVariantQuantity(variantGroup.group, item.value, quantity - 1);
+                                      }}
+                                  >
+                                      <Minus className="w-3 h-3" />
+                                  </div>
+                              )}
                             </button>
                           );
                         })}
@@ -580,40 +658,57 @@ const ProductDetails = () => {
               <div className="flex flex-col gap-4 pt-4">
                 <div className="flex items-center gap-6">
                   <span className="small font-bold uppercase tracking-widest text-text-muted">
-                    Quantity
+                    Total Quantity
                   </span>
                   <div className="flex items-center border border-border-main rounded-component overflow-hidden bg-bg-surface h-12">
-                    <button
-                      onClick={() => {
-                        setIsManualQty(true);
-                        setQuantity(Math.max(1, quantity - 1));
-                      }}
-                      className="w-12 h-full flex items-center justify-center hover:bg-bg-base transition-colors border-r border-border-main"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="w-16 h-full flex items-center justify-center font-bold text-lg">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setIsManualQty(true);
-                        setQuantity(quantity + 1);
-                      }}
-                      className="w-12 h-full flex items-center justify-center hover:bg-bg-base transition-colors border-l border-border-main"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
+                     {/* 
+                        If variants exist, quantity is controlled by variants.
+                        If no variants, manual control.
+                     */}
+                    {(product?.variants?.length ?? 0) > 0 ? (
+                        <div className="w-32 h-full flex items-center justify-center font-bold text-lg bg-gray-50 text-text-muted cursor-not-allowed" title="Update quantity via variants">
+                           {totalQuantity}
+                        </div>
+                    ) : ( 
+                        <>
+                            <button
+                            onClick={() => {
+                                setIsManualQty(true);
+                                setManualQuantity(Math.max(1, manualQuantity - 1));
+                            }}
+                            className="w-12 h-full flex items-center justify-center hover:bg-bg-base transition-colors border-r border-border-main"
+                            >
+                            <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="w-16 h-full flex items-center justify-center font-bold text-lg">
+                            {manualQuantity}
+                            </span>
+                            <button
+                            onClick={() => {
+                                setIsManualQty(true);
+                                setManualQuantity(manualQuantity + 1);
+                            }}
+                            className="w-12 h-full flex items-center justify-center hover:bg-bg-base transition-colors border-l border-border-main"
+                            >
+                            <Plus className="w-4 h-4" />
+                            </button>
+                        </>
+                    )}
                   </div>
                 </div>
 
                 <div className="flex gap-4">
                   <button
                     onClick={handleAddToCart}
-                    className="flex-1 h-14 bg-secondary text-white rounded-component font-bold shadow-lg shadow-secondary/20 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-3"
+                    disabled={totalQuantity === 0}
+                    className={`flex-1 h-14 rounded-component font-bold shadow-lg uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all ${
+                      totalQuantity === 0 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-secondary text-white shadow-secondary/20 hover:scale-[1.02] active:scale-[0.98]'
+                    }`}
                   >
                     <ShoppingCart className="w-4 h-4" />
-                    Add to Cart
+                    Add to Cart - ৳{finalTotal.toLocaleString()}
                   </button>
                   <button
                     onClick={handleWishlist}

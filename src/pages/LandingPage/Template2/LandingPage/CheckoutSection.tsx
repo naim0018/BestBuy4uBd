@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 interface OrderDetails {
   title: string;
-  variants: Map<string, any[]> | Record<string, any[]>;
+  variants: { group: string; item: any; quantity: number }[];
   price: number;
   quantity: number;
   image?: { url: string; alt?: string };
@@ -409,16 +409,19 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                       </p>
                       <div className={`flex flex-wrap gap-2 md:gap-3`}>
                         {variantGroup.items.map((variant: any) => {
-                          const groupSelections = (variants instanceof Map ? variants.get(variantGroup.group) : (variants as Record<string, any[]>)[variantGroup.group]) || [];
-                          const isActive = groupSelections.some((item: any) => item.value === variant.value);
+                          // Find selection in array
+                          const selection = variants.find((v) => v.group === variantGroup.group && v.item.value === variant.value);
+                          const isActive = !!selection;
+                          const variantQty = selection?.quantity || 0;
 
                           return (
                           <button
                             key={variant.value}
+                            type="button"
                             onClick={() => {
                               onVariantChange(variantGroup.group, variant);
                             }}
-                            className={`px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition-all duration-200 ${
+                            className={`relative px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition-all duration-200 ${
                               isActive
                                 ? "bg-green-500 text-white shadow-lg transform scale-105"
                                 : "bg-gray-50 hover:bg-gray-100 text-gray-700"
@@ -429,6 +432,11 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                               <span className="ml-1 md:ml-2 font-bold">
                                 +৳{variant.price}
                               </span>
+                            )}
+                             {isActive && (
+                                <div className="absolute -top-2 -right-2 bg-white text-green-600 w-5 h-5 rounded-full flex items-center justify-center border border-green-600 text-xs font-bold z-10 shadow-sm">
+                                    {variantQty}
+                                </div>
                             )}
                           </button>
                           );

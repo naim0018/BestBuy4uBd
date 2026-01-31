@@ -11,7 +11,7 @@ interface LandingPageHeroSectionProps {
   setCurrentImage: (img: ProductImage) => void;
   quantity: number;
   handleVariantSelect: (groupName: string, variant: ProductVariantItem) => void;
-  selectedVariants: Map<string, ProductVariantItem[]>;
+  selectedVariants: { group: string; item: any; quantity: number }[];
   handleIncrement: () => void;
   handleDecrement: () => void;
   scrollToCheckout: () => void;
@@ -169,24 +169,6 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                 )}
               </div>
 
-              {/* Bulk Pricing UI */}
-              {product.bulkPricing && product.bulkPricing.length > 0 && (
-                <div className="bg-green-50 rounded-2xl p-6 border border-green-100 space-y-4 shadow-sm">
-                  <h3 className="text-[10px] font-bold text-green-700 uppercase tracking-[0.2em] flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    Bulk Pricing Details
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {product.bulkPricing.map((tier, idx) => (
-                      <div key={idx} className="bg-white p-3 rounded-xl border border-green-100 flex justify-between items-center hover:shadow-md transition-shadow">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Buy {tier.minQuantity}+</span>
-                        <span className="text-green-600 font-bold">৳{tier.price.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Key Features */}
               {product.basicInfo.keyFeatures && product.basicInfo.keyFeatures.length > 0 && (
                 <div className="space-y-3">
@@ -223,8 +205,9 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                       </h3>
                       <div className={`flex flex-wrap gap-3`}>
                         {variantGroup.items.map((variant: ProductVariantItem) => {
-                          const groupSelections = selectedVariants.get(variantGroup.group) || [];
-                          const isActive = groupSelections.some(item => item.value === variant.value);
+                          const selection = selectedVariants.find(v => v.group === variantGroup.group && v.item.value === variant.value);
+                          const isActive = !!selection;
+                          const variantQty = selection?.quantity || 0;
 
                           return (
                           <button
@@ -232,7 +215,7 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                             onClick={() => {
                               handleVariantSelect(variantGroup.group, variant);
                             }}
-                            className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
+                            className={`relative flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
                               isActive
                                 ? "border-green-500 bg-green-50 text-green-700 shadow-lg scale-105"
                                 : "border-gray-200 hover:border-green-300 hover:shadow-md hover:scale-105"
@@ -243,6 +226,11 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                               <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
                                 {isPricingGrp ? "" : "+"}৳{variant.price}
                               </span>
+                            )}
+                             {isActive && (
+                                <div className="absolute -top-2 -right-2 bg-white text-green-600 w-6 h-6 rounded-full flex items-center justify-center border border-green-600 text-xs font-bold z-10 shadow-sm">
+                                    {variantQty}
+                                </div>
                             )}
                           </button>
                           );
@@ -259,22 +247,30 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                 <h3 className="text-lg font-semibold text-gray-900">Quantity</h3>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden">
-                    <button
-                      onClick={handleDecrement}
-                      className="px-4 py-3 text-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-                      disabled={quantity <= 1}
-                    >
-                      −
-                    </button>
-                    <span className="px-6 py-3 text-xl font-bold border-x-2 border-gray-200 bg-gray-50">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={handleIncrement}
-                      className="px-4 py-3 text-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      +
-                    </button>
+                     {(!product.variants || product.variants.length === 0) ? (
+                        <>
+                            <button
+                              onClick={handleDecrement}
+                              className="px-4 py-3 text-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                              disabled={quantity <= 1}
+                            >
+                              −
+                            </button>
+                            <span className="px-6 py-3 text-xl font-bold border-x-2 border-gray-200 bg-gray-50">
+                              {quantity}
+                            </span>
+                            <button
+                              onClick={handleIncrement}
+                              className="px-4 py-3 text-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                            >
+                              +
+                            </button>
+                        </>
+                     ) : (
+                         <div className="px-6 py-3 text-lg font-bold text-gray-600 bg-gray-50">
+                             Total Items: {quantity}
+                         </div>
+                     )}
                   </div>
                   {product.stockQuantity && (
                     <span className="text-sm text-gray-500">

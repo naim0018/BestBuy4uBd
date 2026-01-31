@@ -13,7 +13,7 @@ interface LandingPageProductDetailsProps {
   product: Product;
   currentPrice?: number;
   currentImage?: ProductImage | null;
-  selectedVariants?: Record<string, any>;
+  selectedVariants?: { group: string; item: any; quantity: number }[];
   quantity?: number;
   onVariantChange?: (groupName: string, variant: any) => void;
   onQuantityChange?: (qty: number) => void;
