@@ -163,12 +163,29 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                 {hasDiscount && (
                   <div className="flex items-center gap-2">
                     <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-bold">
-                      You Save ৳{(savings * quantity).toLocaleString()} (
-                      {savingsPercent}%)
+                      You Save ৳{(savings * quantity).toLocaleString()} ({savingsPercent}%)
                     </span>
                   </div>
                 )}
               </div>
+
+              {/* Bulk Pricing UI */}
+              {product.bulkPricing && product.bulkPricing.length > 0 && (
+                <div className="bg-green-50 rounded-2xl p-6 border border-green-100 space-y-4 shadow-sm">
+                  <h3 className="text-[10px] font-bold text-green-700 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    Bulk Pricing Details
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {product.bulkPricing.map((tier, idx) => (
+                      <div key={idx} className="bg-white p-3 rounded-xl border border-green-100 flex justify-between items-center hover:shadow-md transition-shadow">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Buy {tier.minQuantity}+</span>
+                        <span className="text-green-600 font-bold">৳{tier.price.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Key Features */}
               {product.basicInfo.keyFeatures && product.basicInfo.keyFeatures.length > 0 && (

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 interface OrderDetails {
   title: string;
-  variants: Map<string, any[]>;
+  variants: Map<string, any[]> | Record<string, any[]>;
   price: number;
   quantity: number;
   image?: { url: string; alt?: string };
@@ -409,7 +409,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                       </p>
                       <div className={`flex flex-wrap gap-2 md:gap-3`}>
                         {variantGroup.items.map((variant: any) => {
-                          const groupSelections = variants.get(variantGroup.group) || [];
+                          const groupSelections = (variants instanceof Map ? variants.get(variantGroup.group) : (variants as Record<string, any[]>)[variantGroup.group]) || [];
                           const isActive = groupSelections.some((item: any) => item.value === variant.value);
 
                           return (

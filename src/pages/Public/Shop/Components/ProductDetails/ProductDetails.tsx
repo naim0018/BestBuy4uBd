@@ -195,23 +195,30 @@ const ProductDetails = () => {
   // Sync Quantity with Selection
   useEffect(() => {
     if (!isManualQty) {
-      let totalQty = 1;
-      let hasSelection = false;
-      Object.values(selectedVariants).forEach((val) => {
-        // Handle both single select (string) and multi select (array) - though ProductDetails is likely Record<string, string> or Record<string, any[]>
-        // Step 704 showed ProductDetails uses array for multi-select now? 
-        // "const [selectedVariants, setSelectedVariants] = useState<Record<string, any[]>>({});" (Step 664)
-        // Wait, Step 664 showed I updated it to Record<string, any[]> to support multi-select toggling.
-        // So I should iterate arrays.
-        if (Array.isArray(val)) {
-            val.forEach(item => {
-                totalQty *= parseQty(item.value);
-                hasSelection = true;
-            });
+      let maxGroupSelection = 1;
+      let pricingVariantQty = 1;
+      let hasPricingVariant = false;
+
+      Object.entries(selectedVariants).forEach(([groupName, items]) => {
+        const name = groupName.toLowerCase();
+        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+        
+        if (isPricing) {
+          items.forEach(item => {
+            pricingVariantQty *= parseQty(item.value);
+            hasPricingVariant = true;
+          });
+        } else {
+          if (items.length > maxGroupSelection) {
+            maxGroupSelection = items.length;
+          }
         }
       });
-      if (hasSelection) {
-        setQuantity(Math.max(1, totalQty));
+
+      if (hasPricingVariant) {
+        setQuantity(Math.max(1, pricingVariantQty));
+      } else {
+        setQuantity(Math.max(1, maxGroupSelection));
       }
     }
   }, [selectedVariants, isManualQty]);
@@ -219,36 +226,23 @@ const ProductDetails = () => {
   const displayPrice = useMemo(() => {
     if (!product) return 0;
     
-    const basePrice = product.price.discounted || product.price.regular;
-    let pricingVariantPrice = 0;
-    let totalSurcharges = 0;
-    let hasPricingVariant = false;
+    const regularPrice = product.price.regular;
+    const discountedPrice = product.price.discounted || regularPrice;
 
-    Object.entries(selectedVariants).forEach(([groupName, items]) => {
-      const name = groupName.toLowerCase();
-      const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+    // Determine price per unit based on quantity and bulk pricing tiers
+    let pricePerUnit = discountedPrice;
 
-      items.forEach(item => {
-        if (item.price && item.price > 0) {
-          if (isPricing) {
-            pricingVariantPrice = item.price;
-            hasPricingVariant = true;
-          } else {
-            totalSurcharges += item.price;
-          }
-        }
-      });
-    });
-
-    let unitPrice = 0;
-    if (hasPricingVariant) {
-      unitPrice = (pricingVariantPrice / quantity) + totalSurcharges;
-    } else {
-      unitPrice = basePrice + totalSurcharges;
+    // Check bulk pricing tiers (these are PER-UNIT prices)
+    if (product.bulkPricing && product.bulkPricing.length > 0) {
+      const sortedBulk = [...product.bulkPricing].sort((a, b) => b.minQuantity - a.minQuantity);
+      const tier = sortedBulk.find(t => quantity >= t.minQuantity);
+      if (tier) {
+        pricePerUnit = tier.price; // This is the per-unit price for this tier
+      }
     }
 
-    return unitPrice;
-  }, [product, quantity, selectedVariants]);
+    return pricePerUnit;
+  }, [product, quantity]);
 
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -272,7 +266,7 @@ const ProductDetails = () => {
       addToCart({
         id: product._id,
         name: product.basicInfo.title,
-        price: displayPrice,
+        price: product.price.discounted || product.price.regular,
         image: product.images[0]?.url,
         quantity: quantity,
         selectedVariants: variantsPayload || [],

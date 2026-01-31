@@ -22,44 +22,6 @@ const isPricingVariant = (groupName: string): boolean => {
          name.includes("প্যাকেজ");
 };
 
-// Helper function to find a pricing variant that matches the current quantity
-const findMatchingPricingVariant = (selectedVariants: Record<string, any[]>, quantity: number) => {
-  for (const [groupName, items] of Object.entries(selectedVariants)) {
-    if (isPricingVariant(groupName)) {
-      for (const item of items) {
-        const match = item.value.match(/\d+/);
-        const variantQty = match ? parseInt(match[0]) : 1;
-
-        if (variantQty === quantity && item.price && item.price > 0) {
-          return item;
-        }
-      }
-    }
-  }
-  return null;
-};
-
-// Helper function to calculate price based on non-pricing variants
-const calculateNonPricingVariantsPrice = (selectedVariants: Record<string, any[]>, basePrice: number) => {
-  let nonPricingVariantSum = 0;
-  let nonPricingCount = 0;
-
-  for (const [groupName, items] of Object.entries(selectedVariants)) {
-    if (!isPricingVariant(groupName)) {
-      for (const item of items) {
-        nonPricingCount++;
-        if (item.price && item.price > 0) {
-          nonPricingVariantSum += item.price;
-        } else {
-          nonPricingVariantSum += basePrice;
-        }
-      }
-    }
-  }
-
-  return { nonPricingVariantSum, nonPricingCount };
-};
-
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
   const host = useGetHost();
@@ -69,6 +31,7 @@ const LandingPage = ({ product }: { product: Product }) => {
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [currentImage, setCurrentImage] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
+  const [isManualQty, setIsManualQty] = useState<boolean>(false);
 
   const [couponCode, setCouponCode] = useState<string>("");
   const [appliedCoupon, setAppliedCoupon] = useState<{
@@ -95,48 +58,56 @@ const LandingPage = ({ product }: { product: Product }) => {
   console.log(selectedVariants, product.price.regular);
   // Sync Quantity with Selection
   useEffect(() => {
-      // If we have distinct variant selections (e.g. Red, Blue), quantity should match
-      // Note: We need to avoid counting "Size" if it's attached to "Color".
-      // But structure is Record<Group, Items[]>.
-      // If I select Red (Color) and Large (Size), totalItems is 2. But Qty is 1.
-      // Heuristic: Max count of any single group.
+    if (!isManualQty) {
       let maxGroupSelection = 1;
-      Object.values(selectedVariants).forEach((items) => {
-          if (items.length > maxGroupSelection) maxGroupSelection = items.length;
+      let pricingVariantQty = 1;
+      let hasPricingVariant = false;
+
+      Object.entries(selectedVariants).forEach(([groupName, items]) => {
+        const name = groupName.toLowerCase();
+        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+        
+        if (isPricing) {
+          items.forEach(item => {
+            const match = item.value.match(/\d+/);
+            const variantQty = match ? parseInt(match[0]) : 1;
+            pricingVariantQty *= variantQty;
+            hasPricingVariant = true;
+          });
+        } else {
+          if (items.length > maxGroupSelection) {
+            maxGroupSelection = items.length;
+          }
+        }
       });
 
-      if (maxGroupSelection > 1) {
-          setQuantity(maxGroupSelection);
+      if (hasPricingVariant) {
+        setQuantity(Math.max(1, pricingVariantQty));
+      } else {
+        setQuantity(Math.max(1, maxGroupSelection));
       }
-  }, [selectedVariants]);
+    }
+  }, [selectedVariants, isManualQty]);
 
   useEffect(() => {
     if (product) {
-      const basePrice = product.price.discounted || product.price.regular;
+      const regularPrice = product.price.regular;
+      const discountedPrice = product.price.discounted || regularPrice;
 
-      // Find any pricing variant that matches the current quantity
-      const matchedPricingVariant = findMatchingPricingVariant(selectedVariants, quantity);
+      // Determine price per unit based on quantity and bulk pricing tiers
+      let pricePerUnit = discountedPrice;
 
-      // Calculate price based on selected variants
-      let finalTotal = basePrice * quantity; // Default to base price * quantity
-
-      if (matchedPricingVariant) {
-        // If we found a matching pricing variant, use its price
-        finalTotal = matchedPricingVariant.price;
-      } else {
-        // Otherwise, calculate based on non-pricing variants
-        const { nonPricingVariantSum, nonPricingCount } = calculateNonPricingVariantsPrice(selectedVariants, basePrice);
-
-        // If non-pricing variants were selected, use their sum
-        if (nonPricingCount > 0) {
-          finalTotal = nonPricingVariantSum;
+      // Check bulk pricing tiers (these are PER-UNIT prices)
+      if (product.bulkPricing && product.bulkPricing.length > 0) {
+        const sortedBulk = [...product.bulkPricing].sort((a, b) => b.minQuantity - a.minQuantity);
+        const tier = sortedBulk.find(t => quantity >= t.minQuantity);
+        if (tier) {
+          pricePerUnit = tier.price; // This is the per-unit price for this tier
         }
       }
 
-      // Calculate unit price for display
-      const finalUnitPrice = finalTotal / (quantity || 1);
-
-      setCurrentPrice(finalUnitPrice);
+      // Set the per-unit price (will be multiplied by quantity in the UI)
+      setCurrentPrice(pricePerUnit);
       setCurrentImage(product.images[0]);
     }
 
@@ -170,8 +141,14 @@ const LandingPage = ({ product }: { product: Product }) => {
     if (variant.image?.url) {
       setCurrentImage(variant.image);
     }
-
+    
+    setIsManualQty(false);
     setSelectedVariants(newVariants);
+  };
+
+  const handleManualQuantityChange = (newQty: number) => {
+    setIsManualQty(true);
+    setQuantity(newQty);
   };
 
   const applyCoupon = () => {
@@ -368,6 +345,24 @@ const LandingPage = ({ product }: { product: Product }) => {
                     </span>
                 </div>
 
+                {/* Bulk Pricing UI */}
+                {product.bulkPricing && product.bulkPricing.length > 0 && (
+                  <div className="bg-green-50 rounded-2xl p-6 border border-green-100 space-y-4 max-w-md mx-auto">
+                    <h3 className="text-[10px] font-bold text-green-700 uppercase tracking-[0.2em] flex items-center gap-2 justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
+                      Bulk Pricing Details
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {product.bulkPricing.map((tier, idx) => (
+                        <div key={idx} className="bg-white p-3 rounded-xl border border-green-100 flex justify-between items-center shadow-sm">
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Buy {tier.minQuantity}+</span>
+                          <span className="text-green-600 font-bold">৳{tier.price.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
 
 
 
@@ -502,7 +497,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                   discount: discount,
                 }}
                 handleSubmit={handleSubmit}
-                onQuantityChange={setQuantity}
+                onQuantityChange={handleManualQuantityChange}
                 onVariantChange={handleVariantChange}
                 isLoading={isOrderLoading}
                 couponCode={couponCode}

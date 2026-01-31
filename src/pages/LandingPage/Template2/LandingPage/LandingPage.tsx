@@ -83,56 +83,54 @@ const LandingPage = ({ product }: { product: Product }) => {
   // Sync Quantity with Selection
   useEffect(() => {
     if (!isManualQty) {
-      let totalQty = 1;
-      let hasPricingSelection = false;
+      let maxGroupSelection = 1;
+      let pricingVariantQty = 1;
+      let hasPricingVariant = false;
+
       selectedVariants.forEach((groupItems, groupName) => {
         const name = groupName.toLowerCase();
         const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
+        
         if (isPricing) {
           groupItems.forEach(item => {
-            totalQty *= parseQty(item.value);
-            hasPricingSelection = true;
+            pricingVariantQty *= parseQty(item.value);
+            hasPricingVariant = true;
           });
+        } else {
+          if (groupItems.length > maxGroupSelection) {
+            maxGroupSelection = groupItems.length;
+          }
         }
       });
-      if (hasPricingSelection) {
-        setQuantity(Math.max(1, totalQty));
+
+      if (hasPricingVariant) {
+        setQuantity(Math.max(1, pricingVariantQty));
+      } else {
+        setQuantity(Math.max(1, maxGroupSelection));
       }
     }
   }, [selectedVariants, isManualQty]);
 
+
   useEffect(() => {
     if (product) {
-      const basePrice = product.price.discounted || product.price.regular;
-      let totalSurcharges = 0;
-      let pricingVariantPrice = 0;
-      let hasPricingVariant = false;
+      const regularPrice = product.price.regular;
+      const discountedPrice = product.price.discounted || regularPrice;
 
-      selectedVariants.forEach((items, groupName) => {
-        const name = groupName.toLowerCase();
-        const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
-        
-        items.forEach(item => {
-          if (item.price && item.price > 0) {
-            if (isPricing) {
-              pricingVariantPrice = item.price;
-              hasPricingVariant = true;
-            } else {
-              totalSurcharges += item.price;
-            }
-          }
-        });
-      });
+      // Determine price per unit based on quantity and bulk pricing tiers
+      let pricePerUnit = discountedPrice;
 
-      let unitPrice = 0;
-      if (hasPricingVariant) {
-        // If pricing variant is selected (e.g. Pack of 2 for 600), calculate unit price for consistent scaling
-        unitPrice = (pricingVariantPrice / quantity) + totalSurcharges;
-      } else {
-        unitPrice = basePrice + totalSurcharges;
+      // Check bulk pricing tiers (these are PER-UNIT prices)
+      if (product.bulkPricing && product.bulkPricing.length > 0) {
+        const sortedBulk = [...product.bulkPricing].sort((a, b) => b.minQuantity - a.minQuantity);
+        const tier = sortedBulk.find(t => quantity >= t.minQuantity);
+        if (tier) {
+          pricePerUnit = tier.price; // This is the per-unit price for this tier
+        }
       }
 
-      setCurrentPrice(unitPrice);
+      // Set the per-unit price (will be multiplied by quantity in the UI)
+      setCurrentPrice(pricePerUnit);
       setCurrentImage(product.images[0]);
     }
   }, [product, quantity, selectedVariants]);

@@ -30,25 +30,39 @@ const calculateBulkPrice = (item: CartItem): number => {
 
   // Apply bulk discount if available
   if (item.bulkPricing && item.bulkPricing.length > 0) {
-    // Sort bulk pricing by minQuantity descending to find the highest matching tier
     const sortedBulk = [...item.bulkPricing].sort(
       (a, b) => b.minQuantity - a.minQuantity
     );
     const tier = sortedBulk.find((t) => item.quantity >= t.minQuantity);
     if (tier) {
-      // The tier price usually replaces the base discounted/regular price
       basePriceToUse = tier.price;
     }
   }
 
   let finalPrice = basePriceToUse;
 
-  // Add variant prices on top of the (possibly bulk-discounted) base price
-  if (item.selectedVariants && item.selectedVariants.length > 0) {
-    item.selectedVariants.forEach((variant: any) => {
-      // Handle both formats of variants (from ProductDetails vs LandingPage)
-      const variantPrice = variant.price || variant.items?.find((vItem: any) => vItem.value === variant.value)?.price || 0;
-      finalPrice += variantPrice;
+  // Add variant prices on top of the base price
+  if (item.selectedVariants) {
+    const variantsToIterate = Array.isArray(item.selectedVariants) 
+      ? item.selectedVariants 
+      : Object.entries(item.selectedVariants).map(([group, items]) => ({ group, items }));
+
+    variantsToIterate.forEach((variant: any) => {
+      // If it's the {group, items: [{value, price}]} format
+      if (variant.items && Array.isArray(variant.items)) {
+        variant.items.forEach((subItem: any) => {
+          finalPrice += (subItem.price || 0);
+        });
+      } else if (Array.isArray(variant)) {
+          // If it's a direct array of items from a group (from Object.entries value)
+           variant.forEach((subItem: any) => {
+            finalPrice += (subItem.price || 0);
+          });
+      } else {
+        // Old format or single select
+        const variantPrice = variant.price || 0;
+        finalPrice += variantPrice;
+      }
     });
   }
 
