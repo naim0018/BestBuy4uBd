@@ -14,10 +14,6 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
   const token = user?.accessToken;
 
-  // Simple check for now. Ideally, we should verify token validity/expiration.
-  // The BaseApi handles 401/refresh token logic for API calls.
-  // This component mainly handles route access.
-
   if (!token) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
