@@ -15,7 +15,7 @@ import {
   KeyFeaturesField,
   VariantsField,
   SpecificationsField,
-  BulkPricingField,
+  ComboPricingField,
 } from "./NestedArrayFields";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
@@ -316,7 +316,9 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
     reset,
   } = form;
 
-  // Populate form when defaultValues arrive (e.g., when editing)
+          
+      // Populate form when defaultValues arrive (e.g., when editing)
+      // Note: We don't populate deprecated bulkPricing if it exists in old data
   useEffect(() => {
     if (defaultValues) {
       reset(defaultValues);
@@ -393,7 +395,7 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
         </div>
 
         <div className="mt-8 border-t border-border pt-8">
-          <BulkPricingField 
+          <ComboPricingField 
             control={control} 
             register={register} 
             errors={errors} 

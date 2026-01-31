@@ -103,12 +103,12 @@ export default function ProductAdminPage() {
                     : undefined,
                 })),
             })) || [],
-        bulkPricing:
-          draft.bulkPricing
-            ?.filter((tier) => tier.minQuantity > 0 && tier.price > 0)
+        comboPricing:
+          draft.comboPricing
+            ?.filter((tier) => tier.minQuantity > 0 && tier.discount > 0)
             .map((tier) => ({
               minQuantity: Number(tier.minQuantity),
-              price: Number(tier.price),
+              discount: Number(tier.discount),
             })) || [],
         specifications:
           draft.specifications

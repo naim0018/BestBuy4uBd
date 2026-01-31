@@ -630,32 +630,32 @@ function SpecificationGroup({
   );
 }
 // ============================================
-// 💰 Bulk Pricing Array Component
+// 💰 Combo Pricing Array Component
 // ============================================
-interface BulkPricingFieldProps {
+interface ComboPricingFieldProps {
   control: Control<ProductFormValues>;
   register: UseFormRegister<ProductFormValues>;
   errors: FieldErrors<ProductFormValues>;
   watch: any;
 }
 
-export const BulkPricingField = memo(({ control, register, errors, watch }: BulkPricingFieldProps) => {
+export const ComboPricingField = memo(({ control, register, errors, watch }: ComboPricingFieldProps) => {
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "bulkPricing",
+    name: "comboPricing",
   });
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800">Bulk Pricing (Quantity Discounts)</h3>
+        <h3 className="text-lg font-semibold text-gray-800">Combo Pricing (Buy More, Save More)</h3>
         <button
           type="button"
-          onClick={() => append({ minQuantity: 2, price: 0 })}
+          onClick={() => append({ minQuantity: 2, discount: 0 })}
           className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Add Tier
+          Add Offer
         </button>
       </div>
 
@@ -671,31 +671,31 @@ export const BulkPricingField = memo(({ control, register, errors, watch }: Bulk
                   Min Quantity <span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register(`bulkPricing.${index}.minQuantity`, { valueAsNumber: true })}
+                  {...register(`comboPricing.${index}.minQuantity`, { valueAsNumber: true })}
                   type="number"
                   placeholder="2"
                   className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 />
-                {errors.bulkPricing?.[index]?.minQuantity && (
+                {errors.comboPricing?.[index]?.minQuantity && (
                   <p className="text-xs text-red-500 mt-1">
-                    {errors.bulkPricing[index]?.minQuantity?.message}
+                    {errors.comboPricing[index]?.minQuantity?.message}
                   </p>
                 )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Unit Price (৳) <span className="text-red-500">*</span>
+                  Discount Amount (৳) <span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register(`bulkPricing.${index}.price`, { valueAsNumber: true })}
+                  {...register(`comboPricing.${index}.discount`, { valueAsNumber: true })}
                   type="number"
                   placeholder="0"
                   className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 />
-                {errors.bulkPricing?.[index]?.price && (
+                {errors.comboPricing?.[index]?.discount && (
                   <p className="text-xs text-red-500 mt-1">
-                    {errors.bulkPricing[index]?.price?.message}
+                    {errors.comboPricing[index]?.discount?.message}
                   </p>
                 )}
               </div>
@@ -712,7 +712,7 @@ export const BulkPricingField = memo(({ control, register, errors, watch }: Bulk
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-2 italic">
-              User will pay ৳{watch(`bulkPricing.${index}.price`) || 0} per item if they buy {watch(`bulkPricing.${index}.minQuantity`) || 0} or more.
+              User will get ৳{watch(`comboPricing.${index}.discount`) || 0} OFF on total amount if they buy {watch(`comboPricing.${index}.minQuantity`) || 0} or more items.
             </p>
           </div>
         ))}
@@ -727,4 +727,4 @@ export const BulkPricingField = memo(({ control, register, errors, watch }: Bulk
   );
 });
 
-BulkPricingField.displayName = "BulkPricingField";
+ComboPricingField.displayName = "ComboPricingField";

@@ -67,9 +67,9 @@ const ProductPriceSchema = z.object({
   selectedVariants: z.record(z.string()).optional(),
 });
 
-const BulkPricingSchema = z.object({
+const ComboPricingSchema = z.object({
   minQuantity: z.number().int().positive("Minimum quantity must be at least 1"),
-  price: z.number().positive("Bulk price must be positive"),
+  discount: z.number().nonnegative("Discount must be non-negative"),
 });
 
 const ProductShippingSchema = z.object({
@@ -112,7 +112,7 @@ export const ProductFormSchema = z.object({
   images: z.array(ProductImageSchema).min(1, "At least one image is required"),
   videos: z.array(ProductVideoSchema).optional(),
   variants: z.array(ProductVariantSchema).optional(),
-  bulkPricing: z.array(BulkPricingSchema).optional(),
+  comboPricing: z.array(ComboPricingSchema).optional(),
   specifications: z.array(ProductSpecGroupSchema).optional(),
   reviews: z.array(ProductReviewSchema).optional(),
   rating: z
