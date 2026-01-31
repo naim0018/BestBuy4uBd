@@ -21,6 +21,7 @@ const LandingPage = ({ product }: { product: Product }) => {
     selectedVariants,
     totalQuantity,
     addVariant,
+    updateVariantQuantity,
     initVariants
   } = useVariantQuantity(product?.variants, product);
 
@@ -107,6 +108,12 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const handleSubmit = async (formData: any) => {
     try {
+      // Validate quantity
+      if (totalQuantity === 0) {
+        toast.error('Please select at least one variant with quantity greater than 0');
+        return;
+      }
+
       const totalAmount = calculateTotalAmount(
         formData.courierCharge,
         discount
@@ -278,6 +285,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                 handleSubmit={handleSubmit}
                 onQuantityChange={setManualQuantity}
                 onVariantChange={addVariant}
+                onVariantUpdate={updateVariantQuantity}
                 isLoading={isOrderLoading}
                 couponCode={couponCode}
                 setCouponCode={setCouponCode}

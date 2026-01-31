@@ -22,6 +22,7 @@ import AnimatedContainer from "../Components/AnimatedContainer";
 import DynamicBanner from "../Components/DynamicBanner";
 import { useVariantQuantity } from "@/hooks/useVariantQuantity";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
+import VariantSelector from "../Components/VariantSelector";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const navigate = useNavigate();
@@ -33,6 +34,7 @@ const LandingPage = ({ product }: { product: Product }) => {
     selectedVariants,
     totalQuantity,
     addVariant,
+    updateVariantQuantity,
     initVariants
   } = useVariantQuantity(product?.variants, product);
 
@@ -342,49 +344,23 @@ const LandingPage = ({ product }: { product: Product }) => {
                   )}
 
                 {/* Variant Selection */}
-                <div className="space-y-4">
-                    {product.variants?.map((vg: any) => (
-                        <div key={vg.group} className="space-y-2">
-                            <p className="text-sm font-semibold text-gray-700">{vg.group}</p>
-                            <div className="flex flex-wrap gap-2">
-                                {vg.items.map((item: any) => {
-                                     // Check if active
-                                     const selection = selectedVariants.find(v => v.group === vg.group && v.item.value === item.value);
-                                     const qty = selection?.quantity || 0;
-                                     const isActive = qty > 0;
-                                     
-                                     return (
-                                        <button
-                                            key={item.value}
-                                            onClick={() => {
-                                                addVariant(vg.group, item);
-                                                if (item.image?.url) {
-                                                    const imgIndex = images.findIndex((img) => img.url === item.image.url);
-                                                    if (imgIndex !== -1) setSelectedImage(imgIndex);
-                                                }
-                                            }}
-                                            className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                                                isActive ? "bg-primary-green text-white shadow-md scale-105" : "bg-gray-50 text-gray-700 border border-gray-200 hover:border-primary-green"
-                                            }`}
-                                        >
-                                            <div className="flex flex-col items-center">
-                                                <span>{item.value}</span>
-                                                {item.price > 0 && <span className="opacity-70 text-[10px]">+৳{item.price}</span>}
-                                            </div>
-                                             {isActive && (
-                                                <div className="absolute -top-2 -right-2 bg-white text-green-600 w-5 h-5 rounded-full flex items-center justify-center border border-green-600 text-xs font-bold z-10">
-                                                    {qty}
-                                                </div>
-                                            )}
-                                        </button>
-                                     );
-                                })}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+            <div className="mb-8">
+                <VariantSelector
+                    selectedVariants={selectedVariants}
+                    productVariants={product.variants}
+                    onVariantAdd={(group, item) => {
+                        addVariant(group, item);
+                        if (item.image?.url) {
+                            const imgIndex = images.findIndex((img: any) => img.url === item.image.url);
+                            if (imgIndex !== -1) setSelectedImage(imgIndex);
+                        }
+                    }}
+                    onVariantUpdate={updateVariantQuantity}
+                    showBaseVariant={true}
+                />
             </div>
-            
+            </div>
+                        
              {/* Features Card (unchanged) */}
             {/* Quantity & Buy Now */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -403,7 +379,24 @@ const LandingPage = ({ product }: { product: Product }) => {
                  </div>
                  
                  <div className="flex-1 flex gap-3">
-                    <Button size="lg" color="primary" className="flex-1 font-bold text-white shadow-lg" startContent={<ShoppingCart className="w-5 h-5" />} onPress={scrollToCheckout} isDisabled={stockStatus !== "In Stock"}>
+                    <Button 
+                        size="lg" 
+                        color="primary" 
+                        className={`flex-1 font-bold shadow-lg ${
+                            totalQuantity === 0 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'text-white'
+                        }`}
+                        startContent={<ShoppingCart className="w-5 h-5" />} 
+                        onPress={() => {
+                            if (totalQuantity === 0) {
+                                toast.error('Please select at least one variant with quantity greater than 0');
+                                return;
+                            }
+                            scrollToCheckout();
+                        }}
+                        isDisabled={totalQuantity === 0 || stockStatus !== "In Stock"}
+                    >
                         Buy Now - ৳{finalTotal.toLocaleString()}
                     </Button>
                  </div>
@@ -531,6 +524,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                 handleSubmit={handleSubmit}
                 onQuantityChange={setManualQuantity}
                 onVariantChange={addVariant}
+                onVariantUpdate={updateVariantQuantity}
                 isLoading={isOrderLoading}
                 couponCode={couponCode}
                 setCouponCode={setCouponCode}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
+import VariantSelector from "../../Components/VariantSelector";
 
 interface OrderDetails {
   title: string;
@@ -17,6 +18,7 @@ interface CheckoutSectionProps {
   handleSubmit: (formData: any) => void;
   onQuantityChange: (quantity: number) => void;
   onVariantChange: (groupName: string, variant: any) => void;
+  onVariantUpdate?: (group: string, value: string, quantity: number) => void;
   isLoading?: boolean;
   couponCode?: string;
   setCouponCode: (code: string) => void;
@@ -28,6 +30,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
   handleSubmit,
   onQuantityChange,
   onVariantChange,
+  onVariantUpdate,
   isLoading,
   couponCode,
   setCouponCode,
@@ -395,57 +398,14 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                 <h3 className="font-bold text-base md:text-lg text-gray-800 mb-4">
                   ভেরিয়েন্ট নির্বাচন করুন
                 </h3>
-                <div className="space-y-4 md:space-y-6">
-                  {product.variants.filter((vg: any) => {
-                    const name = vg.group.toLowerCase();
-                    const isPricing = name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
-                    return !isPricing;
-                  }).map((variantGroup: any) => {
-
-                    return (
-                    <div key={variantGroup.group}>
-                      <p className="text-gray-700 font-medium mb-2">
-                        {variantGroup.group}
-                      </p>
-                      <div className={`flex flex-wrap gap-2 md:gap-3`}>
-                        {variantGroup.items.map((variant: any) => {
-                          // Find selection in array
-                          const selection = variants.find((v) => v.group === variantGroup.group && v.item.value === variant.value);
-                          const isActive = !!selection;
-                          const variantQty = selection?.quantity || 0;
-
-                          return (
-                          <button
-                            key={variant.value}
-                            type="button"
-                            onClick={() => {
-                              onVariantChange(variantGroup.group, variant);
-                            }}
-                            className={`relative px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition-all duration-200 ${
-                              isActive
-                                ? "bg-green-500 text-white shadow-lg transform scale-105"
-                                : "bg-gray-50 hover:bg-gray-100 text-gray-700"
-                            }`}
-                          >
-                            {variant.value}
-                            {variant.price > 0 && (
-                              <span className="ml-1 md:ml-2 font-bold">
-                                +৳{variant.price}
-                              </span>
-                            )}
-                             {isActive && (
-                                <div className="absolute -top-2 -right-2 bg-white text-green-600 w-5 h-5 rounded-full flex items-center justify-center border border-green-600 text-xs font-bold z-10 shadow-sm">
-                                    {variantQty}
-                                </div>
-                            )}
-                          </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    );
-                  })}
-                </div>
+                <VariantSelector
+                  selectedVariants={variants}
+                  productVariants={product.variants}
+                  onVariantAdd={onVariantChange}
+                  onVariantUpdate={onVariantUpdate || (() => {})}
+                  showBaseVariant={true}
+                  className="text-sm"
+                />
               </div>
             )}
 
