@@ -58,7 +58,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
       : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150);
 
   const calculateTotalPrice = () => {
-    const subtotal = price * quantity;
+    const subtotal = price; // Price passed is already the total (finalTotal)
     const total = subtotal + deliveryCharge - (discount || 0);
     return total > 0 ? total : 0;
   };
@@ -408,7 +408,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
 
                 <div className="flex justify-between items-center text-sm md:text-base">
                   <span className="text-gray-600">সাবটোটাল:</span>
-                  <span className="font-medium">৳{price * quantity}</span>
+                  <span className="font-medium">৳{price}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm md:text-base text-gray-600">
                   <span>ডেলিভারি চার্জ:</span>
