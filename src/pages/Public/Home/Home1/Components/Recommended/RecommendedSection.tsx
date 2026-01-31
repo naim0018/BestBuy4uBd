@@ -15,7 +15,7 @@ const RecommendedSection = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedProduct, setSelectedProduct] = useState<ProductData | null>(
-    null
+    null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -66,7 +66,7 @@ const RecommendedSection = () => {
         ? Math.round(
             ((item.price.regular - item.price.discounted) /
               item.price.regular) *
-              100
+              100,
           )
         : undefined,
       rating: item.rating?.average || 0,
@@ -79,8 +79,8 @@ const RecommendedSection = () => {
         item.stockStatus === "Out of Stock"
           ? "SALE"
           : item.additionalInfo?.isFeatured
-          ? "HOT"
-          : undefined,
+            ? "HOT"
+            : undefined,
       description: item.basicInfo.description,
       purchases: item.sold || 0,
     }));
@@ -104,7 +104,7 @@ const RecommendedSection = () => {
 
   const currentProducts = products.slice(
     currentPage * ITEMS_PER_VIEW,
-    (currentPage + 1) * ITEMS_PER_VIEW
+    (currentPage + 1) * ITEMS_PER_VIEW,
   );
 
   return (
@@ -241,13 +241,19 @@ const RecommendedSection = () => {
 
         {/* Mobile controls */}
         <div className="md:hidden flex justify-center gap-4 mt-8">
-          <button onClick={prevPage} className="p-2 bg-bg-surface rounded-full border border-border-main">
+          <button
+            onClick={prevPage}
+            className="p-2 bg-bg-surface rounded-full border border-border-main"
+          >
             <ChevronLeft className="text-text-primary" />
           </button>
           <span className="font-semibold text-text-muted">
             {currentPage + 1} / {totalPages || 1}
           </span>
-          <button onClick={nextPage} className="p-2 bg-bg-surface rounded-full border border-border-main">
+          <button
+            onClick={nextPage}
+            className="p-2 bg-bg-surface rounded-full border border-border-main"
+          >
             <ChevronRight className="text-text-primary" />
           </button>
         </div>
