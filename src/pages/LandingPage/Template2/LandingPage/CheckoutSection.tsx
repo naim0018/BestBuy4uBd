@@ -28,7 +28,6 @@ interface CheckoutSectionProps {
 const CheckoutSection: React.FC<CheckoutSectionProps> = ({
   orderDetails,
   handleSubmit,
-  onQuantityChange,
   onVariantChange,
   onVariantUpdate,
   isLoading,
@@ -43,15 +42,8 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
   const [formValid, setFormValid] = useState(false);
   const [deliveryChargeType, setDeliveryChargeType] = useState("insideDhaka");
 
-  const handleQuantityDecrease = () => {
-    if (quantity > 1) {
-      onQuantityChange(quantity - 1);
-    }
-  };
+  // Quantity controls handled by VariantSelector
 
-  const handleQuantityIncrease = () => {
-    onQuantityChange(quantity + 1);
-  };
 
   const handleDeliveryChargeChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
@@ -393,7 +385,8 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
               </div>
             </div>
 
-            {product?.variants && product.variants.length > 0 && (
+            {/* Variant Selector - Always rendered to allow Base Variant quantity control */}
+            {product && (
               <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm">
                 <h3 className="font-bold text-base md:text-lg text-gray-800 mb-4">
                   ভেরিয়েন্ট নির্বাচন করুন
@@ -410,60 +403,9 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
             )}
 
             <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-base md:text-lg font-medium text-gray-700">
-                  পরিমাণ
-                </span>
-                <div className="flex items-center bg-green-50 rounded-xl border border-green-100">
-                  <button
-                    onClick={handleQuantityDecrease}
-                    className={`w-8 md:w-10 h-8 md:h-10 rounded-l-xl flex items-center justify-center transition-all duration-200 ${
-                      quantity <= 1
-                        ? "text-gray-300 cursor-not-allowed"
-                        : "text-green-600 hover:bg-green-100 active:scale-95"
-                    }`}
-                    disabled={quantity <= 1}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 md:h-5 w-4 md:w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M20 12H4"
-                      />
-                    </svg>
-                  </button>
-                  <div className="w-12 text-center font-bold text-base md:text-lg border-x border-green-100 py-1.5">
-                    {quantity}
-                  </div>
-                  <button
-                    onClick={handleQuantityIncrease}
-                    className="w-8 md:w-10 h-8 md:h-10 rounded-r-xl flex items-center justify-center text-green-600 hover:bg-green-100 active:scale-95 transition-all duration-200"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 md:h-5 w-4 md:w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+               {/* Quantity controls moved to VariantSelector */}
               <div className="space-y-3">
+
                 <div className="flex justify-between items-center text-sm md:text-base">
                   <span className="text-gray-600">সাবটোটাল:</span>
                   <span className="font-medium">৳{price * quantity}</span>

@@ -5,8 +5,6 @@ import {
   ShoppingCart,
   Truck,
   ShieldCheck,
-  Minus,
-  Plus,
   Layout,
   ClipboardList,
   MessageSquare,
@@ -46,8 +44,8 @@ const LandingPage = ({ product }: { product: Product }) => {
   }, [product, initVariants]);
 
   // Use effective quantity (fallback to 1 if no variants? or 1 if totalQty is 0?)
-  const [manualQuantity, setManualQuantity] = useState(1);
-  const effectiveQuantity = (product?.variants?.length ?? 0) > 0 ? totalQuantity : manualQuantity;
+  // Use totalQuantity directly as effectiveQuantity since base variant is now handled by hook
+  const effectiveQuantity = totalQuantity;
 
   const {
       basePrice,
@@ -363,20 +361,9 @@ const LandingPage = ({ product }: { product: Product }) => {
                         
              {/* Features Card (unchanged) */}
             {/* Quantity & Buy Now */}
+            {/* Quantity & Buy Now - Simplified to just button since VariantSelector handles quantity */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                 <div className="flex items-center border border-gray-300 rounded-xl h-12 w-fit">
-                    {(product.variants?.length ?? 0) === 0 ? (
-                        <>
-                             <button onClick={() => setManualQuantity(Math.max(1, manualQuantity - 1))} className="px-4 hover:text-primary-green transition"><Minus className="w-4 h-4" /></button>
-                             <span className="w-12 text-center font-bold text-lg">{manualQuantity}</span>
-                             <button onClick={() => setManualQuantity(manualQuantity + 1)} className="px-4 hover:text-primary-green transition"><Plus className="w-4 h-4" /></button>
-                        </>
-                    ) : (
-                        <div className="px-6 font-bold text-lg text-gray-500 bg-gray-50 h-full flex items-center justify-center min-w-[120px]">
-                            Qty: {effectiveQuantity}
-                        </div>
-                    )}
-                 </div>
+
                  
                  <div className="flex-1 flex gap-3">
                     <Button 
@@ -522,7 +509,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                   discount: discount,
                 }}
                 handleSubmit={handleSubmit}
-                onQuantityChange={setManualQuantity}
+                onQuantityChange={() => {}}
                 onVariantChange={addVariant}
                 onVariantUpdate={updateVariantQuantity}
                 isLoading={isOrderLoading}

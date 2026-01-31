@@ -34,8 +34,7 @@ const LandingPage = ({ product }: { product: Product }) => {
      if(product?.variants) initVariants(product.variants, product);
   }, [product, initVariants]);
 
-  const [manualQuantity, setManualQuantity] = useState(1);
-  const effectiveQuantity = (product?.variants?.length ?? 0) > 0 ? totalQuantity : manualQuantity;
+  const effectiveQuantity = totalQuantity;
 
   const {
       finalTotal
@@ -71,9 +70,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       if (variant.image?.url) setCurrentImage(variant.image);
   };
 
-  const handleManualQuantityChange = (newQty: number) => {
-    setManualQuantity(newQty);
-  };
+  // Manual quantity handling removed in favor of VariantSelector
 
 
 
@@ -420,7 +417,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                   discount: discount,
                 }}
                 handleSubmit={handleSubmit}
-                onQuantityChange={handleManualQuantityChange}
+                onQuantityChange={() => {}}
                 onVariantChange={handleVariantChange}
                 onVariantUpdate={updateVariantQuantity}
                 isLoading={isOrderLoading}

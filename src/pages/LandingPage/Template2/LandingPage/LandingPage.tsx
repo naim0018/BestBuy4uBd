@@ -31,8 +31,7 @@ const LandingPage = ({ product }: { product: Product }) => {
     }
   }, [product, initVariants]);
 
-  const [manualQuantity, setManualQuantity] = useState(1);
-  const effectiveQuantity = (product?.variants?.length ?? 0) > 0 ? totalQuantity : manualQuantity;
+  const effectiveQuantity = totalQuantity;
 
   const {
       finalTotal
@@ -78,14 +77,10 @@ const LandingPage = ({ product }: { product: Product }) => {
   }, [product]);
 
   const handleIncrement = () => {
-       if ((product?.variants?.length ?? 0) === 0) {
-           setManualQuantity(q => q + 1);
-       }
+       // Manual increment handling removed in favor of VariantSelector
   };
   const handleDecrement = () => {
-       if ((product?.variants?.length ?? 0) === 0) {
-           setManualQuantity(q => Math.max(1, q - 1));
-       }
+       // Manual decrement handling removed in favor of VariantSelector
   };
 
 
@@ -266,7 +261,7 @@ const LandingPage = ({ product }: { product: Product }) => {
             currentImage={currentImage}
             quantity={effectiveQuantity}
             onVariantChange={addVariant}
-            onQuantityChange={setManualQuantity}
+            onQuantityChange={() => {}}
         />
 
         {/* Checkout Section Integration */}
@@ -283,7 +278,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                   discount: discount,
                 }}
                 handleSubmit={handleSubmit}
-                onQuantityChange={setManualQuantity}
+                onQuantityChange={() => {}}
                 onVariantChange={addVariant}
                 onVariantUpdate={updateVariantQuantity}
                 isLoading={isOrderLoading}
