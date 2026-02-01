@@ -30,7 +30,9 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+        variant: item.selectedVariants?.map((g: any) => 
+          g.items.map((i: any) => `${g.group}: ${i.value}`).join(", ")
+        ).join("; ")
       })), subtotal);
     }
   }, [isOpen, cartItems, subtotal]);
@@ -95,7 +97,9 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
                                 name: item.name,
                                 price: item.price,
                                 quantity: item.quantity,
-                                variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+                                variant: item.selectedVariants?.map((g: any) => 
+                                  g.items.map((i: any) => `${g.group}: ${i.value}`).join(", ")
+                                ).join("; ")
                               });
                               dispatch(removeFromCart({ itemKey: item.itemKey }));
                             }}
@@ -178,7 +182,9 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
                         name: item.name,
                         price: item.price,
                         quantity: item.quantity,
-                        variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+                        variant: item.selectedVariants?.map((g: any) => 
+                          g.items.map((i: any) => `${g.group}: ${i.value}`).join(", ")
+                        ).join("; ")
                       }));
                       trackBeginCheckout(items, subtotal);
                       onClose();

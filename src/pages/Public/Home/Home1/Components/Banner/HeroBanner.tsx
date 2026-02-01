@@ -10,19 +10,10 @@ interface HeroBannerProps {
 
 const HeroBanner = ({ banners }: HeroBannerProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { trackViewPromotion, trackSelectPromotion } = useTracking();
+  const { trackSelectPromotion } = useTracking();
 
   useEffect(() => {
-    if (banners && banners.length > 0 && banners[currentSlide]) {
-      const banner = banners[currentSlide];
-      trackViewPromotion({
-        id: banner.id,
-        name: banner.title,
-        creative_name: "hero_banner",
-        creative_slot: `slot_${currentSlide + 1}`,
-        location_id: "home_hero"
-      });
-    }
+    // trackViewPromotion removed as per request
   }, [currentSlide, banners]);
 
   useEffect(() => {

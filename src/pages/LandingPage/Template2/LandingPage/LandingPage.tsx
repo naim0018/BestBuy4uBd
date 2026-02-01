@@ -14,9 +14,11 @@ import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import RelatedProducts from "../../Components/RelatedProducts";
 import DynamicBanner from "../../Components/DynamicBanner";
 import AnimatedContainer from "../../Components/AnimatedContainer";
+import { useTracking } from "@/hooks/useTracking";
 
 const LandingPage = ({ product }: { product: Product }) => {
   // Hooks
+  const { trackBeginCheckout, trackPurchase } = useTracking();
   const {
     selectedVariants,
     totalQuantity,
@@ -182,6 +184,36 @@ const LandingPage = ({ product }: { product: Product }) => {
         totalAmount: totalAmount,
         appliedCoupon: appliedCoupon,
       });
+
+      trackPurchase({
+        transaction_id: (response as any).data._id,
+        value: totalAmount,
+        tax: 0,
+        shipping: product.additionalInfo?.freeShipping
+          ? 0
+          : formData.courierCharge === "insideDhaka"
+            ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80)
+            : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150),
+        currency: "BDT",
+        coupon: appliedCoupon.code,
+        items: [{
+          item_id: product._id,
+          item_name: product.basicInfo.title,
+          price: finalTotal / effectiveQuantity,
+          quantity: effectiveQuantity,
+          item_category: product.basicInfo.category,
+          item_variant: selectedVariants.map((v) => `${v.group}: ${v.item.value}`).join(", "),
+        }],
+        user_data: {
+          email: formData.email,
+          phone_number: formData.phone,
+          address: {
+            street: formData.address,
+            country: "Bangladesh",
+          },
+        },
+      });
+
       setShowSuccessModal(true);
     } catch {
       toast.error("দুঃখিত! অর্ডার সম্পন্ন করা যায়নি।");
@@ -189,6 +221,18 @@ const LandingPage = ({ product }: { product: Product }) => {
   };
 
   const scrollToCheckout = () => {
+    trackBeginCheckout(
+      [{
+        id: product._id,
+        name: product.basicInfo.title,
+        price: finalTotal / effectiveQuantity,
+        quantity: effectiveQuantity,
+        category: product.basicInfo.category,
+        variant: selectedVariants.map((v) => `${v.group}: ${v.item.value}`).join(", "),
+      }],
+      finalTotal,
+      couponCode
+    );
     const el = document.getElementById("checkout");
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };

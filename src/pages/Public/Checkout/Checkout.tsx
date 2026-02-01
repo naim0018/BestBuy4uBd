@@ -62,7 +62,7 @@ const Checkout = () => {
     ? 0
     : (deliveryChargeType === "insideDhaka" ? maxDeliveryChargeInside : maxDeliveryChargeOutside);
 
-  const { trackBeginCheckout, trackAddPaymentInfo, trackAddShippingInfo, trackCouponApply, trackCheckoutError } = useTracking();
+  const { trackBeginCheckout, trackAddPaymentInfo, trackAddShippingInfo, trackCouponApply, trackCheckoutError, trackPurchase } = useTracking();
 
   const total = subtotal + deliveryCharge - discount;
 
@@ -75,7 +75,9 @@ const Checkout = () => {
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+        variant: item.selectedVariants?.map((g: any) => 
+          g.items.map((i: any) => `${g.group}: ${i.value}`).join(", ")
+        ).join("; ")
       }));
 
       // Track Begin Checkout
@@ -114,7 +116,9 @@ const Checkout = () => {
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+        variant: item.selectedVariants?.map((g: any) => 
+          g.items.map((i: any) => `${g.group}: ${i.value}`).join(", ")
+        ).join("; ")
       })), total, deliveryChargeType);
     }
   }, [deliveryChargeType]);
@@ -213,6 +217,32 @@ const Checkout = () => {
         totalAmount: total,
         appliedCoupon: appliedCoupon,
         billingInformation: orderData.body.billingInformation,
+      });
+
+      trackPurchase({
+        transaction_id: response.data._id,
+        value: total,
+        tax: 0,
+        shipping: deliveryCharge,
+        currency: "BDT",
+        coupon: appliedCoupon.code,
+        items: cartItems.map(item => ({
+          item_id: item.id,
+          item_name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          item_variant: item.selectedVariants?.map((g: any) => 
+            g.items.map((i: any) => `${g.group}: ${i.value}`).join(", ")
+          ).join("; ")
+        })),
+        user_data: {
+          email: "no-email@example.com",
+          phone_number: formData.phone,
+          address: {
+            street: formData.address,
+            country: "Bangladesh"
+          }
+        }
       });
 
       setShowSuccessModal(true);
