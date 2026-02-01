@@ -53,45 +53,38 @@ export const useVariantQuantity = (
 
   // Initialize with defaults if provided and not already selected
   useEffect(() => {
-    if (defaultVariants && defaultVariants.length > 0 && selectedVariants.length === 0) {
-       // Filter out empty variant groups
+    if (selectedVariants.length === 0) {
+      if (product) {
+        const baseVariant = createBaseVariant(product);
+        setSelectedVariants([baseVariant]);
+      } else if (defaultVariants && defaultVariants.length > 0) {
+        // Fallback for when product is not provided but variants are
         const validDefaults = defaultVariants.filter(vg => vg.items && vg.items.length > 0);
-        
         const defaults = validDefaults.map(vg => ({
-            group: vg.group,
-            item: vg.items[0], // Select first item by default
-            quantity: 1,
-            isBaseVariant: false
-        }));
-        
-        // Prepend base variant if product is provided
-        if (product) {
-          const baseVariant = createBaseVariant(product);
-          setSelectedVariants([baseVariant, ...defaults]);
-        } else {
-          setSelectedVariants(defaults);
-        }
-    } else if (product && selectedVariants.length === 0 && (!defaultVariants || defaultVariants.length === 0)) {
-      // No variants, just add base variant
-      const baseVariant = createBaseVariant(product);
-      setSelectedVariants([baseVariant]);
-    }
-  }, [defaultVariants, product]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const initVariants = useCallback((variants: any[], productData?: any) => {
-      const validDefaults = variants.filter(vg => vg.items && vg.items.length > 0);
-      const defaults = validDefaults.map(vg => ({
           group: vg.group,
           item: vg.items[0],
           quantity: 1,
           isBaseVariant: false
-      }));
-      
-      // Prepend base variant if product is provided
+        }));
+        setSelectedVariants(defaults);
+      }
+    }
+  }, [defaultVariants, product]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const initVariants = useCallback((variants: any[], productData?: any) => {
+      // If product is provided, only select the base variant
       if (productData) {
         const baseVariant = createBaseVariant(productData);
-        setSelectedVariants([baseVariant, ...defaults]);
+        setSelectedVariants([baseVariant]);
       } else {
+        // Fallback behavior
+        const validDefaults = variants.filter(vg => vg.items && vg.items.length > 0);
+        const defaults = validDefaults.map(vg => ({
+            group: vg.group,
+            item: vg.items[0],
+            quantity: 1,
+            isBaseVariant: false
+        }));
         setSelectedVariants(defaults);
       }
   }, []);

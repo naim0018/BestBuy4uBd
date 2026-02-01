@@ -32,7 +32,7 @@ const LandingPageProductDetails: React.FC<LandingPageProductDetailsProps> = ({
           {/* Description */}
           {product.basicInfo.description && (
             <AnimatedContainer>
-              <section>
+              <section id="description">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-green-50 rounded-lg text-green-600">
                     <Layout className="w-6 h-6" />
@@ -53,7 +53,7 @@ const LandingPageProductDetails: React.FC<LandingPageProductDetailsProps> = ({
           {/* Specifications */}
           {product.specifications && product.specifications.length > 0 && (
             <AnimatedContainer delay={0.1}>
-              <section>
+              <section id="specifications">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-green-50 rounded-lg text-green-600">
                     <ClipboardList className="w-6 h-6" />
@@ -72,7 +72,7 @@ const LandingPageProductDetails: React.FC<LandingPageProductDetailsProps> = ({
           {/* Reviews */}
           {reviewCount > 0 && (
             <AnimatedContainer delay={0.2}>
-              <section>
+              <section id="reviews">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-green-50 rounded-lg text-green-600">
                     <Star className="w-6 h-6" />
@@ -87,6 +87,7 @@ const LandingPageProductDetails: React.FC<LandingPageProductDetailsProps> = ({
               </section>
             </AnimatedContainer>
           )}
+
 
           {/* Shipping & Policy */}
           <AnimatedContainer delay={0.3}>
@@ -113,7 +114,9 @@ const LandingPageProductDetails: React.FC<LandingPageProductDetailsProps> = ({
         <div className="space-y-8">
           {product.basicInfo.keyFeatures && product.basicInfo.keyFeatures.length > 0 && (
             <AnimatedContainer direction="left">
-              <KeyFeatures features={product.basicInfo.keyFeatures} />
+               <div id="features">
+                  <KeyFeatures features={product.basicInfo.keyFeatures} />
+               </div>
             </AnimatedContainer>
           )}
 

@@ -22,7 +22,7 @@ const LandingPage = ({ product }: { product: Product }) => {
     totalQuantity,
     addVariant,
     updateVariantQuantity,
-    initVariants
+    initVariants,
   } = useVariantQuantity(product?.variants, product);
 
   useEffect(() => {
@@ -33,12 +33,14 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const effectiveQuantity = totalQuantity;
 
-  const {
-      finalTotal
-  } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
+  const { finalTotal } = usePriceCalculation(
+    product,
+    selectedVariants,
+    effectiveQuantity,
+  );
 
   const [currentImage, setCurrentImage] = useState<any>(null);
-  
+
   const [createOrder, { isLoading: isOrderLoading }] = useCreateOrderMutation();
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [successOrderDetails, setSuccessOrderDetails] = useState<any>(null);
@@ -48,8 +50,6 @@ const LandingPage = ({ product }: { product: Product }) => {
     discount: number;
   }>({ code: "", discount: 0 });
   const [discount, setDiscount] = useState<number>(0);
-
-
 
   const applyCoupon = () => {
     const availableCoupons: Record<string, number> = {
@@ -76,18 +76,32 @@ const LandingPage = ({ product }: { product: Product }) => {
     }
   }, [product]);
 
-  const handleIncrement = () => {
-       // Manual increment handling removed in favor of VariantSelector
-  };
-  const handleDecrement = () => {
-       // Manual decrement handling removed in favor of VariantSelector
-  };
+  const [activeTab, setActiveTab] = useState<string>("description");
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveTab(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-50% 0px -50% 0px" } // Trigger when element is in middle of viewport
+    );
 
+    const sections = ["description", "features", "specifications", "reviews"];
+    sections.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, [product]);
 
   const calculateTotalAmount = (
     courierChargeType: string | null,
-    currentDiscount: number
+    currentDiscount: number,
   ) => {
     const productTotal = finalTotal;
     if (product.additionalInfo?.freeShipping) {
@@ -105,24 +119,26 @@ const LandingPage = ({ product }: { product: Product }) => {
     try {
       // Validate quantity
       if (totalQuantity === 0) {
-        toast.error('Please select at least one variant with quantity greater than 0');
+        toast.error(
+          "Please select at least one variant with quantity greater than 0",
+        );
         return;
       }
 
       const totalAmount = calculateTotalAmount(
         formData.courierCharge,
-        discount
+        discount,
       );
 
       // Transform variants for Order API
       const variantsPayload: Record<string, any[]> = {};
-      selectedVariants.forEach(sv => {
-          if (!variantsPayload[sv.group]) variantsPayload[sv.group] = [];
-          variantsPayload[sv.group].push({
-              value: sv.item.value,
-              price: sv.item.price,
-              quantity: sv.quantity
-          });
+      selectedVariants.forEach((sv) => {
+        if (!variantsPayload[sv.group]) variantsPayload[sv.group] = [];
+        variantsPayload[sv.group].push({
+          value: sv.item.value,
+          price: sv.item.price,
+          quantity: sv.quantity,
+        });
       });
 
       const orderData = {
@@ -161,8 +177,8 @@ const LandingPage = ({ product }: { product: Product }) => {
         deliveryCharge: product.additionalInfo?.freeShipping
           ? 0
           : formData.courierCharge === "insideDhaka"
-          ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80)
-          : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150),
+            ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80)
+            : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150),
         totalAmount: totalAmount,
         appliedCoupon: appliedCoupon,
       });
@@ -189,7 +205,7 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   return (
     <div className="bg-white min-h-screen">
-       <Helmet>
+      <Helmet>
         <title>{product.basicInfo.title} | BestBuy4U</title>
         <meta name="description" content={product.basicInfo.description} />
       </Helmet>
@@ -201,50 +217,67 @@ const LandingPage = ({ product }: { product: Product }) => {
           orderDetails={successOrderDetails}
         />
       )}
-
-      {/* Hero Section */}
-      <LandingPageHeroSection
-        product={product}
-        currentImage={currentImage}
-        currentPrice={finalTotal}
-        setCurrentImage={setCurrentImage}
-        selectedVariants={selectedVariants}
-        handleVariantSelect={addVariant}
-        quantity={effectiveQuantity}
-        handleIncrement={handleIncrement}
-        handleDecrement={handleDecrement}
-        scrollToCheckout={scrollToCheckout}
-      />
+      <div className="-mt-10">
+        {/* Hero Section */}
+        <LandingPageHeroSection
+          product={product}
+          currentImage={currentImage}
+          currentPrice={finalTotal}
+          setCurrentImage={setCurrentImage}
+          selectedVariants={selectedVariants}
+          handleVariantSelect={addVariant}
+          quantity={effectiveQuantity}
+          onVariantUpdate={updateVariantQuantity}
+          scrollToCheckout={scrollToCheckout}
+        />
+      </div>
 
       {/* Dynamic Banner */}
       <div className="my-12">
-      <DynamicBanner
-        title={product.basicInfo.title}
-        regularPrice={product.price.regular}
-        discountedPrice={finalTotal}
-        onShopNow={scrollToCheckout}
-        backgroundImage={product.images[0]?.url}
-      />
+        <DynamicBanner
+          title={product.basicInfo.title}
+          regularPrice={product.price.regular}
+          discountedPrice={finalTotal}
+          onShopNow={scrollToCheckout}
+          backgroundImage={product.images[0]?.url}
+        />
       </div>
 
-       {/* Navigation Bar */}
-       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm hidden md:block">
+      {/* Navigation Bar */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm hidden md:block">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            <div className="flex gap-8">
-              {["Features", "Specifications", "Description", "Reviews"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => document.getElementById(tab.toLowerCase())?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                  className="text-sm font-semibold text-gray-600 hover:text-green-600 transition-colors uppercase tracking-wider"
-                >
-                  {tab}
-                </button>
-              ))}
+            <div className="flex gap-8 relative">
+              {[
+                { name: "Description", id: "description", show: !!product.basicInfo?.description },
+                { name: "Features", id: "features", show: (product.basicInfo?.keyFeatures?.length || 0) > 0 },
+                { name: "Specifications", id: "specifications", show: (product.specifications?.length || 0) > 0 },
+                { name: "Reviews", id: "reviews", show: (product.reviews?.length || 0) > 0 },
+              ]
+                .filter((tab) => tab.show)
+                .map((tab) => (
+                  <button
+                    key={tab.name}
+                    onClick={() => {
+                      document.getElementById(tab.id)?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                      });
+                      setActiveTab(tab.id);
+                    }}
+                    className={`text-sm font-semibold transition-all duration-300 uppercase tracking-wider h-16 border-b-2 ${
+                      activeTab === tab.id
+                        ? "text-green-600 border-green-600"
+                        : "text-gray-600 border-transparent hover:text-green-600 hover:border-green-200"
+                    }`}
+                  >
+                    {tab.name}
+                  </button>
+                ))}
             </div>
             <button
-               onClick={scrollToCheckout}
-               className="bg-green-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all uppercase tracking-widest"
+              onClick={scrollToCheckout}
+              className="bg-green-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all uppercase tracking-widest"
             >
               Order Now
             </button>
@@ -254,56 +287,59 @@ const LandingPage = ({ product }: { product: Product }) => {
 
       {/* Product Information Sections */}
       <div className="container mx-auto px-4 py-12 space-y-24">
-        <LandingPageProductDetails 
-            product={product} 
-            selectedVariants={selectedVariants}
-            currentPrice={finalTotal}
-            currentImage={currentImage}
-            quantity={effectiveQuantity}
-            onVariantChange={addVariant}
-            onQuantityChange={() => {}}
+        <LandingPageProductDetails
+          product={product}
+          selectedVariants={selectedVariants}
+          currentPrice={finalTotal}
+          currentImage={currentImage}
+          quantity={effectiveQuantity}
+          onVariantChange={addVariant}
+          onQuantityChange={() => {}}
         />
 
         {/* Checkout Section Integration */}
         <AnimatedContainer direction="none" delay={0.1}>
-            <div id="checkout" className="pt-20">
-              <CheckoutSection
-                orderDetails={{
-                  title: product.basicInfo.title,
-                  price: finalTotal,
-                  variants: selectedVariants,
-                  quantity: effectiveQuantity,
-                  image: product.images[0],
-                  product: product,
-                  discount: discount,
-                }}
-                handleSubmit={handleSubmit}
-                onQuantityChange={() => {}}
-                onVariantChange={addVariant}
-                onVariantUpdate={updateVariantQuantity}
-                isLoading={isOrderLoading}
-                couponCode={couponCode}
-                setCouponCode={setCouponCode}
-                applyCoupon={applyCoupon}
-              />
-            </div>
-          </AnimatedContainer>
-
-          {/* Related Products */}
-          <div className="pt-20">
-             <RelatedProducts currentProductId={product._id} category={product.basicInfo.category} />
+          <div id="checkout" className="pt-20">
+            <CheckoutSection
+              orderDetails={{
+                title: product.basicInfo.title,
+                price: finalTotal,
+                variants: selectedVariants,
+                quantity: effectiveQuantity,
+                image: product.images[0],
+                product: product,
+                discount: discount,
+              }}
+              handleSubmit={handleSubmit}
+              onQuantityChange={() => {}}
+              onVariantChange={addVariant}
+              onVariantUpdate={updateVariantQuantity}
+              isLoading={isOrderLoading}
+              couponCode={couponCode}
+              setCouponCode={setCouponCode}
+              applyCoupon={applyCoupon}
+            />
           </div>
+        </AnimatedContainer>
+
+        {/* Related Products */}
+        <div className="pt-20">
+          <RelatedProducts
+            currentProductId={product._id}
+            category={product.basicInfo.category}
+          />
+        </div>
       </div>
 
       {/* Floating Order Button for Mobile */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] md:hidden">
-         <button
-            onClick={scrollToCheckout}
-            className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-2xl shadow-green-200 border-2 border-white/20 backdrop-blur-lg flex items-center justify-center gap-3 active:scale-95 transition-transform"
-         >
-            <span className="animate-pulse w-2 h-2 bg-white rounded-full" />
-            অর্ডার করতে চাই
-         </button>
+        <button
+          onClick={scrollToCheckout}
+          className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-2xl shadow-green-200 border-2 border-white/20 backdrop-blur-lg flex items-center justify-center gap-3 active:scale-95 transition-transform"
+        >
+          <span className="animate-pulse w-2 h-2 bg-white rounded-full" />
+          অর্ডার করতে চাই
+        </button>
       </div>
     </div>
   );

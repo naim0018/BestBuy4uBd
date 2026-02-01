@@ -3,6 +3,7 @@ import React from 'react';
 import { Product, ProductImage, ProductVariantItem } from '@/types/Product/Product';
 import TrustSignals from './TrustSignals';
 import AnimatedContainer from '../../../Components/AnimatedContainer';
+import VariantSelector from '../../../Components/VariantSelector';
 
 interface LandingPageHeroSectionProps {
   product: Product;
@@ -12,8 +13,7 @@ interface LandingPageHeroSectionProps {
   quantity: number;
   handleVariantSelect: (groupName: string, variant: ProductVariantItem) => void;
   selectedVariants: { group: string; item: any; quantity: number }[];
-  handleIncrement: () => void;
-  handleDecrement: () => void;
+  onVariantUpdate: (group: string, value: string, quantity: number) => void;
   scrollToCheckout: () => void;
 }
 
@@ -25,8 +25,7 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
   quantity,
   handleVariantSelect,
   selectedVariants,
-  handleIncrement,
-  handleDecrement,
+  onVariantUpdate,
   scrollToCheckout,
 }) => {
 
@@ -188,96 +187,16 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                 </div>
               )}
 
-              {/* Variants */}
-              {product?.variants && product.variants.length > 0 && (
-                <div className="space-y-4">
-                  {product.variants.map((variantGroup: any) => {
-                    const isPricing = (groupName: string) => {
-                        const name = groupName.toLowerCase();
-                        return name.includes("qty") || name.includes("quantity") || name.includes("টা") || name.includes("প্যাকেজ");
-                    };
-                    const isPricingGrp = isPricing(variantGroup.group);
-
-                    return (
-                    <div key={variantGroup.group}>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        Choose {variantGroup.group} {isPricingGrp && "(Updates with Quantity)"}
-                      </h3>
-                      <div className={`flex flex-wrap gap-3`}>
-                        {variantGroup.items.map((variant: ProductVariantItem) => {
-                          const selection = selectedVariants.find(v => v.group === variantGroup.group && v.item.value === variant.value);
-                          const isActive = !!selection;
-                          const variantQty = selection?.quantity || 0;
-
-                          return (
-                          <button
-                            key={variant.value}
-                            onClick={() => {
-                              handleVariantSelect(variantGroup.group, variant);
-                            }}
-                            className={`relative flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
-                              isActive
-                                ? "border-green-500 bg-green-50 text-green-700 shadow-lg scale-105"
-                                : "border-gray-200 hover:border-green-300 hover:shadow-md hover:scale-105"
-                            }`}
-                          >
-                            <span>{variant.value}</span>
-                            {variant.price !== undefined && variant.price > 0 && (
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                {isPricingGrp ? "" : "+"}৳{variant.price}
-                              </span>
-                            )}
-                             {isActive && (
-                                <div className="absolute -top-2 -right-2 bg-white text-green-600 w-6 h-6 rounded-full flex items-center justify-center border border-green-600 text-xs font-bold z-10 shadow-sm">
-                                    {variantQty}
-                                </div>
-                            )}
-                          </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Quantity */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-gray-900">Quantity</h3>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden">
-                     {(!product.variants || product.variants.length === 0) ? (
-                        <>
-                            <button
-                              onClick={handleDecrement}
-                              className="px-4 py-3 text-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-                              disabled={quantity <= 1}
-                            >
-                              −
-                            </button>
-                            <span className="px-6 py-3 text-xl font-bold border-x-2 border-gray-200 bg-gray-50">
-                              {quantity}
-                            </span>
-                            <button
-                              onClick={handleIncrement}
-                              className="px-4 py-3 text-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-                            >
-                              +
-                            </button>
-                        </>
-                     ) : (
-                         <div className="px-6 py-3 text-lg font-bold text-gray-600 bg-gray-50">
-                             Total Items: {quantity}
-                         </div>
-                     )}
-                  </div>
-                  {product.stockQuantity && (
-                    <span className="text-sm text-gray-500">
-                      {product.stockQuantity} items available
-                    </span>
-                  )}
-                </div>
+              {/* Variants & Quantity */}
+              <div className="space-y-4">
+                 <VariantSelector
+                    selectedVariants={selectedVariants}
+                    productVariants={product.variants}
+                    onVariantAdd={handleVariantSelect}
+                    onVariantUpdate={onVariantUpdate}
+                    showBaseVariant={true}
+                    className="text-sm"
+                 />
               </div>
 
               {/* CTA Button */}
