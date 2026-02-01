@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTracking } from "@/hooks/useTracking";
 import { RootState } from "@/store/store";
@@ -66,8 +66,10 @@ const Checkout = () => {
 
   const total = subtotal + deliveryCharge - discount;
 
+  const hasTrackedBeginCheckout = useRef(false);
+
   useEffect(() => {
-    if (cartItems.length > 0) {
+    if (cartItems.length > 0 && !hasTrackedBeginCheckout.current) {
       const items = cartItems.map(item => ({
         id: item.id,
         name: item.name,
@@ -84,8 +86,10 @@ const Checkout = () => {
 
       // Track Add Shipping Info (Initial default)
       trackAddShippingInfo(items, total, deliveryChargeType);
+
+      hasTrackedBeginCheckout.current = true;
     }
-  }, []); // Run once on mount
+  }, [cartItems.length, total, deliveryChargeType, couponCode, trackBeginCheckout, trackAddPaymentInfo, trackAddShippingInfo]); // Dependencies to ensure data is ready, but ref prevents re-firing
 
   const handleDeliveryChargeChange = (
     e: React.ChangeEvent<HTMLSelectElement>
