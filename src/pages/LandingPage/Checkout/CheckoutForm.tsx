@@ -1,6 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Product, useCheckout } from "./useCheckout";
+import { useTracking } from "@/hooks/useTracking";
 
 interface CheckoutFormProps {
     product: Product | undefined;
@@ -38,6 +39,25 @@ const CheckoutForm = ({
         calculateTotalAmount
     } = checkoutCalculations;
 
+    const { trackBeginCheckout } = useTracking();
+
+    useEffect(() => {
+        if (product) {
+            const variantString = Array.from(selectedVariants.values())
+                .map(v => `${v.value}`)
+                .join(", ");
+
+            trackBeginCheckout([{
+                id: product._id,
+                name: product.basicInfo.title,
+                price: currentPrice,
+                quantity: quantity,
+                category: product.basicInfo.category,
+                variant: variantString
+            }], calculateTotalAmount(deliveryChargeType), couponCode);
+        }
+    }, []); // Run once on mount
+
     const [formValid, setFormValid] = useState(false);
     const [deliveryChargeType, setDeliveryChargeType] = useState("insideDhaka");
 
@@ -48,15 +68,15 @@ const CheckoutForm = ({
     const checkFormValidity = (e: React.FormEvent<HTMLFormElement>) => {
         const form = e.currentTarget;
         if (form) {
-             const isValid = form.checkValidity();
-             setFormValid(isValid);
+            const isValid = form.checkValidity();
+            setFormValid(isValid);
         }
     };
 
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const target = e.currentTarget;
-        
+
         const formData = {
             name: (target.elements.namedItem('name') as HTMLInputElement).value,
             phone: (target.elements.namedItem('phone') as HTMLInputElement).value,
@@ -166,9 +186,9 @@ const CheckoutForm = ({
                                             className=" w-[70%] px-4 md:px-5 py-2 md:py-3 rounded-xl  focus:border-green-500 focus:ring-0 transition-colors bg-white"
                                             placeholder="কুপন কোড"
                                         />
-                                        <button 
-                                            onClick={applyCoupon} 
-                                            type="button" 
+                                        <button
+                                            onClick={applyCoupon}
+                                            type="button"
                                             className="px-3 md:px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors absolute right-1 top-1/2 transform -translate-y-1/2"
                                         >
                                             যাচাই করুন

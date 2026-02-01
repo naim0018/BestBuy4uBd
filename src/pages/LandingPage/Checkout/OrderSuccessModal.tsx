@@ -14,6 +14,13 @@ interface OrderDetails {
     code: string;
     discount: number;
   };
+  billingInformation?: {
+    name: string;
+    phone: string;
+    address: string;
+    city?: string;
+    email?: string;
+  };
 }
 
 interface OrderSuccessModalProps {
@@ -43,13 +50,22 @@ const OrderSuccessModal = ({ isOpen, onClose, orderDetails }: OrderSuccessModalP
         shipping: orderDetails.deliveryCharge,
         coupon: orderDetails.appliedCoupon?.code,
         items: [
-           {
-              item_id: "order_" + orderDetails.orderId,
-              item_name: "Order Total", // Ideally we should pass items list here too
-              price: orderDetails.productPrice,
-              quantity: 1
-           }
-        ]
+          {
+            item_id: "order_" + orderDetails.orderId,
+            item_name: "Order Total", // Ideally we should pass items list here too
+            price: orderDetails.productPrice,
+            quantity: 1
+          }
+        ],
+        user_data: {
+          email: orderDetails.billingInformation?.email,
+          phone_number: orderDetails.billingInformation?.phone,
+          address: {
+            first_name: orderDetails.billingInformation?.name,
+            street: orderDetails.billingInformation?.address,
+            city: orderDetails.billingInformation?.city || "Unknown", // Assuming city might not be separated or handled
+          }
+        }
       });
     }
   }, [isOpen, orderDetails, trackPurchase]);

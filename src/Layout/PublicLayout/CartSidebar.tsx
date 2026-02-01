@@ -10,8 +10,11 @@ interface CartSidebarProps {
   onClose: () => void;
 }
 
+import { useTracking } from "@/hooks/useTracking";
+
 const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
   const dispatch = useDispatch();
+  const { trackRemoveFromCart } = useTracking();
   const { cartItems } = useSelector((state: RootState) => state.cart);
 
   const subtotal = cartItems.reduce(
@@ -67,13 +70,22 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
                     <div className="w-24 h-24 bg-bg-base rounded-component flex-shrink-0 p-2 border border-border-main relative overflow-hidden">
                       <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                     </div>
-                    
+
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div>
                         <div className="flex justify-between items-start gap-2">
                           <h3 className="text-sm font-medium text-text-primary line-clamp-2 uppercase leading-tight">{item.name}</h3>
-                          <button 
-                            onClick={() => dispatch(removeFromCart({ itemKey: item.itemKey }))}
+                          <button
+                            onClick={() => {
+                              trackRemoveFromCart({
+                                id: item.id,
+                                name: item.name,
+                                price: item.price,
+                                quantity: item.quantity,
+                                variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+                              });
+                              dispatch(removeFromCart({ itemKey: item.itemKey }));
+                            }}
                             className="text-text-muted/50 hover:text-danger transition-colors flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -92,14 +104,14 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
 
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center bg-bg-base rounded-component p-1 border border-border-main">
-                          <button 
+                          <button
                             onClick={() => dispatch(decrementQuantity({ itemKey: item.itemKey }))}
                             className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-secondary transition-colors"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
                           <span className="w-8 text-center text-xs font-semibold text-text-primary">{item.quantity}</span>
-                          <button 
+                          <button
                             onClick={() => dispatch(incrementQuantity({ itemKey: item.itemKey }))}
                             className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-secondary transition-colors"
                           >
@@ -118,7 +130,7 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
                   </div>
                   <h3 className="text-xl font-semibold text-text-primary mb-2 uppercase tracking-tighter">Your cart is empty</h3>
                   <p className="text-text-muted font-medium uppercase tracking-widest text-[10px] mb-8">Looks like you haven't added anything yet</p>
-                  <button 
+                  <button
                     onClick={onClose}
                     className="px-8 py-4 bg-secondary text-white rounded-component font-semibold shadow-xl shadow-secondary/20 uppercase tracking-widest text-xs hover:translate-y-[-2px] active:translate-y-0 transition-all"
                   >
@@ -136,16 +148,16 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
                   <span className="text-2xl font-semibold text-text-primary tracking-tighter">৳{subtotal.toLocaleString()}</span>
                 </div>
                 <p className="text-[10px] font-medium text-text-muted uppercase tracking-widest text-center">Taxes and shipping calculated at checkout</p>
-                
+
                 <div className="grid grid-cols-2 gap-4 pt-2">
-                  <Link 
+                  <Link
                     to="/cart"
                     onClick={onClose}
                     className="w-full py-4 bg-bg-surface border border-border-main text-text-primary rounded-component font-semibold text-[10px] uppercase tracking-widest text-center shadow-lg hover:bg-bg-base transition-all"
                   >
                     View Cart
                   </Link>
-                  <Link 
+                  <Link
                     to="/checkout"
                     onClick={onClose}
                     className="w-full py-4 bg-secondary text-white rounded-component font-semibold text-[10px] uppercase tracking-widest text-center shadow-2xl shadow-secondary/20 flex items-center justify-center gap-2 hover:translate-y-[-2px] active:translate-y-0 transition-all group"

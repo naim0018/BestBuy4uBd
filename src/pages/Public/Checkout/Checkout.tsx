@@ -57,10 +57,10 @@ const Checkout = () => {
     maxDeliveryChargeOutside = Math.max(maxDeliveryChargeOutside, chargeOutside);
   });
 
-  const deliveryCharge = hasFreeShipping 
-    ? 0 
+  const deliveryCharge = hasFreeShipping
+    ? 0
     : (deliveryChargeType === "insideDhaka" ? maxDeliveryChargeInside : maxDeliveryChargeOutside);
-  
+
   const total = subtotal + deliveryCharge - discount;
 
   const handleDeliveryChargeChange = (
@@ -119,12 +119,12 @@ const Checkout = () => {
             const selectedVariantsObj =
               item.selectedVariants && item.selectedVariants.length > 0
                 ? item.selectedVariants.reduce((acc: any, variant: any) => {
-                    acc[variant.group] = {
-                      value: variant.value,
-                      price: variant.price || 0,
-                    };
-                    return acc;
-                  }, {})
+                  acc[variant.group] = {
+                    value: variant.value,
+                    price: variant.price || 0,
+                  };
+                  return acc;
+                }, {})
                 : {};
 
             return {
@@ -161,6 +161,7 @@ const Checkout = () => {
         deliveryCharge: deliveryCharge,
         totalAmount: total,
         appliedCoupon: appliedCoupon,
+        billingInformation: orderData.body.billingInformation,
       });
 
       setShowSuccessModal(true);
@@ -331,11 +332,10 @@ const Checkout = () => {
                   type="submit"
                   disabled={!formValid || isOrderLoading}
                   className={`w-full mt-6 md:mt-10 bg-gradient-to-r 
-              ${
-                formValid && !isOrderLoading
-                  ? "from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary"
-                  : "from-gray-400 to-gray-500 cursor-not-allowed"
-              } 
+              ${formValid && !isOrderLoading
+                      ? "from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary"
+                      : "from-gray-400 to-gray-500 cursor-not-allowed"
+                    } 
               text-white py-3 md:py-4 rounded-xl text-base md:text-lg font-bold 
               transition-all duration-300 transform hover:scale-[1.02] 
               focus:ring-4 focus:ring-secondary/50 shadow-lg

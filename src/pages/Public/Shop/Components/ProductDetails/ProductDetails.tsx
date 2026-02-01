@@ -22,6 +22,7 @@ import {
   useGetProductByIdQuery,
   useGetAllProductsQuery,
 } from "@/store/Api/ProductApi";
+import { useTracking } from "@/hooks/useTracking";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/store/Slices/CartSlice";
 import { openCart, openWishlist } from "@/store/Slices/UISlice";
@@ -144,11 +145,10 @@ const ForYouCard = ({ product }: { product: any }) => (
         {Array.from({ length: 5 }).map((_, i) => (
           <Star
             key={i}
-            className={`w-2.5 h-2.5 ${
-              i < Math.floor(product.rating?.average || 0)
+            className={`w-2.5 h-2.5 ${i < Math.floor(product.rating?.average || 0)
                 ? "fill-current"
                 : "text-text-muted/20"
-            }`}
+              }`}
           />
         ))}
       </div>
@@ -156,13 +156,14 @@ const ForYouCard = ({ product }: { product: any }) => (
   </Link>
 );
 
-  /* New Hooks Integration */
-  import { useVariantQuantity } from "@/hooks/useVariantQuantity";
-  import { usePriceCalculation } from "@/hooks/usePriceCalculation";
-  /* End New Hooks Integration */
+/* New Hooks Integration */
+import { useVariantQuantity } from "@/hooks/useVariantQuantity";
+import { usePriceCalculation } from "@/hooks/usePriceCalculation";
+/* End New Hooks Integration */
 
 const ProductDetails = () => {
   const dispatch = useDispatch();
+  const { trackViewItem, trackAddToCart, trackAddToWishlist } = useTracking();
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
   const { id } = useParams<{ id: string }>();
   const { data: productResponse, isLoading } = useGetProductByIdQuery({
@@ -175,7 +176,7 @@ const ProductDetails = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [, setIsManualQty] = useState<boolean>(false);
   const [manualQuantity, setManualQuantity] = useState(1);
-  
+
   const product = productResponse?.data;
 
   // Utilize new hooks
@@ -191,6 +192,15 @@ const ProductDetails = () => {
   useEffect(() => {
     if (product?.variants) {
       initVariants(product.variants, product);
+    }
+
+    if (product) {
+      trackViewItem({
+        id: product._id,
+        name: product.basicInfo.title,
+        price: product.price.discounted || product.price.regular,
+        category: product.basicInfo.category
+      });
     }
   }, [product, initVariants]);
 
@@ -234,26 +244,26 @@ const ProductDetails = () => {
     // Transform selectedVariants to cart format if needed
     // Assuming backend/cart supports this structure or we flatten it.
     // For now, let's keep consistency with existing structure but with quantity.
-    
+
     // Group variants by group name for CartSlice compatibility if needed?
     // The CartSlice likely expects `selectedVariants` as array of objects.
     // Let's modify the payload to include quantity info.
-    
+
     // Convert to Group -> Items[] structure for backward compatibility if needed, 
     // OR update CartSlice to handle flat list with quantities.
     // The previous structure was: { group, items: [{value, price}] }
     // We can group them back.
-    
+
     const groupedVariants: Record<string, any[]> = {};
     selectedVariants.forEach(sv => {
-        if (!groupedVariants[sv.group]) {
-            groupedVariants[sv.group] = [];
-        }
-        groupedVariants[sv.group].push({
-            value: sv.item.value,
-            price: sv.item.price,
-            quantity: sv.quantity // Add quantity here
-        });
+      if (!groupedVariants[sv.group]) {
+        groupedVariants[sv.group] = [];
+      }
+      groupedVariants[sv.group].push({
+        value: sv.item.value,
+        price: sv.item.price,
+        quantity: sv.quantity // Add quantity here
+      });
     });
 
     const variantsPayload = Object.entries(groupedVariants).map(([group, items]) => ({
@@ -278,6 +288,15 @@ const ProductDetails = () => {
     );
 
     dispatch(openCart());
+
+    trackAddToCart({
+      id: product._id,
+      name: product.basicInfo.title,
+      price: product.price.discounted || product.price.regular,
+      category: product.basicInfo.category,
+      quantity: effectiveQuantity,
+      variant: selectedVariants.map(v => `${v.group}: ${v.item.value}`).join(", ")
+    });
   };
 
   const forYouProducts = useMemo(() => {
@@ -296,6 +315,12 @@ const ProductDetails = () => {
     } else {
       dispatch(addToWishlist(product));
       dispatch(openWishlist());
+      trackAddToWishlist({
+        id: product._id,
+        name: product.basicInfo.title,
+        price: product.price.discounted || product.price.regular,
+        category: product.basicInfo.category
+      });
     }
   };
 
@@ -359,10 +384,10 @@ const ProductDetails = () => {
 
   const discountPercentage = product.price.discounted
     ? Math.round(
-        ((product.price.regular - product.price.discounted) /
-          product.price.regular) *
-          100
-      )
+      ((product.price.regular - product.price.discounted) /
+        product.price.regular) *
+      100
+    )
     : 0;
 
   return (
@@ -439,11 +464,10 @@ const ProductDetails = () => {
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
-                    className={`w-24 h-24 rounded-component border-2 transition-all flex-shrink-0 bg-bg-base/30 overflow-hidden ${
-                      selectedImage === idx
+                    className={`w-24 h-24 rounded-component border-2 transition-all flex-shrink-0 bg-bg-base/30 overflow-hidden ${selectedImage === idx
                         ? "border-secondary scale-105 shadow-md"
                         : "border-border-main hover:border-text-muted"
-                    }`}
+                      }`}
                   >
                     <img
                       src={img.url}
@@ -463,11 +487,10 @@ const ProductDetails = () => {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-4 h-4 ${
-                        i < Math.floor(product.rating?.average || 0)
+                      className={`w-4 h-4 ${i < Math.floor(product.rating?.average || 0)
                           ? "fill-current"
                           : "text-text-muted/20"
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -475,38 +498,38 @@ const ProductDetails = () => {
                   ({product.rating?.count || 0})
                 </span>
               </div>
-              
+
               {/* Price Display */}
               <div className="flex flex-col gap-2">
-                  <div className="flex items-baseline gap-4">
-                    {product.price.discounted ? (
-                      <>
-                        <span className="text-3xl font-semibold text-danger">
-                          ৳{finalTotal.toLocaleString()}
-                        </span>
-                        <span className="text-xl font-medium text-text-muted line-through">
-                          ৳{((product.price.regular * effectiveQuantity) + variantTotal).toLocaleString()}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-3xl font-semibold text-text-primary">
+                <div className="flex items-baseline gap-4">
+                  {product.price.discounted ? (
+                    <>
+                      <span className="text-3xl font-semibold text-danger">
                         ৳{finalTotal.toLocaleString()}
                       </span>
-                    )}
-                  </div>
-                  {(variantTotal > 0 || comboDiscount > 0) && (
-                      <div className="text-xs text-text-muted flex flex-col gap-1">
-                          {product.price.regular > 0 && <span>Base Price ({basePrice} X {effectiveQuantity}): ৳{(basePrice * effectiveQuantity).toLocaleString()}</span>}
-                          {/* {variantTotal > 0 && <span>Variants Extra: +৳{((variantTotal-basePrice)/effectiveQuantity).toLocaleString()}</span>} */}
-                          {comboDiscount > 0 && <span className="text-secondary font-bold">Combo Discount: -৳{comboDiscount.toLocaleString()}</span>}
-                      </div>
+                      <span className="text-xl font-medium text-text-muted line-through">
+                        ৳{((product.price.regular * effectiveQuantity) + variantTotal).toLocaleString()}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-3xl font-semibold text-text-primary">
+                      ৳{finalTotal.toLocaleString()}
+                    </span>
                   )}
+                </div>
+                {(variantTotal > 0 || comboDiscount > 0) && (
+                  <div className="text-xs text-text-muted flex flex-col gap-1">
+                    {product.price.regular > 0 && <span>Base Price ({basePrice} X {effectiveQuantity}): ৳{(basePrice * effectiveQuantity).toLocaleString()}</span>}
+                    {/* {variantTotal > 0 && <span>Variants Extra: +৳{((variantTotal-basePrice)/effectiveQuantity).toLocaleString()}</span>} */}
+                    {comboDiscount > 0 && <span className="text-secondary font-bold">Combo Discount: -৳{comboDiscount.toLocaleString()}</span>}
+                  </div>
+                )}
               </div>
-              
+
               {/* Combo Pricing Section */}
               {product.comboPricing && product.comboPricing.length > 0 && (
                 <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 space-y-4">
-                   <h3 className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+                  <h3 className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     Combo Savings
                   </h3>
@@ -518,76 +541,76 @@ const ProductDetails = () => {
                       const isMet = effectiveQuantity >= tier.minQuantity;
 
                       return (
-                      <div key={idx} className={`bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm ${isApplied ? "border-primary ring-2 ring-primary bg-primary/5" : isMet ? "border-primary/50" : "border-primary/10"}`}>
-                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Buy {tier.minQuantity}+</span>
-                        <span className={`font-bold ${isApplied ? "text-primary scale-110" : "text-primary opacity-80"}`}>-৳{tier.discount.toLocaleString()} OFF</span>
-                      </div>
-                    )})}
+                        <div key={idx} className={`bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm ${isApplied ? "border-primary ring-2 ring-primary bg-primary/5" : isMet ? "border-primary/50" : "border-primary/10"}`}>
+                          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Buy {tier.minQuantity}+</span>
+                          <span className={`font-bold ${isApplied ? "text-primary scale-110" : "text-primary opacity-80"}`}>-৳{tier.discount.toLocaleString()} OFF</span>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
 
-                <div className="space-y-4">
-                  {/* Base Variant - Auto-injected quantity option */}
-                  {selectedVariants.find(v => v.isBaseVariant) && (
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] pl-1">
-                        Select Quantity
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedVariants
-                          .filter(v => v.isBaseVariant)
-                          .map((variant) => {
-                            const quantity = variant.quantity;
-                            const isActive = quantity > 0;
+              <div className="space-y-4">
+                {/* Base Variant - Auto-injected quantity option */}
+                {selectedVariants.find(v => v.isBaseVariant) && (
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] pl-1">
+                      Select Quantity
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVariants
+                        .filter(v => v.isBaseVariant)
+                        .map((variant) => {
+                          const quantity = variant.quantity;
+                          const isActive = quantity > 0;
 
-                            return (
-                              <button
-                                key={variant.item.value}
-                                onClick={() => {
-                                  // Base variant is always selected, clicking increments quantity
-                                  updateVariantQuantity(variant.group, variant.item.value, quantity + 1);
-                                }}
-                                className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
-                                  isActive
-                                    ? "border-secondary bg-secondary text-white shadow-lg"
-                                    : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
+                          return (
+                            <button
+                              key={variant.item.value}
+                              onClick={() => {
+                                // Base variant is always selected, clicking increments quantity
+                                updateVariantQuantity(variant.group, variant.item.value, quantity + 1);
+                              }}
+                              className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${isActive
+                                  ? "border-secondary bg-secondary text-white shadow-lg"
+                                  : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
                                 }`}
-                              >
-                                <div className="flex flex-col items-center">
-                                  <span>{variant.item.value}</span>
-                                  <span className="opacity-60 text-[8px]">Base Price</span>
-                                </div>
-                                
-                                {/* Quantity Badge on Variant */}
-                                {isActive && (
-                                  <div className="absolute -top-2 -right-2 bg-white text-secondary text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-secondary shadow-sm z-10">
-                                    {quantity}
-                                  </div>
-                                )}
-                                
-                                {/* Decrease Control - Allow deselecting base variant */}
-                                {isActive && (
-                                  <div 
-                                    className="absolute -top-2 -left-2 bg-white text-danger text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-danger shadow-sm z-10 hover:bg-danger hover:text-white transition-colors"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      updateVariantQuantity(variant.group, variant.item.value, quantity - 1);
-                                    }}
-                                  >
-                                    <Minus className="w-3 h-3" />
-                                  </div>
-                                )}
-                              </button>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  )}
+                            >
+                              <div className="flex flex-col items-center">
+                                <span>{variant.item.value}</span>
+                                <span className="opacity-60 text-[8px]">Base Price</span>
+                              </div>
 
-                  {/* Product Variants */}
-                  {product?.variants?.map((variantGroup: any) => {
-                    return (
+                              {/* Quantity Badge on Variant */}
+                              {isActive && (
+                                <div className="absolute -top-2 -right-2 bg-white text-secondary text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-secondary shadow-sm z-10">
+                                  {quantity}
+                                </div>
+                              )}
+
+                              {/* Decrease Control - Allow deselecting base variant */}
+                              {isActive && (
+                                <div
+                                  className="absolute -top-2 -left-2 bg-white text-danger text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-danger shadow-sm z-10 hover:bg-danger hover:text-white transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateVariantQuantity(variant.group, variant.item.value, quantity - 1);
+                                  }}
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Product Variants */}
+                {product?.variants?.map((variantGroup: any) => {
+                  return (
                     <div key={variantGroup.group} className="space-y-3">
                       <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] pl-1">
                         Select {variantGroup.group}
@@ -608,52 +631,51 @@ const ProductDetails = () => {
                                 // But user asked specifically for "Variant is a quantity... select multiple variant"
                                 // So we treat this as "Adding to cart configuration"
                                 addVariant(variantGroup.group, item);
-                                
+
                                 if (item.image?.url) {
                                   const imgIdx = product.images.findIndex((img: any) => img.url === item.image.url);
                                   if (imgIdx !== -1) setSelectedImage(imgIdx);
                                 }
                               }}
-                              className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
-                                isActive
+                              className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${isActive
                                   ? "border-secondary bg-secondary text-white shadow-lg"
                                   : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
-                              }`}
+                                }`}
                             >
                               <div className="flex flex-col items-center">
-                                  <span>{item.value}</span>
-                                  {(item.price ?? 0) > 0 && <span className="opacity-60 text-[8px]">
-                                    +৳{item.price}
-                                  </span>}
+                                <span>{item.value}</span>
+                                {(item.price ?? 0) > 0 && <span className="opacity-60 text-[8px]">
+                                  +৳{item.price}
+                                </span>}
                               </div>
-                              
+
                               {/* Quantity Badge on Variant */}
                               {isActive && (
-                                  <div className="absolute -top-2 -right-2 bg-white text-secondary text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-secondary shadow-sm z-10">
-                                      {quantity}
-                                  </div>
+                                <div className="absolute -top-2 -right-2 bg-white text-secondary text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-secondary shadow-sm z-10">
+                                  {quantity}
+                                </div>
                               )}
-                              
+
                               {/* Decrease Control - Only visible if active/hovered? Or maybe handle quantity update differently? */}
                               {isActive && (
-                                  <div 
-                                      className="absolute -top-2 -left-2 bg-white text-danger text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-danger shadow-sm z-10 hover:bg-danger hover:text-white transition-colors"
-                                      onClick={(e) => {
-                                          e.stopPropagation(); // Prevent re-adding
-                                          updateVariantQuantity(variantGroup.group, item.value, quantity - 1);
-                                      }}
-                                  >
-                                      <Minus className="w-3 h-3" />
-                                  </div>
+                                <div
+                                  className="absolute -top-2 -left-2 bg-white text-danger text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-danger shadow-sm z-10 hover:bg-danger hover:text-white transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent re-adding
+                                    updateVariantQuantity(variantGroup.group, item.value, quantity - 1);
+                                  }}
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </div>
                               )}
                             </button>
                           );
                         })}
                       </div>
                     </div>
-                    );
-                  })}
-                </div>
+                  );
+                })}
+              </div>
 
               <div className="flex flex-col gap-4 pt-4">
                 <div className="flex items-center gap-6">
@@ -661,38 +683,38 @@ const ProductDetails = () => {
                     Total Quantity
                   </span>
                   <div className="flex items-center border border-border-main rounded-component overflow-hidden bg-bg-surface h-12">
-                     {/* 
+                    {/* 
                         If variants exist, quantity is controlled by variants.
                         If no variants, manual control.
                      */}
                     {(product?.variants?.length ?? 0) > 0 ? (
-                        <div className="w-32 h-full flex items-center justify-center font-bold text-lg bg-gray-50 text-text-muted cursor-not-allowed" title="Update quantity via variants">
-                           {totalQuantity}
-                        </div>
-                    ) : ( 
-                        <>
-                            <button
-                            onClick={() => {
-                                setIsManualQty(true);
-                                setManualQuantity(Math.max(1, manualQuantity - 1));
-                            }}
-                            className="w-12 h-full flex items-center justify-center hover:bg-bg-base transition-colors border-r border-border-main"
-                            >
-                            <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="w-16 h-full flex items-center justify-center font-bold text-lg">
-                            {manualQuantity}
-                            </span>
-                            <button
-                            onClick={() => {
-                                setIsManualQty(true);
-                                setManualQuantity(manualQuantity + 1);
-                            }}
-                            className="w-12 h-full flex items-center justify-center hover:bg-bg-base transition-colors border-l border-border-main"
-                            >
-                            <Plus className="w-4 h-4" />
-                            </button>
-                        </>
+                      <div className="w-32 h-full flex items-center justify-center font-bold text-lg bg-gray-50 text-text-muted cursor-not-allowed" title="Update quantity via variants">
+                        {totalQuantity}
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            setIsManualQty(true);
+                            setManualQuantity(Math.max(1, manualQuantity - 1));
+                          }}
+                          className="w-12 h-full flex items-center justify-center hover:bg-bg-base transition-colors border-r border-border-main"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-16 h-full flex items-center justify-center font-bold text-lg">
+                          {manualQuantity}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setIsManualQty(true);
+                            setManualQuantity(manualQuantity + 1);
+                          }}
+                          className="w-12 h-full flex items-center justify-center hover:bg-bg-base transition-colors border-l border-border-main"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -701,22 +723,20 @@ const ProductDetails = () => {
                   <button
                     onClick={handleAddToCart}
                     disabled={totalQuantity === 0}
-                    className={`flex-1 h-14 rounded-component font-bold shadow-lg uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all ${
-                      totalQuantity === 0 
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    className={`flex-1 h-14 rounded-component font-bold shadow-lg uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all ${totalQuantity === 0
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-secondary text-white shadow-secondary/20 hover:scale-[1.02] active:scale-[0.98]'
-                    }`}
+                      }`}
                   >
                     <ShoppingCart className="w-4 h-4" />
                     Add to Cart - ৳{finalTotal.toLocaleString()}
                   </button>
                   <button
                     onClick={handleWishlist}
-                    className={`w-14 h-14 flex items-center justify-center rounded-component border-2 transition-all ${
-                      isWishlisted
+                    className={`w-14 h-14 flex items-center justify-center rounded-component border-2 transition-all ${isWishlisted
                         ? "border-danger bg-danger text-white"
                         : "border-border-main hover:border-danger hover:text-danger text-text-muted"
-                    }`}
+                      }`}
                   >
                     <Heart
                       className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`}
@@ -820,9 +840,8 @@ const ProductDetails = () => {
                   {product.specifications?.map((group, i) => (
                     <div
                       key={i}
-                      className={`p-8 border-border-main ${
-                        i % 2 === 0 ? "md:border-r" : ""
-                      } ${i < (product.specifications?.length || 0) - 2 ? "border-b" : ""}`}
+                      className={`p-8 border-border-main ${i % 2 === 0 ? "md:border-r" : ""
+                        } ${i < (product.specifications?.length || 0) - 2 ? "border-b" : ""}`}
                     >
                       <h3 className="text-secondary font-bold text-sm uppercase tracking-widest mb-6">
                         {group.group}
@@ -850,18 +869,18 @@ const ProductDetails = () => {
           </div>
 
           <div className="w-full lg:w-[25%] space-y-8 sticky top-8">
-             <div className="card-container p-8 bg-secondary text-white overflow-hidden relative group">
-                <div className="relative z-10">
-                  <h3 className="h4 mb-2 uppercase tracking-tighter">Need Help?</h3>
-                  <p className="text-white/80 text-[10px] font-medium uppercase tracking-widest mb-8 leading-loose">
-                    Our customer support team is available 24/7 to assist you.
-                  </p>
-                  <button className="w-full py-4 bg-white text-secondary rounded-component font-bold shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]">
-                    Contact Support
-                  </button>
-                </div>
-                <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-             </div>
+            <div className="card-container p-8 bg-secondary text-white overflow-hidden relative group">
+              <div className="relative z-10">
+                <h3 className="h4 mb-2 uppercase tracking-tighter">Need Help?</h3>
+                <p className="text-white/80 text-[10px] font-medium uppercase tracking-widest mb-8 leading-loose">
+                  Our customer support team is available 24/7 to assist you.
+                </p>
+                <button className="w-full py-4 bg-white text-secondary rounded-component font-bold shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]">
+                  Contact Support
+                </button>
+              </div>
+              <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+            </div>
           </div>
         </div>
 
@@ -885,12 +904,12 @@ const ProductDetails = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {relatedProductsResponse?.data
               ?.filter((p) => p._id !== product._id)
-              .slice(0,4)
+              .slice(0, 4)
               .map((p) => (
                 <ProductCard key={p._id} product={p} />
               ))}
-            {(!relatedProductsResponse?.data || relatedProductsResponse.data.length <= 1) && 
-              Array.from({length: 4}).map((_, i) => <ProductCardSkeleton key={i} />)
+            {(!relatedProductsResponse?.data || relatedProductsResponse.data.length <= 1) &&
+              Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
             }
           </div>
         </div>
@@ -914,35 +933,35 @@ const ProductDetails = () => {
 
             {/* Lightbox Content */}
             <div className="flex-1 relative flex items-center justify-center px-4 md:px-20 overflow-hidden">
-               {/* Controls */}
-               <button 
-                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-8 z-10 p-4 rounded-full bg-white/5 text-white hover:bg-white/10 transition-colors"
-                >
-                  <ChevronLeft className="w-8 h-8" />
-                </button>
+              {/* Controls */}
+              <button
+                onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                className="absolute left-8 z-10 p-4 rounded-full bg-white/5 text-white hover:bg-white/10 transition-colors"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </button>
 
-                <div className="relative max-w-5xl max-h-[70vh] w-full h-full flex items-center justify-center">
-                   <AnimatePresence mode="wait">
-                      <motion.img
-                        key={selectedImage}
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 1.1, y: -20 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                        src={product.images[selectedImage]?.url}
-                        alt=""
-                        className="max-w-full max-h-full object-contain pointer-events-none"
-                      />
-                   </AnimatePresence>
-                </div>
+              <div className="relative max-w-5xl max-h-[70vh] w-full h-full flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={selectedImage}
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 1.1, y: -20 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    src={product.images[selectedImage]?.url}
+                    alt=""
+                    className="max-w-full max-h-full object-contain pointer-events-none"
+                  />
+                </AnimatePresence>
+              </div>
 
-                <button 
-                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-8 z-10 p-4 rounded-full bg-white/5 text-white hover:bg-white/10 transition-colors"
-                >
-                  <ChevronRight className="w-8 h-8" />
-                </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                className="absolute right-8 z-10 p-4 rounded-full bg-white/5 text-white hover:bg-white/10 transition-colors"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </button>
             </div>
 
             {/* Lightbox Thumbnails */}
@@ -951,11 +970,10 @@ const ProductDetails = () => {
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
-                  className={`relative w-16 h-16 rounded overflow-hidden border-2 transition-all ${
-                    selectedImage === idx
+                  className={`relative w-16 h-16 rounded overflow-hidden border-2 transition-all ${selectedImage === idx
                       ? "border-secondary scale-110 shadow-2xl"
                       : "border-transparent opacity-50 hover:opacity-100"
-                  }`}
+                    }`}
                 >
                   <img src={img.url} className="w-full h-full object-cover" />
                 </button>
