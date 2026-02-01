@@ -41,10 +41,41 @@ const Shop = () => {
   const { trackViewItemList, trackSortChange } = useTracking();
 
   useEffect(() => {
-    // ... (existing code)
+    if (productsData?.data) {
+      trackViewItemList(productsData.data.map((product) => ({
+        id: product._id,
+        name: product.basicInfo.title,
+        price: product.price.discounted || product.price.regular,
+        category: product.basicInfo.category,
+        list_name: "Shop Page",
+        list_id: "shop_page"
+      })));
+    }
   }, [productsData]);
 
-  // ... (existing code)
+  // Extract unique brands from current products as a starting point
+  // In a real app, you might have a dedicated API for brands
+  const brands = useMemo(() => {
+    if (!productsData?.data) return [];
+    const uniqueBrands = new Set<string>();
+    productsData.data.forEach((p) => {
+      if (p.basicInfo?.brand) uniqueBrands.add(p.basicInfo.brand);
+    });
+    // Add some default brands if list is small to make it look good
+    ["Samsung", "Apple", "Xiaomi", "X-Lab", "Envato", "Photodune"].forEach(
+      (b) => uniqueBrands.add(b)
+    );
+    return Array.from(uniqueBrands).sort();
+  }, [productsData?.data]);
+
+  const sortOptions = [
+    { label: "Latest Arrivals", value: "-createdAt" },
+    { label: "Oldest First", value: "createdAt" },
+    { label: "Price: Low to High", value: "price.regular" },
+    { label: "Price: High to Low", value: "-price.regular" },
+    { label: "Most Sales", value: "-sold" },
+    { label: "Best Discount", value: "-price.savingsPercentage" },
+  ];
 
   const handleSortChange = (value: string) => {
     trackSortChange(value);

@@ -5,6 +5,7 @@ import Shop from "@/pages/Public/Shop/Shop";
 import ProductDetails from "@/pages/Public/Shop/Components/ProductDetails/ProductDetails";
 import Checkout from "@/pages/Public/Checkout/Checkout";
 import OrderTrack from "@/pages/Public/OrderTracking/OrderTrack";
+import Cart from "@/pages/Public/Cart/Cart";
 
 export const publicRoutes = [
   {
@@ -36,6 +37,11 @@ export const publicRoutes = [
     // label: "Order Track",
     path: "/order-track",
     element: <OrderTrack />,
+  },
+  {
+    label: "Cart",
+    path: "/cart",
+    element: <Cart />,
   },
   {
     label: "Services",

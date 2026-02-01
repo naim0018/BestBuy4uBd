@@ -15,7 +15,7 @@ import { useTracking } from "@/hooks/useTracking";
 
 const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
   const dispatch = useDispatch();
-  const { trackRemoveFromCart, trackViewCart } = useTracking();
+  const { trackRemoveFromCart, trackViewCart, trackBeginCheckout } = useTracking();
   const { cartItems } = useSelector((state: RootState) => state.cart);
 
   const subtotal = cartItems.reduce(
@@ -172,7 +172,17 @@ const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
                   </Link>
                   <Link
                     to="/checkout"
-                    onClick={onClose}
+                    onClick={() => {
+                      const items = cartItems.map((item) => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                        variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+                      }));
+                      trackBeginCheckout(items, subtotal);
+                      onClose();
+                    }}
                     className="w-full py-4 bg-secondary text-white rounded-component font-semibold text-[10px] uppercase tracking-widest text-center shadow-2xl shadow-secondary/20 flex items-center justify-center gap-2 hover:translate-y-[-2px] active:translate-y-0 transition-all group"
                   >
                     Checkout
