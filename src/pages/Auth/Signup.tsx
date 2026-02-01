@@ -7,6 +7,7 @@ import { useRegisterMutation } from "@/store/Api/AuthApi";
 import { toast } from "sonner";
 import { Mail, Lock, User, ImagePlus, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTracking } from "@/hooks/useTracking";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -22,6 +23,7 @@ const Signup = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [registerUser, { isLoading }] = useRegisterMutation();
   const navigate = useNavigate();
+  const { trackSignUp } = useTracking();
 
   const {
     register,
@@ -50,6 +52,7 @@ const Signup = () => {
       if (selectedFile) formData.append("file", selectedFile); // Backend likely expects 'file' or 'image'
 
       await registerUser(formData).unwrap();
+      trackSignUp("email");
       toast.success("Account created successfully! Please login.");
       navigate("/login");
     } catch (err: any) {
@@ -64,7 +67,7 @@ const Signup = () => {
       <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-secondary/20 blur-[120px] rounded-full pointer-events-none" />
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/20 my-10"
@@ -77,8 +80,8 @@ const Signup = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-           {/* Profile Image Upload */}
-           <div className="flex justify-center mb-6">
+          {/* Profile Image Upload */}
+          <div className="flex justify-center mb-6">
             <div className="relative group cursor-pointer" onClick={() => document.getElementById("fileInput")?.click()}>
               <div className={`w-24 h-24 rounded-full border-2 border-dashed border-border-main flex items-center justify-center overflow-hidden transition-all ${!preview ? 'hover:border-primary bg-bg-base' : 'border-primary'}`}>
                 {preview ? (
@@ -91,7 +94,7 @@ const Signup = () => {
                 )}
               </div>
               <div className="absolute bottom-0 right-0 bg-primary-blue text-white p-1.5 rounded-full shadow-lg">
-                 <ImagePlus className="w-3 h-3" />
+                <ImagePlus className="w-3 h-3" />
               </div>
             </div>
             <input

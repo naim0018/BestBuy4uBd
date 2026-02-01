@@ -1,8 +1,17 @@
 import React from "react";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
 import NavItems from "./NavItems";
+import { useTracking } from "@/hooks/useTracking";
 
 const Footer: React.FC = () => {
+  const { trackContact, trackSubscribe } = useTracking();
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    trackSubscribe("footer_newsletter", "footer");
+    // Add newsletter subscription logic here
+  };
+
   return (
     <footer className="bg-text-primary text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,6 +44,7 @@ const Footer: React.FC = () => {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackContact("facebook", "social_link")}
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-secondary transition-all"
               >
                 <FaFacebook size={18} />
@@ -43,6 +53,7 @@ const Footer: React.FC = () => {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackContact("twitter", "social_link")}
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-info transition-all"
               >
                 <FaTwitter size={18} />
@@ -51,6 +62,7 @@ const Footer: React.FC = () => {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackContact("instagram", "social_link")}
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-danger transition-all"
               >
                 <FaInstagram size={18} />
@@ -59,6 +71,7 @@ const Footer: React.FC = () => {
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackContact("linkedin", "social_link")}
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-all"
               >
                 <FaLinkedin size={18} />
@@ -72,7 +85,7 @@ const Footer: React.FC = () => {
             <p className="text-sm opacity-70">
               Subscribe to our newsletter to get the latest updates.
             </p>
-            <form className="flex flex-col gap-2">
+            <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
               <input
                 type="email"
                 placeholder="Your email"

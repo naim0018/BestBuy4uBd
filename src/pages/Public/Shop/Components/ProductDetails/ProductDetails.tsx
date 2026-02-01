@@ -146,8 +146,8 @@ const ForYouCard = ({ product }: { product: any }) => (
           <Star
             key={i}
             className={`w-2.5 h-2.5 ${i < Math.floor(product.rating?.average || 0)
-                ? "fill-current"
-                : "text-text-muted/20"
+              ? "fill-current"
+              : "text-text-muted/20"
               }`}
           />
         ))}
@@ -163,7 +163,7 @@ import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 
 const ProductDetails = () => {
   const dispatch = useDispatch();
-  const { trackViewItem, trackAddToCart, trackAddToWishlist } = useTracking();
+  const { trackViewItem, trackAddToCart, trackAddToWishlist, trackWishlistRemove, trackImageZoom, trackVariantSelect } = useTracking();
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
   const { id } = useParams<{ id: string }>();
   const { data: productResponse, isLoading } = useGetProductByIdQuery({
@@ -311,6 +311,12 @@ const ProductDetails = () => {
     if (!product) return;
 
     if (isWishlisted) {
+      trackWishlistRemove({
+        id: product._id,
+        name: product.basicInfo.title,
+        price: product.price.discounted || product.price.regular,
+        category: product.basicInfo.category
+      });
       dispatch(removeFromWishlist(product._id));
     } else {
       dispatch(addToWishlist(product));
@@ -334,17 +340,19 @@ const ProductDetails = () => {
 
   const nextImage = useCallback(() => {
     if (product) {
-      setSelectedImage((prev) => (prev + 1) % product.images.length);
+      const nextIndex = (selectedImage + 1) % product.images.length;
+      setSelectedImage(nextIndex);
+      trackImageZoom(product._id, product.images[nextIndex]?.url);
     }
-  }, [product]);
+  }, [product, selectedImage, trackImageZoom]);
 
   const prevImage = useCallback(() => {
     if (product) {
-      setSelectedImage(
-        (prev) => (prev - 1 + product.images.length) % product.images.length
-      );
+      const prevIndex = (selectedImage - 1 + product.images.length) % product.images.length;
+      setSelectedImage(prevIndex);
+      trackImageZoom(product._id, product.images[prevIndex]?.url);
     }
-  }, [product]);
+  }, [product, selectedImage, trackImageZoom]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -465,8 +473,8 @@ const ProductDetails = () => {
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
                     className={`w-24 h-24 rounded-component border-2 transition-all flex-shrink-0 bg-bg-base/30 overflow-hidden ${selectedImage === idx
-                        ? "border-secondary scale-105 shadow-md"
-                        : "border-border-main hover:border-text-muted"
+                      ? "border-secondary scale-105 shadow-md"
+                      : "border-border-main hover:border-text-muted"
                       }`}
                   >
                     <img
@@ -488,8 +496,8 @@ const ProductDetails = () => {
                     <Star
                       key={i}
                       className={`w-4 h-4 ${i < Math.floor(product.rating?.average || 0)
-                          ? "fill-current"
-                          : "text-text-muted/20"
+                        ? "fill-current"
+                        : "text-text-muted/20"
                         }`}
                     />
                   ))}
@@ -573,8 +581,8 @@ const ProductDetails = () => {
                                 updateVariantQuantity(variant.group, variant.item.value, quantity + 1);
                               }}
                               className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${isActive
-                                  ? "border-secondary bg-secondary text-white shadow-lg"
-                                  : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
+                                ? "border-secondary bg-secondary text-white shadow-lg"
+                                : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
                                 }`}
                             >
                               <div className="flex flex-col items-center">
@@ -631,6 +639,7 @@ const ProductDetails = () => {
                                 // But user asked specifically for "Variant is a quantity... select multiple variant"
                                 // So we treat this as "Adding to cart configuration"
                                 addVariant(variantGroup.group, item);
+                                trackVariantSelect(product._id, variantGroup.group, item.value);
 
                                 if (item.image?.url) {
                                   const imgIdx = product.images.findIndex((img: any) => img.url === item.image.url);
@@ -638,8 +647,8 @@ const ProductDetails = () => {
                                 }
                               }}
                               className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${isActive
-                                  ? "border-secondary bg-secondary text-white shadow-lg"
-                                  : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
+                                ? "border-secondary bg-secondary text-white shadow-lg"
+                                : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
                                 }`}
                             >
                               <div className="flex flex-col items-center">
@@ -724,8 +733,8 @@ const ProductDetails = () => {
                     onClick={handleAddToCart}
                     disabled={totalQuantity === 0}
                     className={`flex-1 h-14 rounded-component font-bold shadow-lg uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all ${totalQuantity === 0
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-secondary text-white shadow-secondary/20 hover:scale-[1.02] active:scale-[0.98]'
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-secondary text-white shadow-secondary/20 hover:scale-[1.02] active:scale-[0.98]'
                       }`}
                   >
                     <ShoppingCart className="w-4 h-4" />
@@ -734,8 +743,8 @@ const ProductDetails = () => {
                   <button
                     onClick={handleWishlist}
                     className={`w-14 h-14 flex items-center justify-center rounded-component border-2 transition-all ${isWishlisted
-                        ? "border-danger bg-danger text-white"
-                        : "border-border-main hover:border-danger hover:text-danger text-text-muted"
+                      ? "border-danger bg-danger text-white"
+                      : "border-border-main hover:border-danger hover:text-danger text-text-muted"
                       }`}
                   >
                     <Heart
@@ -971,8 +980,8 @@ const ProductDetails = () => {
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
                   className={`relative w-16 h-16 rounded overflow-hidden border-2 transition-all ${selectedImage === idx
-                      ? "border-secondary scale-110 shadow-2xl"
-                      : "border-transparent opacity-50 hover:opacity-100"
+                    ? "border-secondary scale-110 shadow-2xl"
+                    : "border-transparent opacity-50 hover:opacity-100"
                     }`}
                 >
                   <img src={img.url} className="w-full h-full object-cover" />

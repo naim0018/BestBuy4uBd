@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useTracking } from "@/hooks/useTracking";
 import { RootState } from "@/store/store";
 import { useNavigate } from "react-router-dom";
 import { useCreateOrderMutation } from "@/store/Api/OrderApi";
@@ -61,13 +62,58 @@ const Checkout = () => {
     ? 0
     : (deliveryChargeType === "insideDhaka" ? maxDeliveryChargeInside : maxDeliveryChargeOutside);
 
+  const { trackBeginCheckout, trackAddPaymentInfo, trackAddShippingInfo, trackCouponApply, trackCheckoutError } = useTracking();
+
   const total = subtotal + deliveryCharge - discount;
+
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      const items = cartItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+      }));
+
+      // Track Begin Checkout
+      trackBeginCheckout(items, total, couponCode);
+
+      // Track Add Payment Info (Static: Cash on Delivery)
+      trackAddPaymentInfo(items, total, "Cash on Delivery");
+
+      // Track Add Shipping Info (Initial default)
+      trackAddShippingInfo(items, total, deliveryChargeType);
+    }
+  }, []); // Run once on mount
 
   const handleDeliveryChargeChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setDeliveryChargeType(e.target.value);
+    const newChargeType = e.target.value;
+    setDeliveryChargeType(newChargeType);
+
+    // Recalculate total for tracking using new charge type logic locally or just rely on react update?
+    // The state update is async, so 'total' variable here is old. 
+    // Ideally we should track in useEffect dependent on deliveryChargeType, but let's do it here with approximate or wait for effect?
+    // Simpler: Just track with new type.
+
+    // We can re-calculate total here roughly for tracking
+    // But actually, let's use a useEffect on deliveryChargeType to be accurate with total.
   };
+
+  // Effect to track shipping info update when charge type changes
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      trackAddShippingInfo(cartItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+      })), total, deliveryChargeType);
+    }
+  }, [deliveryChargeType]);
 
   const checkFormValidity = (e: React.FormEvent<HTMLFormElement>) => {
     const form = e.currentTarget;
@@ -88,6 +134,7 @@ const Checkout = () => {
       const newDiscount = availableCoupons[couponCode];
       setDiscount(newDiscount);
       setAppliedCoupon({ code: couponCode, discount: newDiscount });
+      trackCouponApply(couponCode, newDiscount);
       toast.success(`Successfully applied coupon: ${couponCode}`);
     } else {
       setDiscount(0);
@@ -173,6 +220,7 @@ const Checkout = () => {
       setDiscount(0);
     } catch (error: any) {
       console.error("Order Error:", error);
+      trackCheckoutError(error.data?.message || "Order Error", "ORDER_CREATION_FAILED");
       toast.error(error.data?.message || "Sad! Order could not be completed.");
     }
   };

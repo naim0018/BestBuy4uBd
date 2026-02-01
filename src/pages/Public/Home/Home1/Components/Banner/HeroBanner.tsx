@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BannerData } from "./types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useTracking } from "@/hooks/useTracking";
 
 interface HeroBannerProps {
   banners: BannerData[];
@@ -9,6 +10,20 @@ interface HeroBannerProps {
 
 const HeroBanner = ({ banners }: HeroBannerProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { trackViewPromotion, trackSelectPromotion } = useTracking();
+
+  useEffect(() => {
+    if (banners && banners.length > 0 && banners[currentSlide]) {
+      const banner = banners[currentSlide];
+      trackViewPromotion({
+        id: banner.id,
+        name: banner.title,
+        creative_name: "hero_banner",
+        creative_slot: `slot_${currentSlide + 1}`,
+        location_id: "home_hero"
+      });
+    }
+  }, [currentSlide, banners]);
 
   useEffect(() => {
     if (banners.length <= 1) return;
@@ -29,9 +44,8 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
 
   return (
     <div
-      className={`relative ${
-        data.bgColor || "bg-bg-base"
-      } rounded-container overflow-hidden h-full min-h-[400px] flex items-center transition-colors duration-500`}
+      className={`relative ${data.bgColor || "bg-bg-base"
+        } rounded-container overflow-hidden h-full min-h-[400px] flex items-center transition-colors duration-500`}
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -46,9 +60,8 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
           <div className="relative z-10 p-8 md:p-16 max-w-xl w-full">
             {/* Title */}
             <h2
-              className={`h2 ${
-                data.textColor || "text-text-primary"
-              } mb-4 leading-[1.1] uppercase tracking-tighter`}
+              className={`h2 ${data.textColor || "text-text-primary"
+                } mb-4 leading-[1.1] uppercase tracking-tighter`}
             >
               {data.title}
             </h2>
@@ -56,9 +69,8 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
             {/* Subtitle */}
             {data.subtitle && (
               <h3
-                className={`text-lg md:text-xl font-semibold ${
-                  data.textColor || "text-text-primary"
-                } opacity-90 mb-6 uppercase tracking-widest`}
+                className={`text-lg md:text-xl font-semibold ${data.textColor || "text-text-primary"
+                  } opacity-90 mb-6 uppercase tracking-widest`}
               >
                 {data.subtitle}
               </h3>
@@ -67,9 +79,8 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
             {/* Features */}
             {data.description && (
               <p
-                className={`text-base font-medium ${
-                  data.textColor || "text-text-primary"
-                } opacity-70 mb-10 uppercase tracking-[0.15em] leading-relaxed`}
+                className={`text-base font-medium ${data.textColor || "text-text-primary"
+                  } opacity-70 mb-10 uppercase tracking-[0.15em] leading-relaxed`}
               >
                 {data.description}
               </p>
@@ -80,6 +91,15 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
               href={data.ctaLink}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                trackSelectPromotion({
+                  id: data.id,
+                  name: data.title,
+                  creative_name: "hero_banner",
+                  creative_slot: `slot_${currentSlide + 1}`,
+                  location_id: "home_hero"
+                });
+              }}
               className="inline-block bg-bg-surface text-text-primary px-10 py-4 rounded-component font-semibold shadow-xl shadow-black/5 hover:shadow-2xl transition-all duration-300 no-underline uppercase tracking-widest text-xs border border-border-main"
             >
               {data.ctaText || "Shop Now"}

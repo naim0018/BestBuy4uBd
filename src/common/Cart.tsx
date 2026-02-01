@@ -20,18 +20,31 @@ interface CartItem {
   selectedVariants?: Array<{ group: string; value: string }>;
 }
 
+import { useEffect } from "react";
 import { useTracking } from "@/hooks/useTracking";
 
 const Cart: React.FC<{ toggleCart: () => void }> = ({ toggleCart }) => {
   const cartItems = useSelector((state: any) => state.cart.cartItems as CartItem[]) || [];
   const dispatch = useDispatch();
-  const { trackRemoveFromCart } = useTracking();
+  const { trackRemoveFromCart, trackViewCart } = useTracking();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
   const total = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
+
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      trackViewCart(cartItems.map(item => ({
+        id: item.itemKey.split('-')[0] || "unknown", // Best effort ID extraction
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        variant: item.selectedVariants?.map(v => `${v.group}: ${v.value}`).join(", ")
+      })), total);
+    }
+  }, [cartItems, total]);
 
   return (
     <>

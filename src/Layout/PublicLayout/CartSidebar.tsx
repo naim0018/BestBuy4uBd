@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store/store";
@@ -14,13 +15,25 @@ import { useTracking } from "@/hooks/useTracking";
 
 const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
   const dispatch = useDispatch();
-  const { trackRemoveFromCart } = useTracking();
+  const { trackRemoveFromCart, trackViewCart } = useTracking();
   const { cartItems } = useSelector((state: RootState) => state.cart);
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
+
+  useEffect(() => {
+    if (isOpen && cartItems.length > 0) {
+      trackViewCart(cartItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        variant: item.selectedVariants?.map((v: any) => `${v.group}: ${v.value}`).join(", ")
+      })), subtotal);
+    }
+  }, [isOpen, cartItems, subtotal]);
 
   return (
     <AnimatePresence>

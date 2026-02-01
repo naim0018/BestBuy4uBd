@@ -16,16 +16,16 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const dispatch = useDispatch();
-  const { trackAddToCart } = useTracking();
+  const { trackAddToCart, trackSelectItem, trackWishlistRemove, trackAddToWishlist } = useTracking();
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
   const isWishlisted = wishlistItems.some(item => item._id === product._id);
 
   const { basicInfo, price, images, rating, stockStatus, additionalInfo } = product;
-  
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     dispatch(addToCart({
       id: product._id,
       name: basicInfo.title,
@@ -42,7 +42,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       category: basicInfo.category,
       quantity: 1
     });
-    
+
     dispatch(openCart());
   };
 
@@ -51,19 +51,42 @@ const ProductCard = ({ product }: ProductCardProps) => {
     e.stopPropagation();
 
     if (isWishlisted) {
+      trackWishlistRemove({
+        id: product._id,
+        name: basicInfo.title,
+        price: price.discounted || price.regular,
+        category: basicInfo.category
+      });
       dispatch(removeFromWishlist(product._id));
     } else {
+      trackAddToWishlist({
+        id: product._id,
+        name: basicInfo.title,
+        price: price.discounted || price.regular,
+        category: basicInfo.category
+      });
       dispatch(addToWishlist(product));
       dispatch(openWishlist());
     }
   };
 
-  const discountPercentage = price.discounted 
+  const discountPercentage = price.discounted
     ? Math.round(((price.regular - price.discounted) / price.regular) * 100)
     : 0;
 
   return (
-    <Link to={`/product/${product._id}`} className="h-full block">
+    <Link
+      to={`/product/${product._id}`}
+      className="h-full block"
+      onClick={() => trackSelectItem({
+        id: product._id,
+        name: basicInfo.title,
+        price: price.discounted || price.regular,
+        category: basicInfo.category,
+        list_name: "Product List",
+        list_id: "product_list"
+      })}
+    >
       <motion.div
         layout
         initial={{ opacity: 0, y: 20 }}
@@ -91,13 +114,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Wishlist Button */}
-        <button 
+        <button
           onClick={handleWishlist}
-          className={`absolute top-4 right-4 z-10 w-9 h-9 rounded-full backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
-            isWishlisted 
-              ? "bg-danger text-white" 
-              : "bg-bg-surface/80 text-text-muted hover:text-danger hover:bg-bg-surface"
-          }`}
+          className={`absolute top-4 right-4 z-10 w-9 h-9 rounded-full backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${isWishlisted
+            ? "bg-danger text-white"
+            : "bg-bg-surface/80 text-text-muted hover:text-danger hover:bg-bg-surface"
+            }`}
         >
           <Heart className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`} />
         </button>
@@ -125,11 +147,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
               whileHover={{ scale: 1.1, rotate: -5 }}
               whileTap={{ scale: 0.9 }}
               disabled={stockStatus === "Out of Stock"}
-              className={`w-11 h-11 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 ${
-                stockStatus === "Out of Stock" 
-                  ? "bg-text-muted/20 cursor-not-allowed text-text-muted" 
-                  : "bg-secondary text-white hover:bg-secondary/90"
-              }`}
+              className={`w-11 h-11 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 ${stockStatus === "Out of Stock"
+                ? "bg-text-muted/20 cursor-not-allowed text-text-muted"
+                : "bg-secondary text-white hover:bg-secondary/90"
+                }`}
               title="Add to Cart"
             >
               <ShoppingCart className="w-5 h-5" />
@@ -142,7 +163,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <div className="text-[10px] font-semibold text-secondary uppercase tracking-widest mb-1">
             {basicInfo.category}
           </div>
-          
+
           <h3
             className="text-text-primary mb-2 line-clamp-2 min-h-[48px] text-lg leading-tight group-hover:text-secondary transition-colors duration-300"
             title={basicInfo.title}
@@ -156,11 +177,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-3.5 h-3.5 ${
-                    i < Math.floor(rating?.average || 0)
-                      ? "fill-current"
-                      : "text-text-muted/20"
-                  }`}
+                  className={`w-3.5 h-3.5 ${i < Math.floor(rating?.average || 0)
+                    ? "fill-current"
+                    : "text-text-muted/20"
+                    }`}
                 />
               ))}
             </div>
@@ -188,11 +208,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </div>
 
             <div className="text-right">
-              <div className={`tag ${
-                stockStatus === "In Stock" ? "bg-secondary/10 text-secondary" :
+              <div className={`tag ${stockStatus === "In Stock" ? "bg-secondary/10 text-secondary" :
                 stockStatus === "Pre-order" ? "bg-accent/10 text-accent" :
-                "bg-danger/10 text-danger"
-              }`}>
+                  "bg-danger/10 text-danger"
+                }`}>
                 {stockStatus}
               </div>
               <span className="text-[10px] text-text-muted font-medium mt-1 block">

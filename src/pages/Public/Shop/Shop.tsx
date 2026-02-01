@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useGetAllProductsQuery } from "@/store/Api/ProductApi";
+import { useTracking } from "@/hooks/useTracking";
 import { useGetAllCategoriesQuery } from "@/store/Api/CategoriesApi";
 import CommonWrapper from "@/common/CommonWrapper";
 import ProductCard from "./Components/ProductCard";
@@ -37,32 +38,16 @@ const Shop = () => {
     isFetching,
   } = useGetAllProductsQuery({ page: filters.page, limit: filters.limit });
   const { data: categoriesData } = useGetAllCategoriesQuery(undefined);
+  const { trackViewItemList, trackSortChange } = useTracking();
 
-  // Extract unique brands from current products as a starting point
-  // In a real app, you might have a dedicated API for brands
-  const brands = useMemo(() => {
-    if (!productsData?.data) return [];
-    const uniqueBrands = new Set<string>();
-    productsData.data.forEach((p) => {
-      if (p.basicInfo?.brand) uniqueBrands.add(p.basicInfo.brand);
-    });
-    // Add some default brands if list is small to make it look good
-    ["Samsung", "Apple", "Xiaomi", "X-Lab", "Envato", "Photodune"].forEach(
-      (b) => uniqueBrands.add(b)
-    );
-    return Array.from(uniqueBrands).sort();
-  }, [productsData?.data]);
+  useEffect(() => {
+    // ... (existing code)
+  }, [productsData]);
 
-  const sortOptions = [
-    { label: "Latest Arrivals", value: "-createdAt" },
-    { label: "Oldest First", value: "createdAt" },
-    { label: "Price: Low to High", value: "price.regular" },
-    { label: "Price: High to Low", value: "-price.regular" },
-    { label: "Most Sales", value: "-sold" },
-    { label: "Best Discount", value: "-price.savingsPercentage" },
-  ];
+  // ... (existing code)
 
   const handleSortChange = (value: string) => {
+    trackSortChange(value);
     setFilters((prev) => ({ ...prev, sort: value, page: 1 }));
   };
 
@@ -172,21 +157,19 @@ const Shop = () => {
                 <div className="flex items-center bg-bg-base p-1.5 rounded-component border border-border-main">
                   <button
                     onClick={() => setViewType("grid")}
-                    className={`p-2.5 rounded-inner transition-all duration-300 ${
-                      viewType === "grid"
-                        ? "bg-bg-surface text-secondary shadow-sm scale-110"
-                        : "text-text-muted hover:text-text-primary"
-                    }`}
+                    className={`p-2.5 rounded-inner transition-all duration-300 ${viewType === "grid"
+                      ? "bg-bg-surface text-secondary shadow-sm scale-110"
+                      : "text-text-muted hover:text-text-primary"
+                      }`}
                   >
                     <LayoutGrid className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setViewType("list")}
-                    className={`p-2.5 rounded-inner transition-all duration-300 ${
-                      viewType === "list"
-                        ? "bg-bg-surface text-secondary shadow-sm scale-110"
-                        : "text-text-muted hover:text-text-primary"
-                    }`}
+                    className={`p-2.5 rounded-inner transition-all duration-300 ${viewType === "list"
+                      ? "bg-bg-surface text-secondary shadow-sm scale-110"
+                      : "text-text-muted hover:text-text-primary"
+                      }`}
                   >
                     <List className="w-5 h-5" />
                   </button>
@@ -229,9 +212,8 @@ const Shop = () => {
 
             {/* Product Grid */}
             <div
-              className={`relative ${
-                isFetching ? "opacity-60 grayscale-[0.5]" : "opacity-100"
-              } transition-all duration-500`}
+              className={`relative ${isFetching ? "opacity-60 grayscale-[0.5]" : "opacity-100"
+                } transition-all duration-500`}
             >
               {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">

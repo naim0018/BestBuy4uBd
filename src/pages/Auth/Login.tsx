@@ -8,6 +8,7 @@ import { setUser } from "@/store/Slices/AuthSlice/authSlice";
 import { toast } from "sonner";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTracking } from "@/hooks/useTracking";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -21,6 +22,8 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const { trackLogin } = useTracking();
+
   const {
     register,
     handleSubmit,
@@ -33,6 +36,7 @@ const Login = () => {
     try {
       const res = await login(data).unwrap();
       dispatch(setUser({ ...res.data }));
+      trackLogin("email");
       toast.success(res.message);
       navigate("/");
     } catch (err: any) {
@@ -43,6 +47,7 @@ const Login = () => {
   const handleGoogleLogin = () => {
     // Placeholder for Google Login logic
     toast.info("Google Login integration coming soon!");
+    trackLogin("google");
   };
 
   return (
@@ -51,7 +56,7 @@ const Login = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 blur-[120px] rounded-full pointer-events-none" />
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/20"
@@ -124,7 +129,7 @@ const Login = () => {
         </div>
 
         {/* Google Login Button */}
-        <button 
+        <button
           onClick={handleGoogleLogin}
           type="button"
           className="w-full bg-white dark:bg-slate-800 border border-border-main text-text-primary py-3.5 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-3"
