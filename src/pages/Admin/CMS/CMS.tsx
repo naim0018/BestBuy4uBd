@@ -90,81 +90,145 @@ const CMS = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-2 md:p-6 space-y-4 md:space-y-6">
+      <div className="flex justify-between items-center px-1">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Content Management</h1>
-          <p className="text-gray-500">Manage your homepage banners and content</p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">CMS</h1>
+          <p className="text-gray-500 text-xs md:text-sm mt-0.5">Manage banners and site content</p>
         </div>
         <Button
           color="primary"
+          size="sm"
           endContent={<Plus className="w-4 h-4" />}
           onPress={handleAdd}
         >
-          Add Banner
+          Add
         </Button>
       </div>
 
-      <Card>
-        <CardBody>
-          <Table aria-label="Banner table">
-            <TableHeader>
-              <TableColumn>IMAGE</TableColumn>
-              <TableColumn>TITLE</TableColumn>
-              <TableColumn>TYPE</TableColumn>
-              <TableColumn>STATUS</TableColumn>
-              <TableColumn>ACTIONS</TableColumn>
-            </TableHeader>
-            <TableBody emptyContent={"No banners found"}>
-              {banners.map((banner: IBanner) => (
-                <TableRow key={banner._id}>
-                  <TableCell>
-                    <div className="w-16 h-10 rounded-lg overflow-hidden bg-gray-100">
-                        {banner.image ? (
-                            <img src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                <ImageIcon size={20} />
-                            </div>
-                        )}
+      <div className="hidden lg:block">
+        <Card>
+          <CardBody>
+            <Table aria-label="Banner table">
+              <TableHeader>
+                <TableColumn>IMAGE</TableColumn>
+                <TableColumn>TITLE</TableColumn>
+                <TableColumn>TYPE</TableColumn>
+                <TableColumn>STATUS</TableColumn>
+                <TableColumn>ACTIONS</TableColumn>
+              </TableHeader>
+              <TableBody emptyContent={"No banners found"}>
+                {banners.map((banner: IBanner) => (
+                  <TableRow key={banner._id}>
+                    <TableCell>
+                      <div className="w-16 h-10 rounded-lg overflow-hidden bg-gray-100">
+                          {banner.image ? (
+                              <img src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
+                          ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                  <ImageIcon size={20} />
+                              </div>
+                          )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                          <p className="font-semibold">{banner.title}</p>
+                          <p className="text-xs text-gray-500 truncate max-w-[200px]">{banner.description}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Chip size="sm" variant="flat" color={banner.type === 'hero' ? 'primary' : 'default'}>
+                          {banner.type.toUpperCase()}
+                      </Chip>
+                    </TableCell>
+                    <TableCell>
+                      <Chip size="sm" color={banner.isActive ? "success" : "danger"} variant="dot">
+                          {banner.isActive ? "Active" : "Inactive"}
+                      </Chip>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                          <Tooltip content="Edit">
+                              <span className="text-lg text-default-400 cursor-pointer active:opacity-50" onClick={() => handleEdit(banner)}>
+                                  <Edit2 size={18} />
+                              </span>
+                          </Tooltip>
+                          <Tooltip color="danger" content="Delete">
+                              <span className="text-lg text-danger cursor-pointer active:opacity-50" onClick={() => handleDelete(banner._id)}>
+                                  <Trash2 size={18} />
+                              </span>
+                          </Tooltip>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Mobile View */}
+      <div className="lg:hidden space-y-3">
+        {banners.map((banner: IBanner) => (
+          <Card key={banner._id} className="border-none shadow-sm">
+            <CardBody className="p-3">
+              <div className="flex gap-3">
+                <div className="w-20 h-14 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                  {banner.image ? (
+                    <img src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <ImageIcon size={20} />
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                        <p className="font-semibold">{banner.title}</p>
-                        <p className="text-xs text-gray-500 truncate max-w-[200px]">{banner.description}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Chip size="sm" variant="flat" color={banner.type === 'hero' ? 'primary' : 'default'}>
-                        {banner.type.toUpperCase()}
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start gap-2">
+                    <h3 className="font-bold text-sm truncate">{banner.title}</h3>
+                    <Chip size="sm" color={banner.isActive ? "success" : "danger"} variant="flat" className="text-[10px] h-5 min-w-fit">
+                      {banner.isActive ? "Active" : "Inactive"}
                     </Chip>
-                  </TableCell>
-                  <TableCell>
-                    <Chip size="sm" color={banner.isActive ? "success" : "danger"} variant="dot">
-                        {banner.isActive ? "Active" : "Inactive"}
+                  </div>
+                  <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{banner.description}</p>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <Chip size="sm" variant="flat" color={banner.type === 'hero' ? 'primary' : 'default'} className="text-[10px] h-5">
+                      {banner.type.toUpperCase()}
                     </Chip>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                        <Tooltip content="Edit">
-                            <span className="text-lg text-default-400 cursor-pointer active:opacity-50" onClick={() => handleEdit(banner)}>
-                                <Edit2 size={18} />
-                            </span>
-                        </Tooltip>
-                        <Tooltip color="danger" content="Delete">
-                            <span className="text-lg text-danger cursor-pointer active:opacity-50" onClick={() => handleDelete(banner._id)}>
-                                <Trash2 size={18} />
-                            </span>
-                        </Tooltip>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardBody>
-      </Card>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-gray-50">
+                <Button 
+                  size="sm" 
+                  variant="flat" 
+                  className="font-bold h-8 text-xs" 
+                  startContent={<Edit2 size={14} />}
+                  onPress={() => handleEdit(banner)}
+                >
+                  Edit
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="flat" 
+                  color="danger" 
+                  className="font-bold h-8 text-xs" 
+                  startContent={<Trash2 size={14} />}
+                  onPress={() => handleDelete(banner._id)}
+                >
+                  Delete
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
+        ))}
+        {banners.length === 0 && (
+          <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-200 text-gray-400 text-sm">
+            No banners found
+          </div>
+        )}
+      </div>
 
       <Modal isOpen={isOpen} onClose={onClose} size="2xl">
         <ModalContent>

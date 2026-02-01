@@ -163,7 +163,7 @@ const TableView = ({ products }: TableViewProps) => {
         <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
         <span className="font-medium">{product.rating.average.toFixed(1)}</span>
         <span className="text-xs text-gray-500">
-          ({product.rating.count} reviews)
+          ({product.rating.count})
         </span>
       </div>
     ),
@@ -249,33 +249,127 @@ const TableView = ({ products }: TableViewProps) => {
     ),
   });
 
+  const ProductCard = ({ product }: { product: ProductDisplay }) => (
+    <div className="bg-white p-4 mb-3 border border-gray-100 rounded-xl space-y-4">
+      <div className="flex gap-3">
+        <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+          <img
+            src={product.images[0]?.url || "https://placehold.co/400x400?text=No+Image"}
+            alt={product.basicInfo.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-sm line-clamp-1">{product.basicInfo.title}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{product.basicInfo.productCode}</p>
+          <div className="flex items-center justify-between mt-2">
+            <span className="font-black text-primary text-base">
+              {formatPrice(product.price.discounted)}
+            </span>
+            <Chip 
+              size="sm" 
+              color={getStatusColor(product.stockStatus) as any} 
+              variant="flat"
+               className="capitalize"
+            >
+              {product.stockStatus}
+            </Chip>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 py-3 border-y border-gray-50">
+        <div>
+          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Stock & Sales</p>
+          <p className="text-sm font-medium mt-0.5">
+            {product.stockQuantity} Left / {product.sold} Sold
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Rating</p>
+          <div className="flex items-center gap-1 mt-0.5">
+            <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+            <span className="text-sm font-medium">{product.rating.average.toFixed(1)}</span>
+            <span className="text-xs text-gray-400">({product.rating.count})</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1.5">Landing Template</p>
+            <Select
+              size="sm"
+              selectedKeys={[product.additionalInfo?.landingPageTemplate || "template1"]}
+              onChange={(e) => handleTemplateChange(product._id, e.target.value)}
+              isDisabled={updatingId === product._id}
+              classNames={{ trigger: "h-9 bg-gray-50 border-none shadow-none" }}
+            >
+              {templateOptions.map((option) => (
+                <SelectItem key={option.value}>{option.label}</SelectItem>
+              ))}
+            </Select>
+        </div>
+
+        <div className="flex gap-2">
+            <Button 
+                className="flex-1 h-9 font-bold bg-blue-50 text-blue-600 border-none" 
+                size="sm" 
+                onPress={() => navigate(`/admin/update-product/${product._id}`)}
+                startContent={<Edit size={16} />}
+            >
+                Edit
+            </Button>
+            <Button 
+                className="flex-1 h-9 font-bold bg-red-50 text-red-600 border-none" 
+                size="sm" 
+                onPress={() => openDeleteModal(product._id, product.basicInfo.title)}
+                startContent={<Trash2 size={16} />}
+            >
+                Delete
+            </Button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="p-0 overflow-x-auto border border-gray-100 rounded-lg bg-white relative">
-      <Table
-        aria-label="Products table"
-        className="w-full"
-        classNames={{
-          wrapper: "p-0 shadow-none",
-          th: "bg-gray-50 text-gray-600 font-medium",
-          td: "py-3",
-        }}
-        selectionMode="multiple"
-      >
-        <TableHeader columns={tableColumns}>
-          {(column) => (
-            <TableColumn key={column.key}>{column.label}</TableColumn>
-          )}
-        </TableHeader>
-        <TableBody items={products.map(renderTableRows)}>
-          {(item) => (
-            <TableRow key={item.key}>
-              {(columnKey) => (
-                <TableCell>{item[columnKey as keyof typeof item]}</TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+    <div className="relative">
+      {/* Desktop View */}
+      <div className="hidden lg:block overflow-x-auto border border-gray-100 rounded-lg bg-white">
+        <Table
+          aria-label="Products table"
+          className="w-full"
+          classNames={{
+            wrapper: "p-0 shadow-none",
+            th: "bg-gray-50 text-gray-600 font-medium",
+            td: "py-3",
+          }}
+          selectionMode="multiple"
+        >
+          <TableHeader columns={tableColumns}>
+            {(column) => (
+              <TableColumn key={column.key}>{column.label}</TableColumn>
+            )}
+          </TableHeader>
+          <TableBody items={products.map(renderTableRows)}>
+            {(item) => (
+              <TableRow key={item.key}>
+                {(columnKey) => (
+                  <TableCell>{item[columnKey as keyof typeof item]}</TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Mobile View */}
+      <div className="lg:hidden">
+        {products.map((product) => (
+          <ProductCard key={product._id} product={product} />
+        ))}
+      </div>
 
       <DeleteProductModal
         isOpen={isDeleteModalOpen}

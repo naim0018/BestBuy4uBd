@@ -26,7 +26,8 @@ import {
   Trash2,
   Settings2,
   Plus,
-  Truck
+  Truck,
+  MessageCircle,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -53,6 +54,8 @@ const Services = () => {
     if (serviceKey === "facebook") {
       setValue("facebookPixelId", currentVal?.facebookPixelId);
       setValue("facebookAccessToken", currentVal?.facebookAccessToken);
+    } else if (serviceKey === "facebookChat") {
+      setValue("facebookPageId", currentVal?.facebookPageId);
     } else if (serviceKey === "steadfast") {
       setValue("steadfastApiKey", currentVal?.steadfastApiKey);
       setValue("steadfastSecretKey", currentVal?.steadfastSecretKey);
@@ -77,6 +80,8 @@ const Services = () => {
               if (key === "facebook") {
                 payload.facebookPixelId = "";
                 payload.facebookAccessToken = "";
+              } else if (key === "facebookChat") {
+                payload.facebookPageId = "";
               } else if (key === "steadfast") {
                 payload.steadfastApiKey = "";
                 payload.steadfastSecretKey = "";
@@ -152,6 +157,24 @@ const Services = () => {
       idLabel: "Pixel ID",
     },
     {
+      key: "facebookChat",
+      title: "Facebook Chat",
+      desc: "Enable Messenger chat on your website.",
+      icon: <MessageCircle className="text-blue-600 w-6 h-6" />,
+      color: "bg-blue-50",
+      link: "https://www.facebook.com/business/help/1524587524402327",
+      idLabel: "Page ID",
+    },
+    {
+      key: "whatsappNumber",
+      title: "WhatsApp Chat",
+      desc: "Enable WhatsApp chat button for customers.",
+      icon: <MessageCircle className="text-green-500 w-6 h-6" />,
+      color: "bg-green-50",
+      link: "https://faq.whatsapp.com/general/chats/how-to-use-click-to-chat/",
+      idLabel: "Phone Number (with 880)",
+    },
+    {
       key: "tiktokPixelId",
       title: "TikTok Pixel",
       desc: "Measure performance of TikTok ads.",
@@ -202,21 +225,23 @@ const Services = () => {
     return <div className="p-10 text-center">Loading Integrations...</div>;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Services & Integrations
+    <div className="p-2 md:p-6 max-w-7xl mx-auto space-y-4 md:space-y-8">
+      <div className="px-1">
+        <h1 className="text-xl md:text-3xl font-bold text-gray-900">
+          Services
         </h1>
-        <p className="text-gray-500 mt-2">
-          Manage third-party tools and tracking codes
+        <p className="text-gray-500 text-xs md:text-sm mt-0.5">
+          Manage third-party tool integrations
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
         {integrations.map((item) => {
           const isConfigured =
             item.key === "facebook"
               ? !!settings.facebookPixelId
+              : item.key === "facebookChat"
+              ? !!settings.facebookPageId
               : item.key === "steadfast"
               ? !!settings.steadfastApiKey
               : !!settings[item.key];
@@ -226,6 +251,10 @@ const Services = () => {
               ? {
                   facebookPixelId: settings.facebookPixelId,
                   facebookAccessToken: settings.facebookAccessToken,
+                }
+              : item.key === "facebookChat"
+              ? {
+                  facebookPageId: settings.facebookPageId,
                 }
               : item.key === "steadfast"
               ? {
@@ -238,6 +267,8 @@ const Services = () => {
           const displayValue =
             item.key === "facebook"
               ? settings.facebookPixelId
+              : item.key === "facebookChat"
+              ? settings.facebookPageId
               : item.key === "steadfast"
               ? settings.steadfastApiKey
               : settings[item.key];
@@ -245,6 +276,8 @@ const Services = () => {
           const maskKey =
             item.key === "facebook"
               ? "facebookPixelId"
+              : item.key === "facebookChat"
+              ? "facebookPageId"
               : item.key === "steadfast"
               ? "steadfastApiKey"
               : item.key;
@@ -254,7 +287,7 @@ const Services = () => {
               key={item.key}
               className="shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
             >
-              <CardHeader className="flex gap-3 p-5">
+              <CardHeader className="flex gap-3 p-3 md:p-5">
                 <div className={`p-2 rounded-lg ${item.color}`}>
                   {item.icon}
                 </div>
@@ -274,7 +307,7 @@ const Services = () => {
                 </div>
               </CardHeader>
               <Divider />
-              <CardBody className="p-6">
+              <CardBody className="p-3 md:p-6">
                 {isConfigured ? (
                   <div className="space-y-4">
                     <div className="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-200 flex justify-between items-center group">
@@ -363,6 +396,13 @@ const Services = () => {
                       {...register("facebookAccessToken")}
                     />
                   </>
+                ) : activeService === "facebookChat" ? (
+                  <Input
+                    label="Page ID (Messenger)"
+                    placeholder="Page ID for Chat Plugin"
+                    variant="bordered"
+                    {...register("facebookPageId")}
+                  />
                 ) : activeService === "steadfast" ? (
                   <>
                     <Input

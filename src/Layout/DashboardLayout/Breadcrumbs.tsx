@@ -20,7 +20,7 @@ const Breadcrumbs = ({ config, basePath }: BreadcrumbProps) => {
   );
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6 px-1">
+    <nav className="flex items-center flex-wrap gap-y-2 space-x-2 text-sm text-gray-500 mb-6 px-1">
       <Link to={basePath} className="hover:text-gray-900 transition-colors">
         <Home className="size-4" />
       </Link>

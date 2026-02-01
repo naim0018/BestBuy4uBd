@@ -78,10 +78,10 @@ const AllProduct = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
       {/* Filters and Controls */}
-      <Card className="p-4 mb-6 shadow-sm border-none bg-gray-50/50">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <Card className="p-2 md:p-4 mb-4 shadow-sm border-none bg-gray-50/50">
+        <div className="flex flex-col lg:flex-row gap-2 md:gap-4">
           {/* Search */}
           <div className="flex-1">
             <Input
@@ -89,13 +89,13 @@ const AllProduct = () => {
               startContent={<Search className="w-4 h-4 text-gray-400" />}
               value={searchTerm}
               onChange={handleSearch}
-              size="md"
+              size="sm"
               className="w-full"
               variant="bordered"
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+          <div className="flex flex-col sm:flex-row gap-2 md:gap-4 shrink-0">
             {/* Category Filter */}
             <div className="w-full sm:w-48">
               <Select
@@ -106,7 +106,7 @@ const AllProduct = () => {
                   setCategoryFilter(e.target.value);
                   setPage(1);
                 }}
-                size="md"
+                size="sm"
                 variant="bordered"
               >
                 {categories.map((category) => (
@@ -118,7 +118,7 @@ const AllProduct = () => {
             </div>
 
             {/* View Toggle */}
-            <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-gray-200 justify-center">
               <Button
                 isIconOnly
                 variant={viewMode === "table" ? "flat" : "light"}
@@ -143,35 +143,35 @@ const AllProduct = () => {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card className="p-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
+        <Card className="p-3 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Products</p>
-              <h3 className="text-2xl font-bold">{meta.total}</h3>
+              <p className="text-[10px] md:text-xs text-gray-600 font-bold uppercase">Products</p>
+              <h3 className="text-lg md:text-2xl font-bold">{meta.total}</h3>
             </div>
-            <Package className="w-8 h-8 text-primary" />
+            <Package className="w-5 h-5 md:w-8 md:h-8 text-primary" />
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-3 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Sales</p>
-              <h3 className="text-2xl font-bold">
+              <p className="text-[10px] md:text-xs text-gray-600 font-bold uppercase">Sales</p>
+              <h3 className="text-lg md:text-2xl font-bold">
                 {products.reduce(
                   (acc: number, p: ProductDisplay) => acc + p.sold,
                   0
                 )}
               </h3>
             </div>
-            <DollarSign className="w-8 h-8 text-green-600" />
+            <DollarSign className="w-5 h-5 md:w-8 md:h-8 text-green-600" />
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-3 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Avg. Rating</p>
-              <h3 className="text-2xl font-bold">
+              <p className="text-[10px] md:text-xs text-gray-600 font-bold uppercase">Rating</p>
+              <h3 className="text-lg md:text-2xl font-bold">
                 {products.length > 0
                   ? (
                       products.reduce(
@@ -183,14 +183,14 @@ const AllProduct = () => {
                   : "0.0"}
               </h3>
             </div>
-            <Star className="w-8 h-8 text-yellow-500 fill-yellow-500" />
+            <Star className="w-5 h-5 md:w-8 md:h-8 text-yellow-500 fill-yellow-500" />
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-3 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">On Sale</p>
-              <h3 className="text-2xl font-bold">
+              <p className="text-[10px] md:text-xs text-gray-600 font-bold uppercase">On Sale</p>
+              <h3 className="text-lg md:text-2xl font-bold">
                 {
                   products.filter(
                     (p: ProductDisplay) => p.additionalInfo.isOnSale
@@ -198,22 +198,22 @@ const AllProduct = () => {
                 }
               </h3>
             </div>
-            <TrendingDown className="w-8 h-8 text-red-600" />
+            <TrendingDown className="w-5 h-5 md:w-8 md:h-8 text-red-600" />
           </div>
         </Card>
       </div>
 
       {/* Top Pagination and Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-2 md:gap-4 mb-4 md:mb-6 bg-white p-2 md:p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between w-full sm:w-auto gap-4 px-1">
           <span className="text-sm font-medium text-gray-500">
-            Total {meta.total} Products
+            {meta.total} Products
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 font-medium">SHOW:</span>
+            <span className="text-[10px] text-gray-400 font-bold hidden xs:block">SHOW:</span>
             <Select
               size="sm"
-              className="w-24"
+              className="w-20"
               selectedKeys={[limit.toString()]}
               onChange={(e) => {
                 setLimit(Number(e.target.value));
@@ -223,7 +223,7 @@ const AllProduct = () => {
             >
               {[10, 20, 30, 50, 100].map((size) => (
                 <SelectItem key={size} textValue={size.toString()}>
-                  {size} items
+                  {size}
                 </SelectItem>
               ))}
             </Select>
@@ -231,17 +231,17 @@ const AllProduct = () => {
         </div>
 
         {meta.totalPage > 1 && (
-          <Pagination
-            total={meta.totalPage}
-            page={page}
-            onChange={handlePageChange}
-            showControls
-            color="primary"
-            size="sm"
-            classNames={{
-              cursor: "bg-primary",
-            }}
-          />
+          <div className="w-full sm:w-auto flex justify-center">
+            <Pagination
+              total={meta.totalPage}
+              page={page}
+              onChange={handlePageChange}
+              showControls
+              color="primary"
+              size="sm"
+              className="scale-[0.85] sm:scale-100"
+            />
+          </div>
         )}
       </div>
 
@@ -255,18 +255,17 @@ const AllProduct = () => {
       </div>
 
       {/* Bottom Pagination */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="text-sm text-gray-500">
-          Showing {Math.min((page - 1) * limit + 1, meta.total)} to{" "}
-          {Math.min(page * limit, meta.total)} of {meta.total} products
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6 md:mt-8 bg-white p-2 md:p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="text-xs md:text-sm font-medium text-gray-500 w-full text-center md:text-left px-1">
+          Showing {Math.min((page - 1) * limit + 1, meta.total)} - {Math.min(page * limit, meta.total)} of {meta.total}
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 w-full md:w-auto">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Rows per page:</span>
+            <span className="text-xs text-gray-500 whitespace-nowrap font-bold uppercase">Rows:</span>
             <Select
               size="sm"
-              className="w-24"
+              className="w-16"
               selectedKeys={[limit.toString()]}
               onChange={(e) => {
                 setLimit(Number(e.target.value));
@@ -283,17 +282,16 @@ const AllProduct = () => {
           </div>
 
           {meta.totalPage > 1 && (
-            <Pagination
-              total={meta.totalPage}
-              page={page}
-              onChange={handlePageChange}
-              showControls
-              color="primary"
-              size="sm"
-              classNames={{
-                cursor: "bg-primary",
-              }}
-            />
+            <div className="scale-[0.85] sm:scale-100">
+              <Pagination
+                total={meta.totalPage}
+                page={page}
+                onChange={handlePageChange}
+                showControls
+                color="primary"
+                size="sm"
+              />
+            </div>
           )}
         </div>
       </div>

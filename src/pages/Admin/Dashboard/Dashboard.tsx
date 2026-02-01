@@ -1,3 +1,4 @@
+import { cloneElement, ReactElement } from "react";
 import { useGetDashboardStatsQuery } from "@/store/Api/DashboardApi";
 import {
   Card,
@@ -12,7 +13,6 @@ import {
 } from "@heroui/react";
 import {
   TrendingUp,
-  TrendingDown,
   ShoppingCart,
   DollarSign,
   Clock,
@@ -139,26 +139,26 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-8 p-1">
+    <div className="space-y-4 md:space-y-8 p-2 md:p-6">
       {/* Header / Last Order Status */}
       {overview?.lastOrder && (
         <Card className="border-none shadow-sm bg-gradient-to-r from-yellow-500 to-amber-100 text-white">
-          <CardBody className="p-6 flex flex-row items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-white/20 p-3 rounded-full">
-                <Package className="w-6 h-6" />
+          <CardBody className="p-3 md:p-6 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="bg-white/20 p-2 md:p-3 rounded-full shrink-0">
+                <Package className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium opacity-90 text-white">
+                <p className="text-[10px] md:text-sm font-medium opacity-90 text-white uppercase tracking-wider">
                   Last Order Status
                 </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <h2 className="text-2xl font-bold capitalize text-white">
+                <div className="flex items-center gap-2 mt-0.5">
+                  <h2 className="text-lg md:text-2xl font-bold capitalize text-white">
                     {formatStatus(overview.lastOrder.status)}
                   </h2>
                   <Chip
                     variant="flat"
-                    className="bg-white/20 text-white border-none text-xs font-bold uppercase"
+                    className="bg-white/20 text-white border-none text-[10px] font-bold uppercase"
                     size="sm"
                   >
                     ID: {overview.lastOrder._id.slice(-6)}
@@ -167,10 +167,10 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="text-right hidden sm:block">
-              <p className="text-xs opacity-80 uppercase tracking-widest font-bold">
-                Latest Order Amount
+              <p className="text-[10px] opacity-80 uppercase tracking-widest font-bold">
+                Amount
               </p>
-              <p className="text-2xl font-black mt-1">
+              <p className="text-lg md:text-2xl font-black mt-0.5">
                 ৳{overview.lastOrder.totalAmount.toLocaleString()}
               </p>
             </div>
@@ -179,51 +179,37 @@ const Dashboard = () => {
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-6">
         {statsCards.map((card, i) => (
           <Card
             key={i}
             className="border-none shadow-sm hover:shadow-md transition-shadow"
           >
-            <CardBody className="p-5 flex flex-col gap-3">
+            <CardBody className="p-3 md:p-5 flex flex-col gap-2 md:gap-3">
               <div
-                className={`w-12 h-12 rounded-xl ${card.bgColor} flex items-center justify-center`}
+                className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl ${card.bgColor} flex items-center justify-center shrink-0`}
               >
-                {card.icon}
+                {cloneElement(card.icon as ReactElement, { size: 16 } as any)}
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">
                   {card.title}
                 </p>
-                <h3 className="text-xl font-bold text-gray-900 mt-1">
+                <h3 className="text-base md:text-xl font-bold text-gray-900 mt-0.5">
                   {card.value}
                 </h3>
-                {card.trend !== undefined && (
-                  <div
-                    className={`flex items-center gap-1 mt-2 text-xs font-bold ${
-                      card.trend >= 0 ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {card.trend >= 0 ? (
-                      <TrendingUp className="w-3 h-3" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3" />
-                    )}
-                    {Math.abs(card.trend)}% vs last month
-                  </div>
-                )}
               </div>
             </CardBody>
           </Card>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         {/* Monthly Sales Bar Chart */}
-        <Card className="border-none shadow-sm p-6 ring-1 ring-gray-100">
-          <div className="mb-8">
-            <h3 className="text-lg font-bold text-gray-900">Monthly Sales</h3>
-            <p className="text-sm text-gray-500">Gross order volume by month</p>
+        <Card className="border-none shadow-sm p-4 md:p-6 ring-1 ring-gray-100">
+          <div className="mb-4 md:mb-8">
+            <h3 className="text-base md:text-lg font-bold text-gray-900">Monthly Sales</h3>
+            <p className="text-xs md:text-sm text-gray-500">Gross volume</p>
           </div>
           <div className="h-[300px] w-full">
             {monthlyStats.length > 0 ? (
@@ -269,13 +255,13 @@ const Dashboard = () => {
         </Card>
 
         {/* Monthly Revenue Area Chart */}
-        <Card className="border-none shadow-sm p-6 ring-1 ring-gray-100">
-          <div className="mb-8">
-            <h3 className="text-lg font-bold text-gray-900">
+        <Card className="border-none shadow-sm p-4 md:p-6 ring-1 ring-gray-100">
+          <div className="mb-4 md:mb-8">
+            <h3 className="text-base md:text-lg font-bold text-gray-900">
               Revenue Analysis
             </h3>
-            <p className="text-sm text-gray-500">
-              Net revenue from completed orders
+            <p className="text-xs md:text-sm text-gray-500">
+              Net revenue
             </p>
           </div>
           <div className="h-[300px] w-full">

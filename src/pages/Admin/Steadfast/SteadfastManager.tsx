@@ -42,23 +42,23 @@ const SteadfastManager = () => {
   const returnRequests = returnsData?.data?.data || []; // Assuming paginated response structure or raw array
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-           <Truck className="text-emerald-600"/> Steadfast Courier Manager
+    <div className="p-2 md:p-6 max-w-7xl mx-auto space-y-4 md:space-y-8">
+      <div className="px-1">
+        <h1 className="text-xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+           <Truck className="text-emerald-600 w-5 h-5 md:w-8 md:h-8"/> Steadfast Courier
         </h1>
-        <p className="text-gray-500 mt-2">
-          Monitor balance, track consignments, and manage return requests.
+        <p className="text-gray-500 text-xs md:text-sm mt-0.5">
+          Monitor balance, track consignments, and manage returns.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Balance Card */}
         <Card className="bg-emerald-50 border-emerald-100 border">
-             <CardBody className="p-6 flex flex-row items-center justify-between">
+             <CardBody className="p-4 md:p-6 flex flex-row items-center justify-between">
                 <div>
-                    <h3 className="text-emerald-900 font-semibold text-lg">Current Balance</h3>
-                    <p className="text-4xl font-bold text-emerald-700 mt-2">
+                    <h3 className="text-emerald-900 font-semibold text-sm md:text-lg">Current Balance</h3>
+                    <p className="text-2xl md:text-4xl font-bold text-emerald-700 mt-1 md:mt-2">
                         {balanceLoading ? "..." : `৳${currentBalance}`}
                     </p>
                 </div>

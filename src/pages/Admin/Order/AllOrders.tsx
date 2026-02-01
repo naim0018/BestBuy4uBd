@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Eye, Trash2, CheckCircle, XCircle, Clock, Truck, Package, LayoutTemplate, RefreshCw, Search, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, Select, SelectItem, Button, Input, Pagination } from "@heroui/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, cloneElement, ReactElement } from "react";
 
 const AllOrders = () => {
   const [selectedTemplates, setSelectedTemplates] = useState<Record<string, string>>({});
@@ -217,12 +217,12 @@ const AllOrders = () => {
           {/* Details */}
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
-              <p className="text-xs text-gray-500">Amount</p>
-              <p className="font-bold text-gray-900">৳{order.totalAmount?.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">Amount</p>
+              <p className="font-bold text-gray-900 text-sm">৳{order.totalAmount?.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Date</p>
-              <p className="text-gray-700">
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">Date</p>
+              <p className="text-gray-700 text-sm">
                 {new Date(order.createdAt).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
@@ -314,25 +314,25 @@ const AllOrders = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center px-1">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            View and manage all customer orders
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Order Management</h1>
+          <p className="text-gray-500 text-xs md:text-sm mt-0.5">
+            Manage your customer orders
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">
         {statCards.map((card, idx) => (
-           <Card key={idx} className="p-4 border-none shadow-sm flex flex-col justify-between">
+           <Card key={idx} className="p-3 md:p-4 border-none shadow-sm flex flex-col justify-between">
               <div className="flex items-start justify-between">
                   <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{card.title}</p>
-                      <h3 className="text-2xl font-bold text-gray-900 mt-1">{card.value}</h3>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{card.title}</p>
+                      <h3 className="text-lg md:text-2xl font-bold text-gray-900 mt-0.5">{card.value}</h3>
                   </div>
-                  <div className={`p-2 rounded-lg ${card.bg} ${card.color}`}>
-                      {card.icon}
+                  <div className={`p-1.5 md:p-2 rounded-lg ${card.bg} ${card.color}`}>
+                      {cloneElement(card.icon as ReactElement, { size: 16 } as any)}
                   </div>
               </div>
            </Card>
@@ -340,24 +340,24 @@ const AllOrders = () => {
       </div>
 
       {/* Filters and Controls */}
-      <Card className="p-4 mb-6 shadow-sm border-none bg-gray-50/50">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <Card className="p-2 md:p-4 mb-4 md:mb-6 shadow-sm border-none bg-gray-50/50">
+        <div className="flex flex-col lg:flex-row gap-2 md:gap-4">
           <div className="flex-1">
             <Input
-              placeholder="Search by Order ID or Customer Name..."
+              placeholder="Search ID/Name..."
               startContent={<Search className="w-4 h-4 text-gray-400" />}
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setPage(1);
               }}
-              size="md"
+              size="sm"
               className="w-full"
               variant="bordered"
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+          <div className="flex flex-col sm:flex-row gap-2 md:gap-4 shrink-0">
             <div className="w-full sm:w-48">
               <Select
                 aria-label="Status Filter"
@@ -368,7 +368,7 @@ const AllOrders = () => {
                   setStatusFilter(val);
                   setPage(1);
                 }}
-                size="md"
+                size="sm"
                 variant="bordered"
               >
                 <SelectItem key="all" textValue="All Status">All Status</SelectItem>
@@ -390,16 +390,16 @@ const AllOrders = () => {
       </Card>
 
       {/* Top Pagination and Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-2 md:gap-4 mb-4 md:mb-6 bg-white p-2 md:p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between w-full sm:w-auto gap-4 px-1">
           <span className="text-sm font-medium text-gray-500">
-            Total {meta.total || 0} Orders
+            {meta.total || 0} Orders
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 font-medium">SHOW:</span>
+            <span className="text-[10px] text-gray-400 font-bold hidden xs:block">SHOW:</span>
             <Select
               size="sm"
-              className="w-24"
+              className="w-20"
               selectedKeys={[limit.toString()]}
               onChange={(e) => {
                 setLimit(Number(e.target.value));
@@ -409,7 +409,7 @@ const AllOrders = () => {
             >
               {[10, 20, 50, 100].map((size) => (
                 <SelectItem key={size} textValue={size.toString()}>
-                  {size} items
+                  {size}
                 </SelectItem>
               ))}
             </Select>
@@ -417,14 +417,17 @@ const AllOrders = () => {
         </div>
 
         {meta.totalPage > 1 && (
-          <Pagination
-            total={meta.totalPage}
-            page={page}
-            onChange={(newPage) => setPage(newPage)}
-            showControls
-            color="primary"
-            size="sm"
-          />
+          <div className="w-full sm:w-auto flex justify-center">
+            <Pagination
+              total={meta.totalPage}
+              page={page}
+              onChange={(newPage) => setPage(newPage)}
+              showControls
+              color="primary"
+              size="sm"
+              className="scale-[0.85] sm:scale-100"
+            />
+          </div>
         )}
       </div>
 
@@ -618,18 +621,17 @@ const AllOrders = () => {
       </Card>
 
       {/* Bottom Pagination */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="text-sm text-gray-500">
-          Showing {Math.min((page - 1) * limit + 1, meta.total)} to{" "}
-          {Math.min(page * limit, meta.total)} of {meta.total} orders
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6 md:mt-8 bg-white p-2 md:p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="text-xs md:text-sm font-medium text-gray-500 w-full text-center md:text-left px-1">
+          Showing {Math.min((page - 1) * limit + 1, meta.total)} - {Math.min(page * limit, meta.total)} of {meta.total}
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 w-full md:w-auto">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Rows per page:</span>
+            <span className="text-xs text-gray-500 whitespace-nowrap font-bold uppercase">Rows:</span>
             <Select
               size="sm"
-              className="w-24"
+              className="w-16"
               selectedKeys={[limit.toString()]}
               onChange={(e) => {
                 setLimit(Number(e.target.value));
@@ -646,14 +648,16 @@ const AllOrders = () => {
           </div>
 
           {meta.totalPage > 1 && (
-            <Pagination
-              total={meta.totalPage}
-              page={page}
-              onChange={(newPage) => setPage(newPage)}
-              showControls
-              color="primary"
-              size="sm"
-            />
+            <div className="scale-[0.85] sm:scale-100">
+              <Pagination
+                total={meta.totalPage}
+                page={page}
+                onChange={(newPage) => setPage(newPage)}
+                showControls
+                color="primary"
+                size="sm"
+              />
+            </div>
           )}
         </div>
       </div>

@@ -48,16 +48,16 @@ const CollapsibleSection = memo(({
       <button
         type="button"
         onClick={toggleOpen}
-        className="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-blue/5 to-transparent hover:from-primary-blue/10 transition-colors"
+        className="w-full px-4 md:px-6 py-3 md:py-4 flex items-center justify-between bg-gradient-to-r from-primary-blue/5 to-transparent hover:from-primary-blue/10 transition-colors"
       >
-        <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+        <h2 className="text-base md:text-xl font-bold text-gray-800">{title}</h2>
         {isOpen ? (
-          <ChevronUp className="w-5 h-5 text-gray-600" />
+          <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-gray-600" />
+          <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
         )}
       </button>
-      {isOpen && <div className="p-6">{children}</div>}
+      {isOpen && <div className="p-3 md:p-6">{children}</div>}
     </div>
   );
 });
@@ -332,7 +332,7 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
   const shippingFieldsSlice2 = useMemo(() => shippingFields.slice(4), []);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full mx-auto p-6 space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full mx-auto p-2 md:p-6 space-y-4 md:space-y-6">
       {/* Basic Information */}
       <CollapsibleSection title="📋 Basic Information" defaultOpen={true}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -490,19 +490,19 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       </CollapsibleSection>
 
       {/* Submit Button */}
-      <div className="sticky bottom-0 bg-white border-t border-border p-6 -mx-6 -mb-6 rounded-b-xl shadow-lg">
-        <div className="flex gap-4 justify-end">
+      <div className="sticky bottom-0 bg-white border-t border-border p-3 md:p-6 -mx-2 md:-mx-6 -mb-2 md:-mb-6 rounded-b-xl shadow-lg z-10">
+        <div className="flex gap-2 md:gap-4 justify-end">
           <button
             type="button"
             onClick={() => form.reset()}
-            className="px-8 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+            className="px-4 md:px-8 py-2 md:py-3 bg-gray-100 text-gray-700 text-sm md:text-base font-medium rounded-lg md:rounded-xl hover:bg-gray-200 transition-colors"
           >
-            Reset Form
+            Reset
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-3 bg-gradient-to-r from-primary-blue to-blue-600 text-white font-medium rounded-xl hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="px-4 md:px-8 py-2 md:py-3 bg-gradient-to-r from-primary-blue to-blue-600 text-white text-sm md:text-base font-medium rounded-lg md:rounded-xl hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             {isSubmitting ? "Saving..." : "Save Product"}
           </button>

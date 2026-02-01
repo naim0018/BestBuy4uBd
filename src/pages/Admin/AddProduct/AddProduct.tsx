@@ -170,7 +170,7 @@ export default function ProductAdminPage() {
   // Preview mode
   if (preview && draft) {
     return (
-      <div className="p-4">
+      <div className="p-2 md:p-4">
         <ProductPreviewNew data={draft as ProductFormValues} />
         <div className="flex gap-2 mt-4">
           <button
@@ -193,8 +193,8 @@ export default function ProductAdminPage() {
 
   // Form mode
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">
+    <div className="p-2 md:p-6">
+      <h1 className="text-xl md:text-2xl font-bold mb-4 px-1">
         {isAdd ? "Add Product" : "Edit Product"}
       </h1>
       <ProductFormNew defaultValues={defaultValues} onSubmit={handleSubmit} />

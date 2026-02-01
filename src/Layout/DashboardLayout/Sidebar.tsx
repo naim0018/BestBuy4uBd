@@ -5,17 +5,20 @@ import { menuGenerator, MenuItem } from "@/utils/Generator/MenuGenerator";
 import { Location } from "react-router-dom";
 import { userRoutes } from "@/routes/UserRoutes";
 import { useGetHost } from "@/utils/useGetHost";
+import { X } from "lucide-react";
 
-const host = useGetHost();
+
 // Sub-component to handle recursive levels and isolated hover states
 const NavItem = ({
   item,
   level,
   location,
+  onClose,
 }: {
   item: MenuItem;
   level: number;
   location: Location;
+  onClose?: () => void;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const hasChildren = !!item.children?.length;
@@ -46,6 +49,7 @@ const NavItem = ({
       {/* Parent / Leaf Link */}
       <NavLink
         to={item.path || "#"}
+        onClick={() => !hasChildren && onClose && onClose()}
         className={`${itemClasses} cursor-pointer whitespace-nowrap`}
       >
         {item.icon}
@@ -80,6 +84,7 @@ const NavItem = ({
                   item={child}
                   level={level + 1}
                   location={location}
+                  onClose={onClose}
                 />
               ))}
             </div>
@@ -90,7 +95,8 @@ const NavItem = ({
   );
 };
 
-const Sidebar = () => {
+const Sidebar = ({ onClose }: { onClose?: () => void }) => {
+  const host = useGetHost();
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
   
@@ -107,25 +113,32 @@ const Sidebar = () => {
 
   return (
     <aside className="w-64 h-screen bg-gray-700 text-white sticky top-0 z-40 flex flex-col print:hidden">
-      <div className="p-4 h-16 text-xl font-bold border-b border-gray-600 flex items-center">
-        <Link to="/" className="no-underline">
-          <p className="text-xl font-bold text-white">{host.title || "BestBuy4uBd"}</p>
+      <div className="p-4 h-16 text-xl font-bold border-b border-gray-600 flex items-center justify-between">
+        <Link to="/" className="no-underline" onClick={onClose}>
+          <p className="text-xl font-bold text-white mb-0 truncate">{host.title || "BestBuy4uBd"}</p>
         </Link>
+        <button 
+          onClick={onClose}
+          className="lg:hidden p-1 hover:bg-gray-600 rounded-md transition-colors"
+        >
+          <X className="w-5 h-5 text-gray-300" />
+        </button>
       </div>
 
-      <nav className="p-2 space-y-4 flex-1 overflow-y-visible overflow-x-visible">
+      <nav className="p-2 space-y-2 flex-1 overflow-y-visible overflow-x-visible">
         {Object.entries(groupedMenu).map(([group, items]) => (
-          <div key={group}>
-            <p className="px-3 mb-2 text-[10px] font-bold uppercase text-gray-400 tracking-widest">
+          <div key={group} className="mt-2">
+            <p className="px-3 mb-1 text-[10px] font-bold uppercase text-gray-400 tracking-widest">
               {group}
             </p>
-            <div className="space-y-4">
+            <div className="space-y-0.5">
               {items.map((item) => (
                 <NavItem
                   key={item.label + item.path}
                   item={item}
                   level={0}
                   location={location}
+                  onClose={onClose}
                 />
               ))}
             </div>

@@ -283,23 +283,23 @@ const Checkout = () => {
     <>
       <div className="min-h-screen bg-bg-base pb-20 font-primary">
         {/* Header */}
-        <div className="bg-bg-surface border-b border-border-main mb-8">
-          <CommonWrapper className="py-6 px-4">
-            <h1 className="h3 uppercase tracking-tighter">Checkout</h1>
-            <p className="text-text-muted text-sm mt-2">
-              Complete your order by filling in the details below
+        <div className="bg-bg-surface border-b border-border-main mb-4 md:mb-8">
+          <CommonWrapper className="py-4 md:py-6 px-2 md:px-4">
+            <h1 className="h4 md:h3 uppercase tracking-tighter">Checkout</h1>
+            <p className="text-text-muted text-[11px] md:text-sm mt-1">
+              Complete your order details
             </p>
           </CommonWrapper>
         </div>
 
-        <CommonWrapper className="px-4">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-border-main">
+        <CommonWrapper className="px-2 md:px-4">
+          <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border-main">
             <div className="grid grid-cols-1 md:grid-cols-2">
               {/* Checkout Form */}
               <form
                 onSubmit={handleFormSubmit}
                 onChange={checkFormValidity}
-                className="p-4 md:p-10 bg-white order-2 md:order-none"
+                className="p-3 md:p-10 bg-white order-2 md:order-none"
               >
                 {/* <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-6 md:mb-8 flex items-center">
                   <span className="bg-secondary/10 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-3 md:mr-4">
@@ -457,37 +457,37 @@ const Checkout = () => {
               </form>
 
               {/* Order Summary Section */}
-              <div className="p-4 md:p-10 bg-gradient-to-br from-secondary/5 via-white to-secondary/5">
-                <h2 className="text-2xl font-bold text-text-primary mb-6 md:mb-8 flex items-center">
-                  <span className="bg-secondary/10 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-3 md:mr-4">
-                    <ShoppingBag className="h-5 w-5 md:h-6 md:w-6 text-secondary" />
+              <div className="p-3 md:p-10 bg-gradient-to-br from-secondary/5 via-white to-secondary/5">
+                <h2 className="text-lg md:text-2xl font-bold text-text-primary mb-4 md:mb-8 flex items-center">
+                  <span className="bg-secondary/10 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-2 md:mr-4">
+                    <ShoppingBag className="h-4 w-4 md:h-6 md:w-6 text-secondary" />
                   </span>
                   অর্ডার সামারি
                 </h2>
 
                 <div className="space-y-6 md:space-y-8">
                   {/* Cart Items */}
-                  <div className="space-y-4 max-h-64 overflow-y-auto">
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
                     {cartItems.map((item) => (
                       <div
                         key={item.itemKey}
-                        className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+                        className="flex items-center gap-2 md:gap-4 p-2 md:p-4 bg-white rounded-xl md:rounded-2xl shadow-sm hover:shadow-md transition-shadow"
                       >
-                        <div className="relative">
+                        <div className="relative shrink-0">
                           <img
                             src={item.image}
                             alt={item.name}
-                            className="size-20 object-cover rounded-xl"
+                            className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg md:rounded-xl"
                           />
-                          <div className="absolute -top-2 -right-2 bg-secondary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
+                          <div className="absolute -top-1.5 -right-1.5 bg-secondary text-white w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold">
                             {item.quantity}
                           </div>
                         </div>
                         <div className="flex-grow">
-                          <h3 className="font-bold text-sm md:text-base text-text-primary line-clamp-2">
+                          <h3 className="font-bold text-xs md:text-base text-text-primary line-clamp-2">
                             {item.name}
                           </h3>
-                          <p className="text-lg md:text-xl font-bold text-secondary mt-1">
+                          <p className="text-sm md:text-xl font-black text-secondary mt-0.5">
                             ৳{item.price * item.quantity}
                           </p>
                         </div>

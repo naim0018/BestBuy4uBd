@@ -169,7 +169,7 @@ const OrderDetails = () => {
     return <div className="p-10 text-center text-red-500">Order not found</div>;
 
   return (
-    <div className="space-y-6 container mx-auto pb-10">
+    <div className="space-y-4 md:space-y-6 container mx-auto px-2 md:px-0 pb-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between no-print">
         <div className="flex items-center gap-3">
@@ -181,7 +181,7 @@ const OrderDetails = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-bold flex flex-wrap items-center gap-2">
               Order #{order._id?.slice(-6).toUpperCase()}
               <Chip
                 size="sm"
@@ -211,10 +211,12 @@ const OrderDetails = () => {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
           <Button
             color="secondary"
+            size="sm"
             variant="flat"
+            className="flex-1 md:flex-none"
             startContent={<Printer className="w-4 h-4" />}
             onClick={handlePrint}
           >
@@ -222,7 +224,9 @@ const OrderDetails = () => {
           </Button>
           <Button
             color="primary"
+            size="sm"
             variant="flat"
+            className="flex-1 md:flex-none"
             startContent={<Send className="w-4 h-4" />}
             onClick={handleSendToSteadfast}
             isLoading={isSteadfastLoading}
@@ -233,7 +237,9 @@ const OrderDetails = () => {
           {order.consignment_id && (
              <Button
                 color="success"
+                size="sm"
                 variant="flat"
+                className="flex-1 md:flex-none"
                 startContent={<RefreshCw className="w-4 h-4" />}
                 onClick={handleCheckStatus}
              >
@@ -242,6 +248,8 @@ const OrderDetails = () => {
           )}
           <Button
             color="primary"
+            size="sm"
+            className="flex-1 md:flex-none"
             isLoading={isUpdating}
             startContent={<Save className="w-4 h-4" />}
             onClick={handleSubmit(onSubmit)}
@@ -256,12 +264,12 @@ const OrderDetails = () => {
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
         {/* Left Column: Order Items */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="p-4 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Package className="w-5 h-5 text-gray-500" /> Order Items
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          <Card className="p-3 md:p-4 shadow-sm border border-gray-100">
+            <h3 className="text-base md:text-lg font-bold mb-3 md:mb-4 flex items-center gap-2">
+              <Package className="w-4 h-5 md:w-5 md:h-5 text-gray-500" /> Order Items
             </h3>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto -mx-3 md:mx-0">
               <table className="w-full text-sm text-left">
                 <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
                   <tr>
@@ -274,8 +282,8 @@ const OrderDetails = () => {
                 <tbody className="divide-y divide-gray-100">
                   {order.items?.map((item: any, idx: number) => (
                     <tr key={idx} className="hover:bg-gray-50/50">
-                      <td className="px-4 py-4 flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
+                      <td className="px-2 md:px-4 py-3 md:py-4 flex items-center gap-2 md:gap-3 lg:min-w-[300px]">
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
                           {item.product?.images?.[0] && (
                             <img
                               src={typeof item.product.images[0] === 'string' ? item.product.images[0] : item.product.images[0].url}
@@ -302,13 +310,13 @@ const OrderDetails = () => {
                           </p>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-center text-xs md:text-sm">
                         ৳{item.price?.toLocaleString()}
                       </td>
-                      <td className="px-4 py-4 text-center font-medium">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-center font-medium text-xs md:text-sm">
                         x {item.quantity}
                       </td>
-                      <td className="px-4 py-4 text-right font-bold">
+                      <td className="px-2 md:px-4 py-3 md:py-4 text-right font-bold text-xs md:text-sm">
                         ৳{(item.price * item.quantity).toLocaleString()}
                       </td>
                     </tr>
@@ -318,33 +326,33 @@ const OrderDetails = () => {
                   <tr>
                     <td
                       colSpan={3}
-                      className="px-4 py-3 text-right text-gray-600 font-medium"
+                      className="px-2 md:px-4 py-3 text-right text-gray-600 font-medium text-xs md:text-sm"
                     >
                       Subtotal
                     </td>
-                    <td className="px-4 py-3 text-right font-bold">
+                    <td className="px-2 md:px-4 py-3 text-right font-bold text-xs md:text-sm">
                       ৳{order.totalAmount?.toLocaleString()}
                     </td>
                   </tr>
                   <tr>
                     <td
                       colSpan={3}
-                      className="px-4 py-2 text-right text-gray-600 font-medium"
+                      className="px-2 md:px-4 py-2 text-right text-gray-600 font-medium text-xs md:text-sm"
                     >
                       Shipping
                     </td>
-                    <td className="px-4 py-2 text-right font-bold text-gray-500">
+                    <td className="px-2 md:px-4 py-2 text-right font-bold text-gray-500 text-xs md:text-sm">
                       Free
                     </td>
                   </tr>
                   <tr>
                     <td
                       colSpan={3}
-                      className="px-4 py-4 text-right text-gray-900 font-black text-lg"
+                      className="px-2 md:px-4 py-4 text-right text-gray-900 font-black text-sm md:text-lg"
                     >
                       Total Amount
                     </td>
-                    <td className="px-4 py-4 text-right font-black text-lg text-primary-blue">
+                    <td className="px-2 md:px-4 py-4 text-right font-black text-sm md:text-lg text-primary-link">
                       ৳{order.totalAmount?.toLocaleString()}
                     </td>
                   </tr>
@@ -355,9 +363,9 @@ const OrderDetails = () => {
         </div>
 
         {/* Right Column: Customer & Status */}
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Status Card */}
-          <Card className="p-5 shadow-sm border border-gray-100 border-l-4 border-l-primary-blue">
+          <Card className="p-3 md:p-5 shadow-sm border border-gray-100 border-l-4 border-l-primary-blue">
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">
               Order Status
             </h3>
@@ -382,7 +390,7 @@ const OrderDetails = () => {
           </Card>
 
           {/* Customer Info Card */}
-          <Card className="p-5 shadow-sm border border-gray-100">
+          <Card className="p-3 md:p-5 shadow-sm border border-gray-100">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
               <User className="w-5 h-5 text-gray-500" /> Customer Details
             </h3>
@@ -430,7 +438,7 @@ const OrderDetails = () => {
           </Card>
 
           {/* Shipping Address */}
-          <Card className="p-5 shadow-sm border border-gray-100">
+          <Card className="p-3 md:p-5 shadow-sm border border-gray-100">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-gray-500" /> Shipping Info
             </h3>
