@@ -231,7 +231,7 @@ const Navbar = () => {
               <div className="flex items-center gap-2">
                 <Truck className="w-5 h-5" />
                 <span className="text-sm font-medium whitespace-nowrap">
-                  FREE SHIPPING OVER $199
+                  FREE SHIPPING OVER ৳199
                 </span>
               </div>
               <div className="flex items-center gap-2">

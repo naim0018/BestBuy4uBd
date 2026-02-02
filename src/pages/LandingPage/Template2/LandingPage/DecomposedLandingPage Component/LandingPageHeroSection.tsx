@@ -2,8 +2,8 @@ import React from 'react';
 
 import { Product, ProductImage, ProductVariantItem } from '@/types/Product/Product';
 import TrustSignals from './TrustSignals';
-import AnimatedContainer from '../../../Components/AnimatedContainer';
-import VariantSelector from '../../../Components/VariantSelector';
+import AnimatedContainer from '@/common/Components/AnimatedContainer';
+import VariantSelector from '@/pages/LandingPage/Components/VariantSelector';
 
 interface LandingPageHeroSectionProps {
   product: Product;

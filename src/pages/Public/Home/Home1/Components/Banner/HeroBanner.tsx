@@ -33,6 +33,24 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
 
   const data = banners[currentSlide];
 
+  const getPositionClasses = (position: string = "center") => {
+    switch (position) {
+      case "top-left":
+        return "justify-start items-start";
+      case "top-right":
+        return "justify-end items-start";
+      case "bottom-left":
+        return "justify-start items-end";
+      case "bottom-right":
+        return "justify-end items-end";
+      case "center":
+      default:
+        return "justify-center items-center text-center";
+    }
+  };
+
+  const positionClasses = getPositionClasses(data.textPosition);
+
   return (
     <div
       className={`relative ${data.bgColor || "bg-bg-base"
@@ -47,54 +65,70 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
           transition={{ duration: 0.5 }}
           className="w-full h-full absolute inset-0 flex items-center"
         >
-          {/* Content */}
-          <div className="relative z-10 p-8 md:p-16 max-w-xl w-full">
-            {/* Title */}
-            <h2
-              className={`h2 ${data.textColor || "text-text-primary"
-                } mb-4 leading-[1.1] uppercase tracking-tighter`}
-            >
-              {data.title}
-            </h2>
+          {/* Content Container */}
+          <div className={`absolute inset-0 z-10 p-8 md:p-16 flex ${positionClasses}`}>
+            <div className="max-w-xl">
+              {/* Subtitle */}
+              {data.subtitle && (
+                <h3
+                  className="font-semibold opacity-90 mb-4 uppercase tracking-widest"
+                  style={{ 
+                    color: data.textColor || "inherit",
+                    fontSize: data.subtitleSize || "inherit"
+                  }}
+                >
+                  {data.subtitle}
+                </h3>
+              )}
 
-            {/* Subtitle */}
-            {data.subtitle && (
-              <h3
-                className={`text-lg md:text-xl font-semibold ${data.textColor || "text-text-primary"
-                  } opacity-90 mb-6 uppercase tracking-widest`}
-              >
-                {data.subtitle}
-              </h3>
-            )}
+              {/* Title */}
+              {data.title && data.showTitle !== false && (
+                <h2
+                  className="h2 mb-4 leading-[1.1] uppercase tracking-tighter"
+                  style={{ 
+                    color: data.textColor || "inherit",
+                    fontSize: data.titleSize || "inherit"
+                  }}
+                >
+                  {data.title}
+                </h2>
+              )}
 
-            {/* Features */}
-            {data.description && (
-              <p
-                className={`text-base font-medium ${data.textColor || "text-text-primary"
-                  } opacity-70 mb-10 uppercase tracking-[0.15em] leading-relaxed`}
-              >
-                {data.description}
-              </p>
-            )}
+              {/* Description */}
+              {data.description && (
+                <p
+                  className="text-base font-medium opacity-70 mb-10 uppercase tracking-[0.15em] leading-relaxed line-clamp-2"
+                  style={{ color: data.textColor || "inherit" }}
+                >
+                  {data.description}
+                </p>
+              )}
 
-            {/* CTA Button */}
-            <motion.a
-              href={data.ctaLink}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                trackSelectPromotion({
-                  id: data.id,
-                  name: data.title,
-                  creative_name: "hero_banner",
-                  creative_slot: `slot_${currentSlide + 1}`,
-                  location_id: "home_hero"
-                });
-              }}
-              className="inline-block bg-bg-surface text-text-primary px-10 py-4 rounded-component font-semibold shadow-xl shadow-black/5 hover:shadow-2xl transition-all duration-300 no-underline uppercase tracking-widest text-xs border border-border-main"
-            >
-              {data.ctaText || "Shop Now"}
-            </motion.a>
+              {/* CTA Button */}
+              {data.ctaLink && data.showButton !== false && (
+                <motion.a
+                  href={data.ctaLink}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    trackSelectPromotion({
+                      id: data.id,
+                      name: data.title || "Hero Banner",
+                      creative_name: "hero_banner",
+                      creative_slot: `slot_${currentSlide + 1}`,
+                      location_id: "home_hero",
+                    });
+                  }}
+                  style={{
+                    backgroundColor: data.buttonColor || "#FFFFFF",
+                    color: data.buttonTextColor || "#000000",
+                  }}
+                  className="inline-block px-10 py-4 rounded-component font-semibold shadow-xl shadow-black/5 hover:shadow-2xl transition-all duration-300 no-underline uppercase tracking-widest text-xs"
+                >
+                  {data.ctaText || "Shop Now"}
+                </motion.a>
+              )}
+            </div>
           </div>
 
           {/* Product Image (Right side) */}

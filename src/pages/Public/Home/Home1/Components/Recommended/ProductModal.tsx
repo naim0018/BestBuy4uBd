@@ -92,11 +92,11 @@ const ProductModal = ({ product, isOpen, onClose }: ProductModalProps) => {
                     {/* Price */}
                     <div className="flex items-baseline gap-4 mb-6">
                       <span className="text-3xl font-bold text-primary-green">
-                        ${product.price.toFixed(2)}
+                        ৳{product.price.toFixed(2)}
                       </span>
                       {product.oldPrice && (
                         <span className="text-xl text-gray-400 line-through">
-                          ${product.oldPrice.toFixed(2)}
+                          ৳{product.oldPrice.toFixed(2)}
                         </span>
                       )}
                       {product.discount && (

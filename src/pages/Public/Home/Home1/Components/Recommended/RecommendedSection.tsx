@@ -112,7 +112,9 @@ const RecommendedSection = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-text-primary mb-2">Recommended</h2>
+          <h2 className="text-3xl font-black text-[#0F172A] mb-2">
+            <span className="text-secondary">Recomm</span>ended
+          </h2>
         </div>
 
         {/* Tabs */}

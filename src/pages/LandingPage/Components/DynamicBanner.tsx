@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@heroui/react";
 import { ArrowRight, Sparkles } from "lucide-react";
-import AnimatedContainer from "./AnimatedContainer";
+import AnimatedContainer from "@/common/Components/AnimatedContainer";
 
 interface DynamicBannerProps {
   title: string;

@@ -12,6 +12,7 @@ import {
   Printer,
   ShoppingBag,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useGetAllCategoriesQuery } from "../../../../../../store/Api/CategoriesApi";
 
 // Mapping for category icons and colors based on name keywords
@@ -53,6 +54,7 @@ const getCategoryConfig = (name: string) => {
 };
 
 const FeaturedCategories = () => {
+  const navigate = useNavigate();
   const {
     data: categoriesData,
     isLoading,
@@ -75,108 +77,115 @@ const FeaturedCategories = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="mb-4">Shop by Category</h2>
+          <h2 className="text-3xl font-black text-[#0F172A] mb-4 text-center">
+            <span className="text-secondary">Shop</span> by Category
+          </h2>
           <p className="text-text-muted max-w-2xl mx-auto uppercase tracking-widest text-xs font-medium">
             Explore our curated collections of premium products across multiple
             categories
           </p>
         </motion.div>
 
-        {/* Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-          {isLoading
-            ? // Skeleton Loading
-              Array.from({ length: 5 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="bg-bg-base rounded-component p-8 border border-border-main shadow-lg animate-pulse"
-                >
-                  <div className="flex flex-col items-center space-y-4">
-                    <div className="w-16 h-16 rounded-component bg-border-main/50" />
-                    <div className="h-4 w-24 bg-border-main/50 rounded" />
-                    <div className="h-3 w-16 bg-border-main/50 rounded" />
-                  </div>
-                </div>
-              ))
-            : categories.map((category: any) => {
-                const { icon: Icon, color } = getCategoryConfig(category.name);
-                return (
-                  <motion.div
-                    key={category._id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
-                    whileHover={{
-                      scale: 1.05,
-                      y: -8,
-                    }}
-                    className="group cursor-pointer"
+        {/* Categories Marquee */}
+        <div 
+          className="overflow-hidden relative pause-on-hover py-4"
+          style={{
+            maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
+          }}
+        >
+          <div className="flex w-max animate-marquee gap-6">
+            {isLoading
+              ? Array.from({ length: 12 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="bg-bg-base rounded-component p-6 border border-border-main shadow-lg animate-pulse w-[250px] flex-shrink-0"
                   >
-                    {/* Glassmorphic Card */}
-                    <div className="relative bg-bg-surface rounded-component p-8 border border-border-main shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                      {/* Gradient Background on Hover */}
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-                      />
-
-                      {/* Content */}
-                      <div className="relative z-10 flex flex-col items-center text-center space-y-4">
-                        {/* Icon with Gradient */}
-                        <motion.div
-                          whileHover={{ rotate: 360 }}
-                          transition={{ duration: 0.6 }}
-                          className={`w-16 h-16 rounded-component bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}
-                        >
-                          <Icon
-                            className="w-8 h-8 text-white"
-                            strokeWidth={2}
-                          />
-                        </motion.div>
-
-                        {/* Category Name */}
-                        <h3 className="text-text-primary line-clamp-1 h6">
-                          {category.name}
-                        </h3>
-
-                        {/* View Collection Label (Replaces Count) */}
-                        <p className="small text-text-muted">
-                          View Collection
-                        </p>
-
-                        {/* CTA Arrow */}
-                        <motion.div
-                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                          initial={{ x: -10 }}
-                          whileHover={{ x: 0 }}
-                        >
-                          <span className="text-[10px] font-semibold text-primary flex items-center gap-2 uppercase tracking-widest">
-                            Explore
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
-                          </span>
-                        </motion.div>
-                      </div>
-
-                      {/* Decorative Corner */}
-                      <div
-                        className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${color} opacity-10 rounded-bl-full`}
-                      />
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="w-12 h-12 rounded-component bg-border-main/50" />
+                      <div className="h-4 w-24 bg-border-main/50 rounded" />
                     </div>
-                  </motion.div>
-                );
-              })}
+                  </div>
+                ))
+              : [...categories, ...categories].map((category: any, index: number) => {
+                  const { icon: Icon, color } = getCategoryConfig(category.name);
+                  return (
+                    <motion.div
+                      key={`${category._id}-${index}`}
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5 }}
+                      whileHover={{
+                        scale: 1.05,
+                        y: -8,
+                      }}
+                      onClick={() => navigate(`/shop?category=${encodeURIComponent(category.name)}`)}
+                      className="group cursor-pointer w-[250px] flex-shrink-0"
+                    >
+                      {/* Glassmorphic Card */}
+                      <div className="relative bg-bg-surface rounded-component p-6 border border-border-main shadow-lg  transition-all duration-300 overflow-hidden">
+                        {/* Gradient Background on Hover */}
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                        />
+
+                        {/* Content */}
+                        <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+                          {/* Icon with Gradient */}
+                          <motion.div
+                            whileHover={{ rotate: 360 }}
+                            transition={{ duration: 0.6 }}
+                            className={`size-12 rounded-component bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}
+                          >
+                            <Icon
+                              className="w-6 h-6 text-white"
+                              strokeWidth={2}
+                            />
+                          </motion.div>
+
+                          {/* Category Name */}
+                          <h3 className="text-text-primary line-clamp-1 h6">
+                            {category.name}
+                          </h3>
+
+                          {/* View Collection Label */}
+                          <p className="small text-text-muted">View Collection</p>
+
+                          {/* CTA Arrow */}
+                          <motion.div
+                            className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            initial={{ x: -10 }}
+                            whileHover={{ x: 0 }}
+                          >
+                            <span className="text-[10px] font-semibold text-primary flex items-center gap-2 uppercase tracking-widest">
+                              Explore
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5l7 7-7 7"
+                                />
+                              </svg>
+                            </span>
+                          </motion.div>
+                        </div>
+
+                        {/* Decorative Corner */}
+                        <div
+                          className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${color} opacity-10 rounded-bl-full`}
+                        />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+          </div>
         </div>
       </div>
     </section>

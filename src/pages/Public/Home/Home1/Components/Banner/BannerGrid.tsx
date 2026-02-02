@@ -29,15 +29,24 @@ const BannerGrid = () => {
       const bgColor = getBackgroundColor(index, banner.type);
       const mapped: BannerData = {
         id: banner._id,
-        type: banner.type === "hero" ? "hero" : "product",
+        type: (banner.type === "hero" || banner.type === "promotional" || banner.type === "product" || banner.type === "feature") 
+          ? banner.type as "hero" | "promotional" | "product" | "feature" 
+          : "product",
         title: banner.title,
-        subtitle: banner.description,
+        subtitle: banner.subtitle,
         description: banner.description,
-        ctaText: "Shop Now",
-        ctaLink: `/product/${banner.productId}`,
+        ctaText: banner.buttonText || "Shop Now",
+        ctaLink: banner.link || "#",
         image: banner.image,
         bgColor: bgColor,
-        textColor: getTextColor(bgColor),
+        textColor: banner.textColor || getTextColor(bgColor),
+        buttonColor: banner.buttonBgColor,
+        buttonTextColor: banner.buttonTextColor,
+        textPosition: banner.textPosition,
+        titleSize: banner.titleSize,
+        subtitleSize: banner.subtitleSize,
+        showButton: banner.showButton !== undefined ? banner.showButton : true,
+        showTitle: banner.showTitle !== undefined ? banner.showTitle : true,
         size: banner.type === "hero" ? "large" : "medium",
         brand: "",
         price: "",
@@ -45,7 +54,7 @@ const BannerGrid = () => {
 
       if (banner.type === "hero") {
         heroes.push(mapped);
-      } else {
+      } else if (banner.type !== "promotional") {
         others.push(mapped);
       }
     });

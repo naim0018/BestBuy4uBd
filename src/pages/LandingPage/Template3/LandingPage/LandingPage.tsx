@@ -5,13 +5,13 @@ import { clearCart } from "@/store/Slices/CartSlice";
 import { useCreateOrderMutation } from "@/store/Api/OrderApi";
 import { Product } from "@/types/Product/Product";
 import { useGetHost } from "@/utils/useGetHost";
-import AnimatedContainer from "../../Components/AnimatedContainer";
+import AnimatedContainer from "@/common/Components/AnimatedContainer";
 import CountdownTimer from "../Components/CountdownTimer";
 import { useVariantQuantity } from "@/hooks/useVariantQuantity";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import CheckoutSection from "../../Template2/LandingPage/CheckoutSection";
 import OrderSuccessModal from "../../Template2/LandingPage/OrderSuccessModal";
-import RelatedProducts from "../../Components/RelatedProducts";
+import RelatedProducts from "@/pages/LandingPage/Components/RelatedProducts";
 import WhyBuyFromUs from "../Components/WhyBuyFromUs";
 import VideoGallery from "../Components/VideoGallery";
 

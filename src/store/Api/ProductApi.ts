@@ -59,6 +59,16 @@ export const productApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Product", id: "LIST" }],
     }),
+    getNewArrivals: builder.query<ApiResponse<Product[]>, void>({
+      query: () => `/product/new-arrivals`,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ _id }) => ({ type: "Product" as const, id: _id })),
+              { type: "Product", id: "LIST" },
+            ]
+          : [{ type: "Product", id: "LIST" }],
+    }),
   }),
 });
 
@@ -68,4 +78,5 @@ export const {
   useAddProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useGetNewArrivalsQuery,
 } = productApi;

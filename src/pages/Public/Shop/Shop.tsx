@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useGetAllProductsQuery } from "@/store/Api/ProductApi";
 import { useTracking } from "@/hooks/useTracking";
 import { useGetAllCategoriesQuery } from "@/store/Api/CategoriesApi";
@@ -19,54 +20,80 @@ import { motion, AnimatePresence } from "framer-motion";
 const Shop = () => {
   const [viewType, setViewType] = useState<"grid" | "list">("grid");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [filters, setFilters] = useState({
-    page: 1,
-    limit: 12,
-    search: "",
-    category: "",
-    brand: "",
-    minPrice: 0,
-    maxPrice: 1000000,
-    sort: "-createdAt",
-    stockStatus: "",
-    rating: 0,
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const initialFilters = useMemo(
+    () => ({
+      page: Number(searchParams.get("page")) || 1,
+      limit: Number(searchParams.get("limit")) || 12,
+      search: searchParams.get("search") || "",
+      category: searchParams.get("category") || "",
+      minPrice: Number(searchParams.get("minPrice")) || 0,
+      maxPrice: Number(searchParams.get("maxPrice")) || 100000,
+      sort: searchParams.get("sort") || "-createdAt",
+      stockStatus: searchParams.get("stockStatus") || "",
+      rating: Number(searchParams.get("rating")) || 0,
+    }),
+    [searchParams],
+  );
+
+  const [filters, setFilters] = useState(initialFilters);
+
+  // Sync state with URL when filters change
+  useEffect(() => {
+    const params: Record<string, string> = {};
+    Object.entries(filters).forEach(([key, value]) => {
+      if (
+        value !== "" &&
+        value !== 0 &&
+        value !== undefined &&
+        value !== null
+      ) {
+        // Special case for limit if it's default
+        if (key === "limit" && value === 12) return;
+        // Special case for search (don't put empty string in URL)
+        if (key === "search" && !value) return;
+
+        params[key] = String(value);
+      }
+    });
+
+    // Only update if params actually changed to avoid infinite cycles
+    const currentParams = Object.fromEntries(searchParams.entries());
+    const hasChanged = JSON.stringify(params) !== JSON.stringify(currentParams);
+
+    if (hasChanged) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [filters, setSearchParams, searchParams]);
+
+  // Sync state FROM URL when user navigates back/forward
+  useEffect(() => {
+    setFilters(initialFilters);
+  }, [initialFilters]);
 
   const {
     data: productsData,
     isLoading,
     isFetching,
-  } = useGetAllProductsQuery({ page: filters.page, limit: filters.limit });
+  } = useGetAllProductsQuery(filters);
   const { data: categoriesData } = useGetAllCategoriesQuery(undefined);
   const { trackViewItemList, trackSortChange } = useTracking();
 
   useEffect(() => {
     if (productsData?.data) {
-      trackViewItemList(productsData.data.map((product) => ({
-        id: product._id,
-        name: product.basicInfo.title,
-        price: product.price.discounted || product.price.regular,
-        category: product.basicInfo.category,
-        list_name: "Shop Page",
-        list_id: "shop_page"
-      })));
+      trackViewItemList(
+        productsData.data.map((product) => ({
+          id: product._id,
+          name: product.basicInfo.title,
+          price: product.price.discounted || product.price.regular,
+          category: product.basicInfo.category,
+          list_name: "Shop Page",
+          list_id: "shop_page",
+        })),
+      );
     }
-  }, [productsData]);
-
-  // Extract unique brands from current products as a starting point
-  // In a real app, you might have a dedicated API for brands
-  const brands = useMemo(() => {
-    if (!productsData?.data) return [];
-    const uniqueBrands = new Set<string>();
-    productsData.data.forEach((p) => {
-      if (p.basicInfo?.brand) uniqueBrands.add(p.basicInfo.brand);
-    });
-    // Add some default brands if list is small to make it look good
-    ["Samsung", "Apple", "Xiaomi", "X-Lab", "Envato", "Photodune"].forEach(
-      (b) => uniqueBrands.add(b)
-    );
-    return Array.from(uniqueBrands).sort();
-  }, [productsData?.data]);
+  }, [productsData, trackViewItemList]);
 
   const sortOptions = [
     { label: "Latest Arrivals", value: "-createdAt" },
@@ -110,7 +137,6 @@ const Shop = () => {
             <div className="sticky top-28 bg-bg-surface p-8 rounded-container border border-border-main shadow-sm">
               <FilterSidebar
                 categories={categoriesData?.data || []}
-                brands={brands}
                 filters={filters}
                 setFilters={setFilters}
               />
@@ -148,7 +174,6 @@ const Shop = () => {
                   </div>
                   <FilterSidebar
                     categories={categoriesData?.data || []}
-                    brands={brands}
                     filters={filters}
                     setFilters={setFilters}
                   />
@@ -171,14 +196,14 @@ const Shop = () => {
             <div className="bg-bg-surface px-8 py-6 rounded-container border border-border-main shadow-sm flex flex-wrap items-center justify-between gap-6 transition-all">
               <div className="flex items-center gap-10">
                 <div className="hidden md:block">
-                  <h1 className="h4 text-text-primary mb-1 uppercase tracking-tighter">
-                    Shop Products
+                  <h1 className="text-2xl font-black text-[#0F172A] mb-1 uppercase tracking-tighter">
+                    <span className="text-secondary">Shop</span> Products
                   </h1>
                   <p className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.2em]">
                     {(filters.page - 1) * filters.limit + 1}-
                     {Math.min(
                       filters.page * filters.limit,
-                      productsData?.meta?.total || 0
+                      productsData?.meta?.total || 0,
                     )}{" "}
                     of {productsData?.meta?.total || 0} ITEMS
                   </p>
@@ -188,19 +213,21 @@ const Shop = () => {
                 <div className="flex items-center bg-bg-base p-1.5 rounded-component border border-border-main">
                   <button
                     onClick={() => setViewType("grid")}
-                    className={`p-2.5 rounded-inner transition-all duration-300 ${viewType === "grid"
-                      ? "bg-bg-surface text-secondary shadow-sm scale-110"
-                      : "text-text-muted hover:text-text-primary"
-                      }`}
+                    className={`p-2.5 rounded-inner transition-all duration-300 ${
+                      viewType === "grid"
+                        ? "bg-bg-surface text-secondary shadow-sm scale-110"
+                        : "text-text-muted hover:text-text-primary"
+                    }`}
                   >
                     <LayoutGrid className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setViewType("list")}
-                    className={`p-2.5 rounded-inner transition-all duration-300 ${viewType === "list"
-                      ? "bg-bg-surface text-secondary shadow-sm scale-110"
-                      : "text-text-muted hover:text-text-primary"
-                      }`}
+                    className={`p-2.5 rounded-inner transition-all duration-300 ${
+                      viewType === "list"
+                        ? "bg-bg-surface text-secondary shadow-sm scale-110"
+                        : "text-text-muted hover:text-text-primary"
+                    }`}
                   >
                     <List className="w-5 h-5" />
                   </button>
@@ -226,7 +253,7 @@ const Shop = () => {
             </div>
 
             {/* Top Pagination Row */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 px-2">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 px-2 h-24">
               <div className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.2em]">
                 PAGES{" "}
                 <span className="text-secondary mx-2 font-semibold">
@@ -243,8 +270,9 @@ const Shop = () => {
 
             {/* Product Grid */}
             <div
-              className={`relative ${isFetching ? "opacity-60 grayscale-[0.5]" : "opacity-100"
-                } transition-all duration-500`}
+              className={`relative ${
+                isFetching ? "opacity-60 grayscale-[0.5]" : "opacity-100"
+              } transition-all duration-500`}
             >
               {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -288,9 +316,8 @@ const Shop = () => {
                         ...filters,
                         search: "",
                         category: "",
-                        brand: "",
                         minPrice: 0,
-                        maxPrice: 1000000,
+                        maxPrice: 100000,
                         stockStatus: "",
                         rating: 0,
                       })
@@ -312,8 +339,7 @@ const Shop = () => {
                 onPageChange={handlePageChange}
               />
               <p className="text-[10px] font-semibold text-text-muted italic uppercase tracking-[0.2em]">
-                Displaying of{" "}
-                {productsData?.data?.length || 0} items
+                Displaying of {productsData?.data?.length || 0} items
               </p>
             </div>
           </main>

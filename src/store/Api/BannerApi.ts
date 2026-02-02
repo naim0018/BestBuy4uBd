@@ -4,11 +4,21 @@ import { ApiResponse } from "@/types/Api/ApiResponse";
 export interface IBanner {
     _id: string;
     type: string;
-    title: string;
-    description: string;
-    productId: string;
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    link?: string;
     image: string;
     isActive: boolean;
+    buttonText?: string;
+    buttonBgColor?: string;
+    buttonTextColor?: string;
+    textColor?: string;
+    textPosition?: string;
+    titleSize?: string;
+    subtitleSize?: string;
+    showButton?: boolean;
+    showTitle?: boolean;
 }
 
 export const bannerApi = baseApi.injectEndpoints({

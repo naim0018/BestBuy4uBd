@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { useTracking } from "@/hooks/useTracking";
-import { Search, X, ChevronRight, SlidersHorizontal, RotateCcw, Star } from "lucide-react";
+import { Search, X, ChevronRight, SlidersHorizontal, RotateCcw, Star, CheckCircle2 } from "lucide-react";
+import { Slider } from "@heroui/react";
 
 interface FilterSidebarProps {
   categories: any[];
-  brands: string[];
   filters: {
     category: string;
-    brand: string;
     minPrice: number;
     maxPrice: number;
     search: string;
@@ -17,10 +16,16 @@ interface FilterSidebarProps {
   setFilters: (filters: any) => void;
 }
 
-const FilterSidebar = ({ categories, brands, filters, setFilters }: FilterSidebarProps) => {
+const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) => {
   const [localSearch, setLocalSearch] = useState(filters.search);
   const [priceRange, setPriceRange] = useState({ min: filters.minPrice, max: filters.maxPrice });
   const { trackSearch, trackFilterApply } = useTracking();
+
+  // Sync with props when resets or URL changes occur
+  useEffect(() => {
+    setLocalSearch(filters.search);
+    setPriceRange({ min: filters.minPrice, max: filters.maxPrice });
+  }, [filters.search, filters.minPrice, filters.maxPrice]);
 
   // Debounce search
   useEffect(() => {
@@ -31,7 +36,7 @@ const FilterSidebar = ({ categories, brands, filters, setFilters }: FilterSideba
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [localSearch, setFilters]);
+  }, [localSearch, setFilters, trackSearch]);
 
   const handlePriceChange = () => {
     trackFilterApply("price_range", `${priceRange.min}-${priceRange.max}`);
@@ -47,9 +52,8 @@ const FilterSidebar = ({ categories, brands, filters, setFilters }: FilterSideba
     trackFilterApply("reset", "all");
     setFilters({
       category: "",
-      brand: "",
       minPrice: 0,
-      maxPrice: 1000000,
+      maxPrice: 100000,
       search: "",
       page: 1,
       sort: "-createdAt",
@@ -130,59 +134,62 @@ const FilterSidebar = ({ categories, brands, filters, setFilters }: FilterSideba
         </div>
       </div>
 
-      {/* Brands */}
-      <div className="space-y-4">
-        <h3 className="h6 uppercase tracking-widest pl-1">By Brands</h3>
-        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-          {brands?.map((brand) => (
-            <label key={brand} className="flex items-center gap-3 group cursor-pointer">
-              <input
-                type="checkbox"
-                checked={filters.brand === brand}
-                onChange={() => {
-                  const newVal = filters.brand === brand ? "" : brand;
-                  if (newVal) trackFilterApply("brand", brand);
-                  setFilters((prev: any) => ({ ...prev, brand: newVal, page: 1 }))
-                }}
-                className="custom-checkbox"
-              />
-              <span className={`text-sm font-medium transition-colors ${filters.brand === brand ? "text-secondary font-semibold" : "text-text-secondary group-hover:text-text-primary"}`}>
-                {brand}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
 
       {/* Price Range */}
-      <div className="space-y-4">
-        <h3 className="h6 uppercase tracking-widest pl-1">By Price</h3>
-        <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between pl-1">
+          <h3 className="h6 uppercase tracking-widest">Price Range</h3>
+          <span className="text-[10px] font-bold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
+            ৳{priceRange.min} - ৳{priceRange.max}
+          </span>
+        </div>
+        
+        <div className="px-1">
+          <Slider
+            label="Price"
+            step={100}
+            minValue={0}
+            maxValue={100000}
+            defaultValue={[filters.minPrice, filters.maxPrice]}
+            value={[priceRange.min, priceRange.max]}
+            onChange={(value: any) => setPriceRange({ min: value[0], max: value[1] })}
+            onChangeEnd={() => handlePriceChange()}
+            formatOptions={{ style: "currency", currency: "BDT" }}
+            className="max-w-md"
+            classNames={{
+              base: "max-w-md",
+              filler: "bg-secondary",
+              thumb: [
+                "after:bg-secondary",
+                "after:shadow-lg",
+                "after:shadow-secondary/20",
+              ],
+            }}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="space-y-1.5">
-            <label className="tag text-text-muted ml-1">Min (৳)</label>
+            <label className="tag text-text-muted ml-1">Min</label>
             <input
               type="number"
               value={priceRange.min}
               onChange={(e) => setPriceRange({ ...priceRange, min: Number(e.target.value) })}
-              className="w-full px-3 py-2.5 bg-bg-base border-none rounded-component text-text-primary text-sm font-semibold focus:ring-1 focus:ring-secondary/50"
+              onBlur={handlePriceChange}
+              className="w-full px-3 py-2 bg-bg-base border-none rounded-component text-text-primary text-xs font-semibold focus:ring-1 focus:ring-secondary/50"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="tag text-text-muted ml-1">Max (৳)</label>
+            <label className="tag text-text-muted ml-1">Max</label>
             <input
               type="number"
               value={priceRange.max}
               onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
-              className="w-full px-3 py-2.5 bg-bg-base border-none rounded-component text-text-primary text-sm font-semibold focus:ring-1 focus:ring-secondary/50"
+              onBlur={handlePriceChange}
+              className="w-full px-3 py-2 bg-bg-base border-none rounded-component text-text-primary text-xs font-semibold focus:ring-1 focus:ring-secondary/50"
             />
           </div>
         </div>
-        <button
-          onClick={handlePriceChange}
-          className="w-full py-3 bg-text-primary hover:bg-text-primary/90 text-white rounded-component font-semibold transition-all active:scale-95 shadow-lg shadow-text-primary/10"
-        >
-          Go
-        </button>
       </div>
 
       {/* Rating */}
@@ -213,12 +220,12 @@ const FilterSidebar = ({ categories, brands, filters, setFilters }: FilterSideba
 
       {/* Stock Status */}
       <div className="space-y-4">
-        <h3 className="h6 uppercase tracking-widest pl-1">Stock Status</h3>
-        <div className="flex flex-wrap gap-2">
+        <h3 className="h6 uppercase tracking-widest pl-1">Availability</h3>
+        <div className="flex flex-col gap-2">
           {[
-            { label: 'In Stock', value: 'In Stock' },
-            { label: 'Out of Stock', value: 'Out of Stock' },
-            { label: 'Pre-order', value: 'Pre-order' }
+            { label: 'In Stock', value: 'In Stock', color: 'bg-success' },
+            { label: 'Out of Stock', value: 'Out of Stock', color: 'bg-danger' },
+            { label: 'Pre-order', value: 'Pre-order', color: 'bg-warning' }
           ].map((tag) => (
             <button
               key={tag.value}
@@ -227,12 +234,23 @@ const FilterSidebar = ({ categories, brands, filters, setFilters }: FilterSideba
                 if (newVal) trackFilterApply("stock_status", newVal);
                 setFilters((prev: any) => ({ ...prev, stockStatus: newVal, page: 1 }));
               }}
-              className={`px-3 py-1.5 rounded-full text-[10px] font-semibold border transition-all uppercase tracking-wider ${filters.stockStatus === tag.value
-                ? "bg-secondary/10 border-secondary text-secondary"
-                : "bg-transparent border-border-main text-text-muted hover:border-text-secondary"
-                }`}
+              className={`flex items-center justify-between px-4 py-3 rounded-component border transition-all duration-300 ${
+                filters.stockStatus === tag.value
+                  ? "border-secondary bg-secondary/5 shadow-sm"
+                  : "border-border-main hover:border-text-secondary bg-transparent"
+              }`}
             >
-              {tag.label}
+              <div className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full ${tag.color}`} />
+                <span className={`text-sm font-medium ${
+                  filters.stockStatus === tag.value ? "text-secondary" : "text-text-secondary"
+                }`}>
+                  {tag.label}
+                </span>
+              </div>
+              {filters.stockStatus === tag.value && (
+                <CheckCircle2 className="w-4 h-4 text-secondary" />
+              )}
             </button>
           ))}
         </div>

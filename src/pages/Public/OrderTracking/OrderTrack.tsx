@@ -59,7 +59,9 @@ const OrderTrack = () => {
                                 <div className="inline-block p-4 bg-green-50 rounded-3xl mb-6">
                                     <Truck className="w-10 h-10 text-green-600" />
                                 </div>
-                                <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">আপনার অর্ডার ট্র্যাক করুন</h1>
+                                <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">
+                                    <span className="text-secondary">আপনার</span> অর্ডার ট্র্যাক করুন
+                                </h1>
                                 <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
                                     অর্ডারের সঠিক অবস্থান এবং ডেলিভারির সময়কাল জানতে আপনার ফোন নম্বর অথবা অর্ডার আইডি ব্যবহার করুন।
                                 </p>
@@ -254,12 +256,12 @@ const OrderDetailsCard = ({ order }: { order: any }) => {
                                 <span className="text-gray-900 font-bold">৳{order?.totalAmount - (order?.deliveryCharge || 0)}</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500 font-medium font-medium">ডেলিভারি চার্জ</span>
+                                <span className="text-gray-500 font-medium">ডেলিভারি চার্জ</span>
                                 <span className="text-gray-900 font-bold">৳{order?.deliveryCharge || 0}</span>
                             </div>
                             <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
                                 <span className="text-gray-900 font-black">সর্বমোট</span>
-                                <span className="text-2xl font-black text-green-600 font-black tracking-tight">৳{order?.totalAmount}</span>
+                                <span className="text-2xl font-black text-green-600 tracking-tight">৳{order?.totalAmount}</span>
                             </div>
                         </div>
                     </div>

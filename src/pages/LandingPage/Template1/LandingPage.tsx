@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import OrderSuccessModal from "../Template2/LandingPage/OrderSuccessModal";
 import CheckoutSection from "../Template2/LandingPage/CheckoutSection";
 import RelatedProducts from "../Components/RelatedProducts";
-import AnimatedContainer from "../Components/AnimatedContainer";
+import AnimatedContainer from "@/common/Components/AnimatedContainer";
 import DynamicBanner from "../Components/DynamicBanner";
 import { useVariantQuantity } from "@/hooks/useVariantQuantity";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";

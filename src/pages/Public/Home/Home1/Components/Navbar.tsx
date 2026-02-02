@@ -41,7 +41,7 @@ const Navbar = () => {
 
               {/* Currency Dropdown */}
               <button className="flex items-center gap-1 hover:text-primary transition-colors font-medium uppercase tracking-widest text-[10px]">
-                <span>USD</span>
+                <span>BDT</span>
                 <ChevronDown className="w-2.5 h-2.5" />
               </button>
 
@@ -164,7 +164,7 @@ const Navbar = () => {
               <div className="flex items-center gap-3">
                 <Truck className="w-5 h-5" />
                 <span className="text-[10px] font-semibold whitespace-nowrap uppercase tracking-widest">
-                  FREE SHIPPING OVER $199
+                  FREE SHIPPING OVER ৳199
                 </span>
               </div>
               <div className="flex items-center gap-3">

@@ -13,7 +13,7 @@ import { useVariantQuantity } from "@/hooks/useVariantQuantity";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import RelatedProducts from "../../Components/RelatedProducts";
 import DynamicBanner from "../../Components/DynamicBanner";
-import AnimatedContainer from "../../Components/AnimatedContainer";
+import AnimatedContainer from "@/common/Components/AnimatedContainer";
 import { useTracking } from "@/hooks/useTracking";
 
 const LandingPage = ({ product }: { product: Product }) => {

@@ -17,9 +17,9 @@ export interface QueryOptions {
   limit?: number;
   search?: string;
   category?: string;
-  status?: "active" | "inactive";
   minPrice?: number;
   maxPrice?: number;
   sort?: string;
   stockStatus?: string;
+  rating?: number;
 }

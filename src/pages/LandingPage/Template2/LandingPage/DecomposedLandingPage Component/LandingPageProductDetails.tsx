@@ -7,7 +7,7 @@ import CustomerReviews from "./CustomerReviews";
 import { Product, ProductImage } from "@/types/Product/Product";
 import Specifications from "./Specifications";
 import { Layout, ClipboardList, Star, Truck } from "lucide-react";
-import AnimatedContainer from "../../../Components/AnimatedContainer";
+import AnimatedContainer from "@/common/Components/AnimatedContainer";
 
 interface LandingPageProductDetailsProps {
   product: Product;

@@ -131,7 +131,7 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
           <div>
             {product.oldPrice && (
               <span className="text-xs text-text-muted line-through mr-2">
-                ${product.oldPrice.toFixed(0)}
+                ৳{product.oldPrice.toFixed(0)}
               </span>
             )}
             {product.discount && (
@@ -140,7 +140,7 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
               </span>
             )}
             <div className="text-lg font-bold text-text-primary">
-              $
+              ৳
               {product.price.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
               })}

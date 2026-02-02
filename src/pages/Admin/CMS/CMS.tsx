@@ -48,10 +48,20 @@ const CMS = () => {
   const handleEdit = (banner: IBanner) => {
     setEditingBanner(banner);
     setValue("title", banner.title);
+    setValue("subtitle", banner.subtitle);
     setValue("description", banner.description);
     setValue("type", banner.type);
     setValue("image", banner.image);
-    setValue("productId", banner.productId);
+    setValue("link", banner.link);
+    setValue("buttonText", banner.buttonText);
+    setValue("buttonBgColor", banner.buttonBgColor);
+    setValue("buttonTextColor", banner.buttonTextColor || "#FFFFFF");
+    setValue("textColor", banner.textColor);
+    setValue("textPosition", banner.textPosition || "center");
+    setValue("titleSize", banner.titleSize);
+    setValue("subtitleSize", banner.subtitleSize);
+    setValue("showButton", banner.showButton !== undefined ? banner.showButton : true);
+    setValue("showTitle", banner.showTitle !== undefined ? banner.showTitle : true);
     setValue("isActive", banner.isActive);
     onOpen();
   };
@@ -242,7 +252,7 @@ const CMS = () => {
                              <Input 
                                 label="Title" 
                                 placeholder="Enter banner title" 
-                                {...register("title", { required: true })} 
+                                {...register("title")} 
                              />
                         </div>
                         <div className="col-span-2">
@@ -260,13 +270,21 @@ const CMS = () => {
                             >
                                 <SelectItem key="hero">Hero Slider</SelectItem>
                                 <SelectItem key="product">Product Card</SelectItem>
+                                <SelectItem key="promotional">Promotional Section</SelectItem>
                             </Select>
                         </div>
                         <div>
                              <Input 
-                                label="Product ID" 
-                                placeholder="Linked Product ID" 
-                                {...register("productId", { required: true })} 
+                                label="Link URL" 
+                                placeholder="/products/..." 
+                                {...register("link")} 
+                             />
+                        </div>
+                        <div className="col-span-2">
+                             <Input 
+                                label="Subtitle" 
+                                placeholder="Enter banner subtitle" 
+                                {...register("subtitle")} 
                              />
                         </div>
                         <div className="col-span-2">
@@ -275,8 +293,71 @@ const CMS = () => {
                                 placeholder="https://..." 
                                 {...register("image", { required: true })} 
                              />
+                             <p className="text-[10px] text-gray-500 mt-1">
+                                Recommended Sizes: Hero (1200x500px), Product (400x500px), Promotional (1400x400px)
+                             </p>
                         </div>
-                        <div className="col-span-2">
+                        <div>
+                             <Input 
+                                label="Button Text" 
+                                placeholder="e.g. SHOP NOW" 
+                                {...register("buttonText")} 
+                             />
+                        </div>
+                        <div>
+                            <Select 
+                                label="Text Position" 
+                                placeholder="Select position"
+                                {...register("textPosition")}
+                                defaultSelectedKeys={["center"]}
+                            >
+                                <SelectItem key="top-left">Top Left</SelectItem>
+                                <SelectItem key="top-right">Top Right</SelectItem>
+                                <SelectItem key="bottom-left">Bottom Left</SelectItem>
+                                <SelectItem key="bottom-right">Bottom Right</SelectItem>
+                                <SelectItem key="center">Center</SelectItem>
+                            </Select>
+                        </div>
+                        <div>
+                             <Input 
+                                label="Text Color" 
+                                type="color"
+                                {...register("textColor")} 
+                             />
+                        </div>
+                        <div className="flex gap-2">
+                             <Input 
+                                label="Btn Bg" 
+                                type="color"
+                                {...register("buttonBgColor")} 
+                             />
+                             <Input 
+                                label="Btn Text" 
+                                type="color"
+                                {...register("buttonTextColor")} 
+                             />
+                        </div>
+                        <div className="flex gap-2">
+                             <Input 
+                                label="Title Size" 
+                                placeholder="e.g. 3rem" 
+                                {...register("titleSize")} 
+                             />
+                             <Input 
+                                label="Subtitle Size" 
+                                placeholder="e.g. 1.2rem" 
+                                {...register("subtitleSize")} 
+                             />
+                        </div>
+                        <div className="col-span-2 flex flex-wrap items-center gap-6">
+                             <label className="flex items-center gap-2 text-sm text-gray-600">
+                                <input type="checkbox" {...register("showTitle")} defaultChecked />
+                                Show Title
+                             </label>
+                             <label className="flex items-center gap-2 text-sm text-gray-600">
+                                <input type="checkbox" {...register("showButton")} defaultChecked />
+                                Show Button
+                             </label>
                              <label className="flex items-center gap-2 text-sm text-gray-600">
                                 <input type="checkbox" {...register("isActive")} defaultChecked />
                                 Is Active
