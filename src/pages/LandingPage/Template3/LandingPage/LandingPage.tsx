@@ -14,6 +14,8 @@ import OrderSuccessModal from "../../Template2/LandingPage/OrderSuccessModal";
 import RelatedProducts from "@/pages/LandingPage/Components/RelatedProducts";
 import WhyBuyFromUs from "../Components/WhyBuyFromUs";
 import VideoGallery from "../Components/VideoGallery";
+import PriceBreakdown from "../../../../components/PriceBreakdown";
+import ComboPricingDisplay from "../../../../components/ComboPricingDisplay";
 
 
 
@@ -37,7 +39,10 @@ const LandingPage = ({ product }: { product: Product }) => {
   const effectiveQuantity = totalQuantity;
 
   const {
-      finalTotal
+      finalTotal,
+      basePrice,
+      variantTotal,
+      appliedComboTier
   } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
 
   const [currentImage, setCurrentImage] = useState<any>(null);
@@ -189,14 +194,14 @@ const LandingPage = ({ product }: { product: Product }) => {
       <div className="bg-white border-b border-gray-100">
         <div className="container mx-auto px-4 py-8 max-w-4xl text-center">
           <AnimatedContainer direction="down">
-            <h1 className="text-2xl md:text-4xl font-black text-green-700 mb-6 leading-tight">
+            <h1 className="text-2xl md:text-4xl font-black text-brand-700 mb-6 leading-tight">
               {product?.basicInfo?.title || "Product Title"}
             </h1>
           </AnimatedContainer>
 
           <AnimatedContainer direction="up" delay={0.1}>
             <div className="relative group max-w-xl mx-auto mb-8">
-              <div className="aspect-square rounded-[1.5rem] overflow-hidden border-6 border-green-600 shadow-xl bg-white p-1.5">
+              <div className="aspect-square rounded-[1.5rem] overflow-hidden border-6 border-brand-600 shadow-xl bg-white p-1.5">
                 <img
                   src={
                     currentImage?.url ||
@@ -217,8 +222,8 @@ const LandingPage = ({ product }: { product: Product }) => {
                     onClick={() => setCurrentImage(img)}
                     className={`size-16 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
                       currentImage?.url === img.url
-                        ? "border-green-600 ring-2 ring-green-300 scale-110"
-                        : "border-gray-200 hover:border-green-400"
+                        ? "border-brand-600 ring-2 ring-brand-300 scale-110"
+                        : "border-gray-200 hover:border-brand-400"
                     }`}
                   >
                     <img
@@ -236,12 +241,12 @@ const LandingPage = ({ product }: { product: Product }) => {
                         .getElementById("product-video")
                         ?.scrollIntoView({ behavior: "smooth" })
                     }
-                    className="size-16 rounded-xl overflow-hidden border-2 border-green-200 bg-green-50 flex items-center justify-center hover:bg-green-100 transition-all group"
+                    className="size-16 rounded-xl overflow-hidden border-2 border-brand-200 bg-brand-50 flex items-center justify-center hover:bg-brand-100 transition-all group"
                   >
                     <div className="flex flex-col items-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-green-600 group-hover:scale-110 transition-transform"
+                        className="h-6 w-6 text-brand-600 group-hover:scale-110 transition-transform"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -253,7 +258,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                           d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
                         />
                       </svg>
-                      <span className="text-[10px] font-bold text-green-600">
+                      <span className="text-[10px] font-bold text-brand-600">
                         VIDEO
                       </span>
                     </div>
@@ -269,16 +274,21 @@ const LandingPage = ({ product }: { product: Product }) => {
 
           <AnimatedContainer direction="up" delay={0.3}>
             <div className="flex flex-col items-center gap-4 mt-4">
-                <div className="flex flex-col items-center">
-                    <span className="text-xl text-gray-400 line-through font-bold mb-1">
-                      Start: ৳{(product?.price?.regular || 0).toLocaleString()}
-                    </span>
-                    <span className="text-4xl md:text-5xl font-black text-green-600">
-                      Total: ৳{finalTotal.toLocaleString()}
-                    </span>
-                    <span className="text-sm font-medium text-gray-500 mt-1">
-                        (৳{(finalTotal / (effectiveQuantity || 1)).toLocaleString()} / unit)
-                    </span>
+                <div className="w-full max-w-md mx-auto bg-gray-50 p-4 rounded-xl border border-gray-200">
+                   <PriceBreakdown
+                     quantity={effectiveQuantity}
+                     unitPrice={Math.round(((basePrice * effectiveQuantity) + variantTotal) / (effectiveQuantity || 1))}
+                     comboPricing={product.comboPricing || []}
+                   />
+                </div>
+
+                <div className="w-full max-w-md mx-auto mt-4 mb-4">
+                  <ComboPricingDisplay
+                    comboPricing={product.comboPricing || []}
+                    currentQuantity={effectiveQuantity}
+                    appliedTier={appliedComboTier || undefined} 
+                    variant="primary"
+                  />
                 </div>
 
 
@@ -288,7 +298,7 @@ const LandingPage = ({ product }: { product: Product }) => {
 
               <button
                 onClick={scrollToCheckout}
-                className="bg-green-600 hover:bg-green-700 text-xl md:text-2xl font-black py-4 px-10 rounded-xl shadow-[0_6px_0_0_#000] hover:shadow-[0_4px_0_0_#000] transition-all duration-200 active:translate-y-1 active:shadow-none mt-4 animate-pulse text-gray-800"
+                className="bg-brand-600 hover:bg-brand-700 text-xl md:text-2xl font-black py-4 px-10 rounded-xl shadow-[0_6px_0_0_#000] hover:shadow-[0_4px_0_0_#000] transition-all duration-200 active:translate-y-1 active:shadow-none mt-4 animate-pulse text-white transition-colors duration-500"
               >
                 অর্ডার করতে চাই
               </button>
@@ -300,12 +310,12 @@ const LandingPage = ({ product }: { product: Product }) => {
       {/* Why Buy Section */}
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <AnimatedContainer direction="left">
-          <div className="bg-green-600 text-white p-4 rounded-t-2xl text-center">
+          <div className="bg-brand-600 text-white p-4 rounded-t-2xl text-center">
             <h2 className="text-xl md:text-3xl font-black uppercase">
               {product?.basicInfo?.title || "Product Title"}
             </h2>
           </div>
-          <div className="bg-white p-6 md:p-10 rounded-b-2xl shadow-lg border-x border-b border-green-100">
+          <div className="bg-white p-6 md:p-10 rounded-b-2xl shadow-lg border-x border-b border-brand-100">
             {product?.basicInfo?.description ? (
               <div
                 className="prose prose-base max-w-none text-gray-700 leading-relaxed space-y-3 whitespace-pre-line [&>p]:mb-4 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-4 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:mb-4 [&>li]:mb-2"
@@ -318,17 +328,17 @@ const LandingPage = ({ product }: { product: Product }) => {
                 {(product?.basicInfo?.keyFeatures || []).map((feature, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-3 p-3 bg-green-50 rounded-xl border border-green-100 italic font-medium"
+                    className="flex items-start gap-3 p-3 bg-brand-50 rounded-xl border border-brand-100 italic font-medium"
                   >
-                    <span className="text-green-600 text-xl font-bold">✔</span>
-                    <span className="text-base text-green-900">{feature}</span>
+                    <span className="text-brand-600 text-xl font-bold">✔</span>
+                    <span className="text-base text-brand-700">{feature}</span>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="text-center mt-10 bg-green-100 py-4 rounded-xl border-2 border-dashed border-green-300">
-              <h3 className="text-2xl md:text-4xl font-black text-green-700">
+            <div className="text-center mt-10 bg-brand-100 py-4 rounded-xl border-2 border-dashed border-brand-300">
+              <h3 className="text-2xl md:text-4xl font-black text-brand-700">
                 {product.price.discounted || product.price.regular}
               </h3>
             </div>
@@ -336,7 +346,7 @@ const LandingPage = ({ product }: { product: Product }) => {
             <div className="flex justify-center mt-8">
               <button
                 onClick={scrollToCheckout}
-                className="bg-green-600 hover:bg-green-700 text-lg md:text-xl font-black py-3 px-8 rounded-lg shadow-md transition-all"
+                className="bg-brand-600 hover:bg-brand-700 text-lg md:text-xl font-black py-3 px-8 rounded-lg shadow-md transition-all text-white"
               >
                 অর্ডার করতে চাই
               </button>
@@ -348,15 +358,15 @@ const LandingPage = ({ product }: { product: Product }) => {
       {/* Why Buy From Us */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <AnimatedContainer direction="right">
-          <div className="bg-green-600 text-white p-4 rounded-t-2xl text-center">
+          <div className="bg-brand-600 text-white p-4 rounded-t-2xl text-center">
             <h2 className="text-xl md:text-3xl font-black uppercase">
               আমাদের কাছে কেন কিনবেন?
             </h2>
           </div>
-          <div className="bg-white p-6 md:p-10 rounded-b-2xl shadow-lg border-x border-b border-green-100 space-y-4">
+          <div className="bg-white p-6 md:p-10 rounded-b-2xl shadow-lg border-x border-b border-brand-100 space-y-4">
             <WhyBuyFromUs features={product?.basicInfo?.keyFeatures || []} />
 
-            <div className="mt-8 rounded-2xl overflow-hidden border-4 border-green-600 shadow-xl">
+            <div className="mt-8 rounded-2xl overflow-hidden border-4 border-brand-600 shadow-xl">
               <img
                 src={product?.images?.[0]?.url}
                 alt="Quality assurance"
@@ -374,12 +384,12 @@ const LandingPage = ({ product }: { product: Product }) => {
           className="container mx-auto px-4 py-8 max-w-4xl"
         >
           <AnimatedContainer direction="up">
-            <div className="bg-green-600 text-white p-4 rounded-t-2xl text-center">
+            <div className="bg-brand-600 text-white p-4 rounded-t-2xl text-center">
               <h2 className="text-xl md:text-3xl font-black uppercase">
                 Product Video Review
               </h2>
             </div>
-            <div className="bg-white p-4 md:p-8 rounded-b-2xl shadow-lg border-x border-b border-green-100">
+            <div className="bg-white p-4 md:p-8 rounded-b-2xl shadow-lg border-x border-b border-brand-100">
               <VideoGallery videos={product.videos} />
             </div>
           </AnimatedContainer>
@@ -387,7 +397,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       )}
 
       {/* Contact Bar */}
-      <div className="bg-green-600 text-white py-3 sticky top-0 z-40 mb-8 shadow-md">
+      <div className="bg-brand-600 text-white py-3 sticky top-0 z-40 mb-8 shadow-md">
         <div className="container mx-auto px-4 text-center">
           <p className="text-lg md:text-2xl font-black tracking-wide">
             যে কোন প্রয়োজনে যোগাযোগ করুন {host?.phone || "01610403011"}
@@ -398,9 +408,9 @@ const LandingPage = ({ product }: { product: Product }) => {
       {/* Checkout Section Integration */}
       <div id="checkout" className="container mx-auto px-4 max-w-5xl">
         <AnimatedContainer direction="none" delay={0.1}>
-          <div className="bg-white rounded-[2rem] shadow-xl border border-green-100 overflow-hidden">
-            <div className="bg-green-50 py-8 text-center border-b border-green-100">
-              <h2 className="text-2xl md:text-4xl font-black text-green-700 px-4">
+          <div className="bg-white rounded-[2rem] shadow-xl border border-brand-100 overflow-hidden">
+            <div className="bg-brand-50 py-8 text-center border-b border-brand-100">
+              <h2 className="text-2xl md:text-4xl font-black text-brand-700 px-4">
                 অর্ডার করতে নিচের ফর্মটি পূরণ করুন
               </h2>
             </div>

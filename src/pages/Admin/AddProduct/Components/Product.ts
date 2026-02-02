@@ -70,6 +70,7 @@ const ProductPriceSchema = z.object({
 const ComboPricingSchema = z.object({
   minQuantity: z.number().int().positive("Minimum quantity must be at least 1"),
   discount: z.number().nonnegative("Discount must be non-negative"),
+  discountType: z.enum(["total", "per_product"]).default("total"),
 });
 
 const ProductShippingSchema = z.object({

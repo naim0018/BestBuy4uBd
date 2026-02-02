@@ -5,7 +5,10 @@ import { Product } from "@/types/Product/Product";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/store/Slices/CartSlice";
 import { openCart, openWishlist } from "@/store/Slices/UISlice";
-import { addToWishlist, removeFromWishlist } from "@/store/Slices/wishlistSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "@/store/Slices/wishlistSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useTracking } from "@/hooks/useTracking";
@@ -16,31 +19,39 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const dispatch = useDispatch();
-  const { trackAddToCart, trackSelectItem, trackWishlistRemove, trackAddToWishlist } = useTracking();
+  const {
+    trackAddToCart,
+    trackSelectItem,
+    trackWishlistRemove,
+    trackAddToWishlist,
+  } = useTracking();
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
-  const isWishlisted = wishlistItems.some(item => item._id === product._id);
+  const isWishlisted = wishlistItems.some((item) => item._id === product._id);
 
-  const { basicInfo, price, images, rating, stockStatus, additionalInfo } = product;
+  const { basicInfo, price, images, rating, stockStatus, additionalInfo } =
+    product;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    dispatch(addToCart({
-      id: product._id,
-      name: basicInfo.title,
-      price: price.discounted || price.regular,
-      image: images[0]?.url,
-      quantity: 1,
-      selectedVariants: []
-    }));
+    dispatch(
+      addToCart({
+        id: product._id,
+        name: basicInfo.title,
+        price: price.discounted || price.regular,
+        image: images[0]?.url,
+        quantity: 1,
+        selectedVariants: [],
+      }),
+    );
 
     trackAddToCart({
       id: product._id,
       name: basicInfo.title,
       price: price.discounted || price.regular,
       category: basicInfo.category,
-      quantity: 1
+      quantity: 1,
     });
 
     dispatch(openCart());
@@ -55,7 +66,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         id: product._id,
         name: basicInfo.title,
         price: price.discounted || price.regular,
-        category: basicInfo.category
+        category: basicInfo.category,
       });
       dispatch(removeFromWishlist(product._id));
     } else {
@@ -63,7 +74,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         id: product._id,
         name: basicInfo.title,
         price: price.discounted || price.regular,
-        category: basicInfo.category
+        category: basicInfo.category,
       });
       dispatch(addToWishlist(product));
       dispatch(openWishlist());
@@ -78,14 +89,16 @@ const ProductCard = ({ product }: ProductCardProps) => {
     <Link
       to={`/product/${product._id}`}
       className="h-full block"
-      onClick={() => trackSelectItem({
-        id: product._id,
-        name: basicInfo.title,
-        price: price.discounted || price.regular,
-        category: basicInfo.category,
-        list_name: "Product List",
-        list_id: "product_list"
-      })}
+      onClick={() =>
+        trackSelectItem({
+          id: product._id,
+          name: basicInfo.title,
+          price: price.discounted || price.regular,
+          category: basicInfo.category,
+          list_name: "Product List",
+          list_id: "product_list",
+        })
+      }
     >
       <motion.div
         layout
@@ -116,16 +129,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
         {/* Wishlist Button */}
         <button
           onClick={handleWishlist}
-          className={`absolute top-4 right-4 z-10 w-9 h-9 rounded-full backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${isWishlisted
-            ? "bg-danger text-white"
-            : "bg-bg-surface/80 text-text-muted hover:text-danger hover:bg-bg-surface"
-            }`}
+          className={`absolute top-4 right-4 z-10 w-9 h-9 rounded-full backdrop-blur-md shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
+            isWishlisted
+              ? "bg-danger text-white"
+              : "bg-bg-surface/80 text-text-muted hover:text-danger hover:bg-bg-surface"
+          }`}
         >
           <Heart className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`} />
         </button>
 
         {/* Image Container */}
-        <div className="relative h-56 mb-5 flex items-center justify-center overflow-hidden card-inner bg-bg-base/50 group-hover:bg-bg-surface transition-colors duration-500">
+        <div className="relative h-56 flex items-center justify-center overflow-hidden card-inner bg-bg-base/50 group-hover:bg-bg-surface transition-colors duration-500 border border-b-0 rounded-b-none -mb-1 hover:mb-0">
           <motion.img
             src={images[0]?.url || "https://via.placeholder.com/300"}
             alt={basicInfo.title}
@@ -147,10 +161,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
               whileHover={{ scale: 1.1, rotate: -5 }}
               whileTap={{ scale: 0.9 }}
               disabled={stockStatus === "Out of Stock"}
-              className={`w-11 h-11 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 ${stockStatus === "Out of Stock"
-                ? "bg-text-muted/20 cursor-not-allowed text-text-muted"
-                : "bg-secondary text-white hover:bg-secondary/90"
-                }`}
+              className={`w-11 h-11 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 ${
+                stockStatus === "Out of Stock"
+                  ? "bg-text-muted/20 cursor-not-allowed text-text-muted"
+                  : "bg-secondary text-white hover:bg-secondary/90"
+              }`}
               title="Add to Cart"
             >
               <ShoppingCart className="w-5 h-5" />
@@ -159,37 +174,38 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col px-1">
+        <div className="flex-1 flex flex-col p-3 bg-gray-100 rounded-lg">
           <div className="text-[10px] font-semibold text-secondary uppercase tracking-widest mb-1">
             {basicInfo.category}
           </div>
 
           <h3
-            className="text-text-primary mb-2 line-clamp-2 min-h-[48px] text-lg leading-tight group-hover:text-secondary transition-colors duration-300"
+            className="text-[#0F172A] mb-2 line-clamp-2 min-h-[48px] text-lg leading-tight group-hover:text-secondary transition-colors duration-300"
             title={basicInfo.title}
           >
             {basicInfo.title}
           </h3>
 
           {/* Rating */}
-          <div className="flex items-center gap-2 mb-4">
+          {/* <div className="flex items-center gap-2 mb-4">
             <div className="flex text-accent">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-3.5 h-3.5 ${i < Math.floor(rating?.average || 0)
-                    ? "fill-current"
-                    : "text-text-muted/20"
-                    }`}
+                  className={`w-3.5 h-3.5 ${
+                    i < Math.floor(rating?.average || 0)
+                      ? "fill-current"
+                      : "text-text-muted/20"
+                  }`}
                 />
               ))}
             </div>
             <span className="small font-medium">
               ({rating?.count || 0} reviews)
             </span>
-          </div>
+          </div> */}
 
-          <div className="mt-auto pt-4 border-t border-border-main flex items-center justify-between">
+          <div className="mt-auto pt-4 flex items-center justify-between">
             <div className="flex flex-col">
               {price.discounted ? (
                 <>
@@ -208,10 +224,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </div>
 
             <div className="text-right">
-              <div className={`tag ${stockStatus === "In Stock" ? "bg-secondary/10 text-secondary" :
-                stockStatus === "Pre-order" ? "bg-accent/10 text-accent" :
-                  "bg-danger/10 text-danger"
-                }`}>
+              <div
+                className={`tag p-1.5 text-xs ${
+                  stockStatus === "In Stock"
+                    ? "bg-secondary/10 text-secondary"
+                    : stockStatus === "Pre-order"
+                      ? "bg-accent/10 text-accent"
+                      : "bg-danger/10 text-danger"
+                }`}
+              >
                 {stockStatus}
               </div>
               <span className="text-[10px] text-text-muted font-medium mt-1 block">

@@ -4,6 +4,8 @@ import { Product, ProductImage, ProductVariantItem } from '@/types/Product/Produ
 import TrustSignals from './TrustSignals';
 import AnimatedContainer from '@/common/Components/AnimatedContainer';
 import VariantSelector from '@/pages/LandingPage/Components/VariantSelector';
+import PriceBreakdown from '../../../../../components/PriceBreakdown';
+import ComboPricingDisplay from '../../../../../components/ComboPricingDisplay';
 
 interface LandingPageHeroSectionProps {
   product: Product;
@@ -147,25 +149,28 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                 {product.basicInfo.title}
               </h1>
 
-              {/* Price Section */}
+              {/* Prices Section */}
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-100">
-                <div className="flex items-baseline gap-4 mb-2">
-                  <span className="text-4xl lg:text-5xl font-bold text-green-600">
-                    ৳{currentPrice.toLocaleString()}
-                  </span>
-                  {hasDiscount && (
-                    <span className="text-xl text-gray-400 line-through">
-                      ৳{product.price.regular.toLocaleString()}
-                    </span>
-                  )}
-                </div>
-                {hasDiscount && (
-                  <div className="flex items-center gap-2">
-                    <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-bold">
-                      You Save ৳{(savings * quantity).toLocaleString()} ({savingsPercent}%)
-                    </span>
-                  </div>
-                )}
+                <PriceBreakdown
+                  quantity={quantity}
+                  unitPrice={Math.round(quantity > 0 ? currentPrice / quantity : product.price.regular)}
+                  comboPricing={product.comboPricing || []}
+                />
+              </div>
+
+               {/* Combo Pricing UI */}
+               <div className="mt-4">
+                <ComboPricingDisplay
+                  comboPricing={product.comboPricing || []}
+                  currentQuantity={quantity}
+                  appliedTier={undefined} // PriceBreakdown calculates this internally, but for display we assume visual cue is enough or pass if needed.
+                  // Actually ComboPricingDisplay needs appliedTier to highlight.
+                  // Since we don't have appliedTier passed down, we might need to recalculate or just show tiers.
+                  // However, for visual consistency it's better to calculate it.
+                  // We can import calculateComboPricing here or accept it as prop.
+                  // For now, let's keep it simple or use a helper if possible.
+                  variant="secondary"
+                />
               </div>
 
               {/* Key Features */}

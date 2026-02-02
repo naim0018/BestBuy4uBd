@@ -196,7 +196,7 @@ const Shop = () => {
             <div className="bg-bg-surface px-8 py-6 rounded-container border border-border-main shadow-sm flex flex-wrap items-center justify-between gap-6 transition-all">
               <div className="flex items-center gap-10">
                 <div className="hidden md:block">
-                  <h1 className="text-2xl font-black text-[#0F172A] mb-1 uppercase tracking-tighter">
+                  <h1 className="text-2xl font-black text-brand-700 mb-1 uppercase tracking-tighter">
                     <span className="text-secondary">Shop</span> Products
                   </h1>
                   <p className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.2em]">

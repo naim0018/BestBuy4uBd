@@ -1,4 +1,6 @@
 import Layout from "./Layout/PublicLayout/Layout";
+import { ThemeProvider } from "./context/ThemeContext";
+import { ThemeSwitcher } from "./components/ThemeSwitcher";
 import { HeroUIProvider } from "@heroui/react";
 import TrackingManager from "./components/common/TrackingManager";
 import { useEffect } from "react";
@@ -10,20 +12,23 @@ function App() {
     document.title = brand.title;
 
     const favicon = document.querySelector(
-      "link[rel='icon']"
+      "link[rel='icon']",
     ) as HTMLLinkElement | null;
 
-  if (favicon) {
-    favicon.href = brand.logo;
-  }
-}, [brand]);
+    if (favicon) {
+      favicon.href = brand.logo;
+    }
+  }, [brand]);
 
   return (
     <>
-      <HeroUIProvider>
-        <TrackingManager />
-        <Layout />
-      </HeroUIProvider>
+      <ThemeProvider>
+        <HeroUIProvider>
+          <TrackingManager />
+          <ThemeSwitcher />
+          <Layout />
+        </HeroUIProvider>
+      </ThemeProvider>
     </>
   );
 }

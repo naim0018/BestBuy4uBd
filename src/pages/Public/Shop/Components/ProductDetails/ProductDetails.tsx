@@ -159,6 +159,8 @@ const ForYouCard = ({ product }: { product: any }) => (
 /* New Hooks Integration */
 import { useVariantQuantity } from "@/hooks/useVariantQuantity";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
+import PriceBreakdown from "../../../../../components/PriceBreakdown";
+import ComboPricingDisplay from "../../../../../components/ComboPricingDisplay";
 /* End New Hooks Integration */
 
 const ProductDetails = () => {
@@ -213,9 +215,8 @@ const ProductDetails = () => {
   const {
     basePrice,
     variantTotal,
-    comboDiscount,
-    finalTotal,
-    appliedComboTier
+    appliedComboTier,
+    finalTotal
   } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
 
 
@@ -509,55 +510,22 @@ const ProductDetails = () => {
 
               {/* Price Display */}
               <div className="flex flex-col gap-2">
-                <div className="flex items-baseline gap-4">
-                  {product.price.discounted ? (
-                    <>
-                      <span className="text-3xl font-semibold text-danger">
-                        ৳{finalTotal.toLocaleString()}
-                      </span>
-                      <span className="text-xl font-medium text-text-muted line-through">
-                        ৳{((product.price.regular * effectiveQuantity) + variantTotal).toLocaleString()}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-3xl font-semibold text-text-primary">
-                      ৳{finalTotal.toLocaleString()}
-                    </span>
-                  )}
-                </div>
-                {(variantTotal > 0 || comboDiscount > 0) && (
-                  <div className="text-xs text-text-muted flex flex-col gap-1">
-                    {product.price.regular > 0 && <span>Base Price ({basePrice} X {effectiveQuantity}): ৳{(basePrice * effectiveQuantity).toLocaleString()}</span>}
-                    {/* {variantTotal > 0 && <span>Variants Extra: +৳{((variantTotal-basePrice)/effectiveQuantity).toLocaleString()}</span>} */}
-                    {comboDiscount > 0 && <span className="text-secondary font-bold">Combo Discount: -৳{comboDiscount.toLocaleString()}</span>}
-                  </div>
-                )}
+                <PriceBreakdown
+                  quantity={effectiveQuantity}
+                  unitPrice={Math.round((((basePrice * effectiveQuantity) + variantTotal) / (effectiveQuantity || 1)))}
+                  comboPricing={product.comboPricing || []}
+                />
               </div>
 
               {/* Combo Pricing Section */}
-              {product.comboPricing && product.comboPricing.length > 0 && (
-                <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 space-y-4">
-                  <h3 className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Combo Savings
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {product.comboPricing.map((tier: { minQuantity: number; discount: number }, idx: number) => {
-                      // Check if this tier is the currently applied one
-                      const isApplied = appliedComboTier && appliedComboTier.minQuantity === tier.minQuantity;
-                      // Or check if this tier is met (candidate)
-                      const isMet = effectiveQuantity >= tier.minQuantity;
-
-                      return (
-                        <div key={idx} className={`bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm ${isApplied ? "border-primary ring-2 ring-primary bg-primary/5" : isMet ? "border-primary/50" : "border-primary/10"}`}>
-                          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Buy {tier.minQuantity}+</span>
-                          <span className={`font-bold ${isApplied ? "text-primary scale-110" : "text-primary opacity-80"}`}>-৳{tier.discount.toLocaleString()} OFF</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+              <div className="mt-4">
+                <ComboPricingDisplay
+                  comboPricing={product.comboPricing || []}
+                  currentQuantity={effectiveQuantity}
+                  appliedTier={appliedComboTier || undefined} 
+                  variant="primary"
+                />
+              </div>
 
               <div className="space-y-4">
                 {/* Base Variant - Auto-injected quantity option */}

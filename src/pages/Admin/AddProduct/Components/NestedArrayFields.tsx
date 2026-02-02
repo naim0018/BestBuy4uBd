@@ -651,7 +651,7 @@ export const ComboPricingField = memo(({ control, register, errors, watch }: Com
         <h3 className="text-lg font-semibold text-gray-800">Combo Pricing (Buy More, Save More)</h3>
         <button
           type="button"
-          onClick={() => append({ minQuantity: 2, discount: 0 })}
+          onClick={() => append({ minQuantity: 2, discount: 0, discountType: "total" })}
           className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -665,7 +665,7 @@ export const ComboPricingField = memo(({ control, register, errors, watch }: Com
             key={field.id}
             className="p-4 border border-border rounded-xl bg-white shadow-sm"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Min Quantity <span className="text-red-500">*</span>
@@ -700,6 +700,20 @@ export const ComboPricingField = memo(({ control, register, errors, watch }: Com
                 )}
               </div>
 
+               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Apply Discount To <span className="text-red-500">*</span>
+                </label>
+                <select
+                  {...register(`comboPricing.${index}.discountType`)}
+                  className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white"
+                  defaultValue="total"
+                >
+                  <option value="total">Total Amount</option>
+                  <option value="per_product">Each Product</option>
+                </select>
+              </div>
+
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -712,7 +726,10 @@ export const ComboPricingField = memo(({ control, register, errors, watch }: Com
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-2 italic">
-              User will get ৳{watch(`comboPricing.${index}.discount`) || 0} OFF on total amount if they buy {watch(`comboPricing.${index}.minQuantity`) || 0} or more items.
+              {watch(`comboPricing.${index}.discountType`) === 'per_product' 
+                ? `User will get ৳${watch(`comboPricing.${index}.discount`) || 0} OFF on EACH product when buying ${watch(`comboPricing.${index}.minQuantity`) || 0} or more items (Total: ৳${(watch(`comboPricing.${index}.discount`) || 0) * (watch(`comboPricing.${index}.minQuantity`) || 0)} OFF for ${watch(`comboPricing.${index}.minQuantity`) || 0} items)`
+                : `User will get ৳${watch(`comboPricing.${index}.discount`) || 0} OFF on TOTAL amount when buying ${watch(`comboPricing.${index}.minQuantity`) || 0} or more items`
+              }
             </p>
           </div>
         ))}

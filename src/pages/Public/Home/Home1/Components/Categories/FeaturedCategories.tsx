@@ -77,7 +77,7 @@ const FeaturedCategories = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl font-black text-[#0F172A] mb-4 text-center">
+          <h2 className="text-3xl font-black text-brand-700 mb-4 text-center">
             <span className="text-secondary">Shop</span> by Category
           </h2>
           <p className="text-text-muted max-w-2xl mx-auto uppercase tracking-widest text-xs font-medium">

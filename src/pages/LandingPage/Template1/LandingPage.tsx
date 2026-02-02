@@ -21,6 +21,8 @@ import DynamicBanner from "../Components/DynamicBanner";
 import { useVariantQuantity } from "@/hooks/useVariantQuantity";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import VariantSelector from "../Components/VariantSelector";
+import PriceBreakdown from "../../../components/PriceBreakdown";
+import ComboPricingDisplay from "../../../components/ComboPricingDisplay";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const navigate = useNavigate();
@@ -49,10 +51,9 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const {
       basePrice,
-      variantTotal,
-      comboDiscount,
       finalTotal,
-      appliedComboTier
+      appliedComboTier,
+      variantTotal
   } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
 
   const [currentImage, setCurrentImage] = useState<any>(null);
@@ -311,35 +312,24 @@ const LandingPage = ({ product }: { product: Product }) => {
                   )}
                 </div>
                 
-                 {/* Price Breakdown */}
-                  {(variantTotal > 0 || comboDiscount > 0) && (
-                      <div className="text-sm text-gray-500 flex flex-col gap-1">
-                          {price.regular > 0 && <span>Base ({effectiveQuantity}x): ৳{(basePrice * effectiveQuantity).toLocaleString()}</span>}
-                          {variantTotal > 0 && <span>Variants: +৳{variantTotal.toLocaleString()}</span>}
-                          {comboDiscount > 0 && <span className="text-primary-green font-bold">Combo Discount: -৳{comboDiscount.toLocaleString()}</span>}
-                      </div>
-                  )}
+                  {/* reusable Price Breakdown */}
+                   <div className="mt-4">
+                     <PriceBreakdown
+                       quantity={effectiveQuantity}
+                       unitPrice={Math.round((basePrice * effectiveQuantity + variantTotal) / (effectiveQuantity || 1))} // Weighted average unit price
+                       comboPricing={product.comboPricing || []}
+                     />
+                   </div>
 
-
-                  {/* Combo Pricing UI */}
-                  {product.comboPricing && product.comboPricing.length > 0 && (
-                    <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100 space-y-4">
-                       <h3 className="text-[10px] font-bold text-blue-700 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600" /> Combo Savings
-                      </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {product.comboPricing.map((tier: any, idx: number) => {
-                           const isApplied = appliedComboTier && appliedComboTier.minQuantity === tier.minQuantity;
-                           return (
-                              <div key={idx} className={`bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm ${isApplied ? "border-blue-600 ring-1 ring-blue-600 bg-blue-50" : "border-blue-100"}`}>
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Buy {tier.minQuantity}+</span>
-                                <span className={`font-bold ${isApplied ? "text-blue-700" : "text-blue-600 opacity-80"}`}>-৳{tier.discount.toLocaleString()} OFF</span>
-                              </div>
-                           );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                  {/* Reusable Combo Pricing UI */}
+                  <div className="mt-4">
+                    <ComboPricingDisplay
+                      comboPricing={product.comboPricing || []}
+                      currentQuantity={effectiveQuantity}
+                      appliedTier={appliedComboTier || undefined}
+                      variant="primary"
+                    />
+                  </div>
 
                 {/* Variant Selection */}
             <div className="mb-8">

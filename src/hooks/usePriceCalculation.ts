@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { calculateComboPricing, ComboPricing } from '../utils/pricingUtils';
 
 export interface PriceBreakdown {
   basePrice: number;
@@ -7,7 +8,7 @@ export interface PriceBreakdown {
   comboDiscount: number;
   finalTotal: number;
   totalQuantity: number;
-  appliedComboTier?: { minQuantity: number; discount: number };
+  appliedComboTier?: ComboPricing | null;
 }
 
 export const usePriceCalculation = (
@@ -50,29 +51,23 @@ export const usePriceCalculation = (
     // Only include base price if base variant is selected
     const subtotal = (basePrice * baseVariantQuantity) + variantTotal;
 
-    // Apply combo discount (flat discount based on total quantity)
-    let comboDiscount = 0;
-    let appliedComboTier = undefined;
-    
-    if (product.comboPricing && product.comboPricing.length > 0 && totalQuantity > 0) {
-      const sortedCombo = [...product.comboPricing].sort((a: any, b: any) => b.minQuantity - a.minQuantity);
-      const tier = sortedCombo.find((t: any) => totalQuantity >= t.minQuantity);
-      if (tier) {
-        comboDiscount = tier.discount;
-        appliedComboTier = tier;
-      }
-    }
+    // Apply combo discount using centralized logic
+    const { 
+      appliedTier, 
+      discountAmount: comboDiscount 
+    } = calculateComboPricing(totalQuantity, 0, product.comboPricing || []); 
 
-    const finalTotal = Math.max(0, subtotal - comboDiscount);
+    // Recalculate finalTotal based on our subtotal 
+    const realFinalTotal = Math.max(0, subtotal - comboDiscount);
 
     return {
       basePrice,
       variantTotal,
       subtotal,
       comboDiscount,
-      finalTotal,
+      finalTotal: realFinalTotal,
       totalQuantity,
-      appliedComboTier
+      appliedComboTier: appliedTier
     };
   }, [product, selectedVariants, manualQuantity]);
 };

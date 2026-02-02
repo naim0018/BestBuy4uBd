@@ -110,7 +110,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   </div>
 
                   <div className="mt-auto">
-                    <div className="text-2xl font-black text-[#0F172A] mb-4">
+                    <div className="text-2xl font-black text-brand-700 mb-4">
                       ৳{price}
                     </div>
                     <div className="flex items-center justify-between">
@@ -146,7 +146,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                           {promotion.text.map((line, i) => (
                             <p
                               key={i}
-                              className="text-[13px] font-bold text-[#0F172A] flex items-start gap-1.5"
+                              className="text-[13px] font-bold text-brand-700 flex items-start gap-1.5"
                             >
                               <span className="mt-1.5 w-1 h-1 rounded-full bg-black flex-shrink-0" />
                               <span>
@@ -223,7 +223,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   <span className="text-[11px] text-gray-400 font-medium">
                     {purchases}
                   </span>
-                  <div className="text-xl font-black text-[#0F172A]">
+                  <div className="text-xl font-black text-brand-700">
                     ৳{price}
                   </div>
                   <Heart

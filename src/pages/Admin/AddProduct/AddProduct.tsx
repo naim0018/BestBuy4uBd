@@ -109,6 +109,7 @@ export default function ProductAdminPage() {
             .map((tier) => ({
               minQuantity: Number(tier.minQuantity),
               discount: Number(tier.discount),
+              discountType: tier.discountType || "total",
             })) || [],
         specifications:
           draft.specifications

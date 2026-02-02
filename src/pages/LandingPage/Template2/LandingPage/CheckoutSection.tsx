@@ -133,7 +133,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
   return (
     <div
       id="checkout"
-      className="bg-white rounded-3xl shadow-xl overflow-hidden border border-green-100"
+      className="bg-white rounded-3xl shadow-xl overflow-hidden border border-brand-100"
     >
       <div className="grid grid-cols-1 md:grid-cols-2">
         {/* Checkout Form */}
@@ -143,10 +143,10 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
           className="p-4 md:p-10 bg-white order-2 md:order-none"
         >
           <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 md:mb-8 flex items-center">
-            <span className="bg-green-100 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-3 md:mr-4">
+            <span className="bg-brand-100 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-3 md:mr-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 md:h-6 md:w-6 text-green-600"
+                className="h-5 w-5 md:h-6 md:w-6 text-brand-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -177,7 +177,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                 <input
                   type="text"
                   name="name"
-                  className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-0 transition-colors"
+                  className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:ring-0 transition-colors"
                   placeholder="আপনার পূর্ণ নাম"
                   required
                 />
@@ -190,7 +190,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                   type="tel"
                   name="phone"
                   pattern="01[2-9][0-9]{8}"
-                  className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-0 transition-colors"
+                  className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:ring-0 transition-colors"
                   placeholder="01XXXXXXXXX"
                   required
                 />
@@ -204,20 +204,20 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
               <textarea
                 name="address"
                 rows={3}
-                className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-0 transition-colors"
+                className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:ring-0 transition-colors"
                 placeholder="আপনার সম্পূর্ণ ঠিকানা"
                 required
               ></textarea>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-              <div className="bg-green-50 p-3 md:p-4 rounded-xl">
+              <div className="bg-brand-50 p-3 md:p-4 rounded-xl">
                 <label className="block text-gray-700 font-medium mb-2">
                   ডেলিভারি এলাকা <span className="text-red-500">*</span>
                 </label>
                 <select
                   name="courierCharge"
-                  className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-green-200 focus:border-green-500 focus:ring-0 transition-colors bg-white"
+                  className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-brand-200 focus:border-brand-500 focus:ring-0 transition-colors bg-white"
                   required
                   onChange={handleDeliveryChargeChange}
                   value={deliveryChargeType}
@@ -232,31 +232,31 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                   </option>
                 </select>
                 {product?.additionalInfo?.freeShipping && (
-                  <p className="text-green-600 text-xs mt-1 font-bold italic">
+                  <p className="text-brand-600 text-xs mt-1 font-bold italic">
                     এই পণ্যটির জন্য শিপিং ফ্রি
                   </p>
                 )}
               </div>
 
-              <div className="bg-green-50 p-3 md:p-4 rounded-xl">
+              <div className="bg-brand-50 p-3 md:p-4 rounded-xl">
                 <label className="block text-gray-700 font-medium mb-2">
                   কুপন কোড{" "}
                   <span className="text-gray-500 text-sm">(ঐচ্ছিক)</span>
                 </label>
                 <div className="flex gap-2 w-full">
-                  <div className="relative w-full border-2 border-green-200 rounded-xl bg-white overflow-hidden">
+                  <div className="relative w-full border-2 border-brand-200 rounded-xl bg-white overflow-hidden">
                     <input
                       type="text"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       name="cuponCode"
-                      className="w-full pr-24 px-4 md:px-5 py-2 md:py-3 rounded-xl focus:border-green-500 focus:ring-0 transition-colors bg-white"
+                      className="w-full pr-24 px-4 md:px-5 py-2 md:py-3 rounded-xl focus:border-brand-500 focus:ring-0 transition-colors bg-white"
                       placeholder="কুপন কোড"
                     />
                     <button
                       onClick={applyCoupon}
                       type="button"
-                      className="px-3 md:px-4 py-1.5 md:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors absolute right-1 top-1/2 transform -translate-y-1/2 text-sm font-bold"
+                      className="px-3 md:px-4 py-1.5 md:py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors absolute right-1 top-1/2 transform -translate-y-1/2 text-sm font-bold"
                     >
                       যাচাই
                     </button>
@@ -273,7 +273,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
               <textarea
                 name="notes"
                 rows={2}
-                className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-0 transition-colors"
+                className="w-full px-4 md:px-5 py-2 md:py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:ring-0 transition-colors"
                 placeholder="যদি কোন বিশেষ নির্দেশনা থাকে"
               ></textarea>
             </div>
@@ -286,12 +286,12 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
             className={`w-full mt-6 md:mt-10 bg-gradient-to-r 
               ${
                 !isLoading
-                  ? "from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
+                  ? "from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600"
                   : "from-gray-400 to-gray-500 cursor-not-allowed"
               } 
               text-white py-3 md:py-4 rounded-xl text-base md:text-lg font-bold 
               transition-all duration-300 transform hover:scale-[1.02] 
-              focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-lg
+              focus:ring-4 focus:ring-brand-500 focus:ring-opacity-50 shadow-lg
               relative
               ${!formValid ? "opacity-90" : "opacity-100"}
             `}
@@ -329,12 +329,12 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
         </form>
 
         {/* Order Summary Section */}
-        <div className="p-4 md:p-10 bg-gradient-to-br from-green-50 via-white to-green-50">
+        <div className="p-4 md:p-10 bg-gradient-to-br from-brand-50 via-white to-brand-50">
           <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 md:mb-8 flex items-center">
-            <span className="bg-green-100 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-3 md:mr-4">
+            <span className="bg-brand-100 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-3 md:mr-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 md:h-6 md:w-6 text-green-600"
+                className="h-5 w-5 md:h-6 md:w-6 text-brand-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -369,7 +369,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                     }
                   }}
                 />
-                <div className="absolute -top-2 -right-2 bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
+                <div className="absolute -top-2 -right-2 bg-brand-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
                   {quantity}
                 </div>
               </div>
@@ -378,7 +378,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                   {title}
                 </h3>
                 <div className="flex justify-between items-center">
-                  <p className="text-xl md:text-2xl font-bold text-green-600">
+                  <p className="text-xl md:text-2xl font-bold text-brand-600">
                     ৳{price}
                   </p>
                 </div>
@@ -413,7 +413,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                 <div className="flex justify-between items-center text-sm md:text-base text-gray-600">
                   <span>ডেলিভারি চার্জ:</span>
                   <span
-                    className={`font-medium ${product?.additionalInfo?.freeShipping ? "text-green-600 line-through" : ""}`}
+                    className={`font-medium ${product?.additionalInfo?.freeShipping ? "text-brand-600 line-through" : ""}`}
                   >
                     ৳
                     {deliveryChargeType === "insideDhaka"
@@ -422,22 +422,22 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                   </span>
                 </div>
                 {product?.additionalInfo?.freeShipping && (
-                  <div className="flex justify-between items-center text-sm md:text-base text-green-600 font-bold italic">
+                  <div className="flex justify-between items-center text-sm md:text-base text-brand-600 font-bold italic">
                     <span>শিপিং:</span>
                     <span>ফ্রি</span>
                   </div>
                 )}
                 {(discount ?? 0) > 0 && (
-                  <div className="flex justify-between items-center text-sm md:text-base text-green-600">
+                  <div className="flex justify-between items-center text-sm md:text-base text-brand-600">
                     <span className="text-gray-600">কুপন ডিসকাউন্ট:</span>
                     <span className="font-medium">-৳{discount}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-center bg-green-50 p-3 md:p-4 rounded-xl">
+                <div className="flex justify-between items-center bg-brand-50 p-3 md:p-4 rounded-xl">
                   <span className="text-base md:text-lg font-medium text-gray-700">
                     মোট মূল্য
                   </span>
-                  <span className="text-xl md:text-2xl font-bold text-green-600">
+                  <span className="text-xl md:text-2xl font-bold text-brand-600">
                     ৳{calculateTotalPrice()}
                   </span>
                 </div>
@@ -446,10 +446,10 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
 
             <div className="mt-6 md:mt-8">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
-                <span className="bg-green-100 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-3 md:mr-4">
+                <span className="bg-brand-100 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-3 md:mr-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 md:h-6 md:w-6 text-green-600"
+                    className="h-5 w-5 md:h-6 md:w-6 text-brand-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -464,12 +464,12 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                 </span>
                 পেমেন্ট পদ্ধতি
               </h2>
-              <div className="bg-green-50 rounded-xl p-4">
+              <div className="bg-brand-50 rounded-xl p-4">
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 md:h-6 md:w-6 text-green-600"
+                      className="h-5 w-5 md:h-6 md:w-6 text-brand-600"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"

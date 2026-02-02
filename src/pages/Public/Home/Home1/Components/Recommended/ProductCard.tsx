@@ -104,7 +104,7 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
       {/* Content */}
       <div className="flex-1 flex flex-col">
         <h3
-          className="h6 text-text-primary mb-1 line-clamp-2 min-h-[40px] group-hover:text-secondary transition-colors"
+          className="h6 text-[#0F172A] mb-1 line-clamp-2 min-h-[40px] group-hover:text-[#0F172A] transition-colors"
           title={product.title}
         >
           {product.title}

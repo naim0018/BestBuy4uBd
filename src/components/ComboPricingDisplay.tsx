@@ -3,6 +3,7 @@ import React from "react";
 interface ComboPricingTier {
   minQuantity: number;
   discount: number;
+  discountType?: "total" | "per_product";
 }
 
 interface ComboPricingDisplayProps {
@@ -84,18 +85,37 @@ const ComboPricingDisplay: React.FC<ComboPricingDisplayProps> = ({
           return (
             <div
               key={idx}
-              className={`bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm ${
+              className={`bg-white p-3 rounded-xl border flex flex-col justify-between shadow-sm relative overflow-hidden transition-all duration-300 ${
                 isApplied ? colors.active : isMet ? colors.met : colors.inactive
               }`}
             >
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                Buy {tier.minQuantity}+
-              </span>
-              <span
-                className={`font-bold ${isApplied ? colors.activeText : colors.inactiveText}`}
-              >
-                -৳{tier.discount.toLocaleString()} OFF
-              </span>
+              {isApplied && (
+                <div className={`absolute top-0 right-0 px-2 py-0.5 text-[9px] font-bold text-white rounded-bl-lg ${colors.dot}`}>
+                  APPLIED
+                </div>
+              )}
+              
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  Buy {tier.minQuantity}+
+                </span>
+                <span
+                  className={`font-bold ${isApplied ? colors.activeText : colors.inactiveText}`}
+                >
+                  -৳{tier.discount.toLocaleString()}
+                  {tier.discountType === 'per_product' && <span className="text-[9px] ml-0.5 opacity-80">/each</span>}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${
+                  tier.discountType === 'per_product' 
+                    ? 'bg-green-50 border-green-100 text-green-700' 
+                    : 'bg-blue-50 border-blue-100 text-blue-700'
+                }`}>
+                  {tier.discountType === 'per_product' ? 'Per Item Discount' : 'Flat Discount'}
+                </span>
+              </div>
             </div>
           );
         })}
