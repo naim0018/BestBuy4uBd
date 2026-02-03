@@ -313,6 +313,14 @@ const TableView = ({ products }: TableViewProps) => {
 
         <div className="flex gap-2">
             <Button 
+                isIconOnly
+                className="h-9 w-9 font-bold bg-gray-50 text-gray-600 border-none" 
+                size="sm" 
+                onPress={() => navigate(`/${product._id}`)}
+            >
+                <Eye size={16} />
+            </Button>
+            <Button 
                 className="flex-1 h-9 font-bold bg-blue-50 text-blue-600 border-none" 
                 size="sm" 
                 onPress={() => navigate(`/admin/update-product/${product._id}`)}
