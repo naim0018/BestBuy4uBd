@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Heart, Star, ShoppingCart, Eye } from "lucide-react";
+import { Heart, ShoppingCart, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Product } from "@/types/Product/Product";
 import { useDispatch } from "react-redux";
@@ -28,7 +28,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
   const isWishlisted = wishlistItems.some((item) => item._id === product._id);
 
-  const { basicInfo, price, images, rating, stockStatus, additionalInfo } =
+  const { basicInfo, price, images, stockStatus } =
     product;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -114,7 +114,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               -{discountPercentage}%
             </span>
           )}
-          {additionalInfo?.isFeatured && (
+          {product.additionalInfo?.isFeatured && (
             <span className="tag bg-primary text-white shadow-lg">
               Featured
             </span>

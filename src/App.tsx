@@ -1,5 +1,4 @@
 import Layout from "./Layout/PublicLayout/Layout";
-import { ThemeProvider } from "./context/ThemeContext";
 import { ThemeSwitcher } from "./components/ThemeSwitcher";
 import { HeroUIProvider } from "@heroui/react";
 import TrackingManager from "./components/common/TrackingManager";
@@ -22,13 +21,11 @@ function App() {
 
   return (
     <>
-      <ThemeProvider>
-        <HeroUIProvider>
-          <TrackingManager />
-          <ThemeSwitcher />
-          <Layout />
-        </HeroUIProvider>
-      </ThemeProvider>
+      <HeroUIProvider>
+        <TrackingManager />
+        <ThemeSwitcher />
+        <Layout />
+      </HeroUIProvider>
     </>
   );
 }

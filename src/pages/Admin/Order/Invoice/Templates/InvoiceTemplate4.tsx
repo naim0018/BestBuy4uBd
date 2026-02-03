@@ -90,7 +90,24 @@ const InvoiceTemplate4: React.FC<InvoiceTemplateProps> = ({ order }) => {
             {items.map((item: any, idx: number) => (
               <tr key={idx} className="group hover:bg-slate-50 bg-white">
                 <td className="p-4 pl-6">
-                  <p className="font-black text-slate-800 text-xs">{item.itemKey}</p>
+                  <p className="font-black text-slate-800 text-xs">
+                    {item.product?.basicInfo?.title || item.itemKey}
+                  </p>
+                  {item.selectedVariants && Object.entries(item.selectedVariants).length > 0 && (
+                    <div className="flex flex-wrap gap-x-3 mt-1 underline-offset-2 decoration-blue-100 italic">
+                      {Object.entries(item.selectedVariants).map(([group, variants]: [string, any]) => (
+                        Array.isArray(variants) ? variants.map((v: any, vIdx: number) => (
+                          <span key={`${group}-${vIdx}`} className="text-[8px] text-blue-500 font-bold uppercase">
+                            {group}: {v.value}
+                          </span>
+                        )) : (
+                          <span key={group} className="text-[8px] text-blue-500 font-bold uppercase">
+                            {group}: {variants.value}
+                          </span>
+                        )
+                      ))}
+                    </div>
+                  )}
                   <p className="text-[10px] text-slate-400 font-medium">SKU: BB-{item.product?._id?.slice(-4).toUpperCase() || 'TRK-001'}</p>
                 </td>
                 <td className="p-4 text-center text-xs font-bold text-slate-600">{item.quantity}</td>

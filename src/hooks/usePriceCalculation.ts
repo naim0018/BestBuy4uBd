@@ -35,29 +35,46 @@ export const usePriceCalculation = (
     // Base price is discounted price if available, otherwise regular price
     const basePrice = product.price.discounted || product.price.regular;
     
+    // Normalize comboPricing and bulkPricing into a single tiers array
+    const normalizedTiers: ComboPricing[] = [...(product.comboPricing || [])];
+    
+    if (product.bulkPricing && product.bulkPricing.length > 0) {
+      product.bulkPricing.forEach((bp: any) => {
+        // If bp.price is a total for the bundle (e.g. 3 for 900), 
+        // convert it to a per-product discount
+        const unitPriceInTier = bp.price >= basePrice * 1.5 ? bp.price / bp.minQuantity : bp.price;
+        const perProductDiscount = basePrice - unitPriceInTier;
+        
+        if (perProductDiscount > 0) {
+          normalizedTiers.push({
+            minQuantity: bp.minQuantity,
+            discount: perProductDiscount,
+            discountType: 'per_product'
+          });
+        }
+      });
+    }
+
     // Check if base variant exists in selectedVariants
     const baseVariant = selectedVariants.find(v => v.isBaseVariant);
     const baseVariantQuantity = baseVariant?.quantity || 0;
     
     // Calculate variant total (additive pricing)
-    // Each variant's price is the extra cost per unit, multiplied by its quantity
     const variantTotal = selectedVariants.reduce((sum, v) => {
-      // Don't include base variant in variant total (it has price: 0 anyway)
       if (v.isBaseVariant) return sum;
       return sum + ((v.item.price || 0) * v.quantity);
     }, 0);
 
-    // Calculate subtotal: base price * base variant quantity + all variant extras
-    // Only include base price if base variant is selected
+    // Calculate subtotal
     const subtotal = (basePrice * baseVariantQuantity) + variantTotal;
 
-    // Apply combo discount using centralized logic
+    // Apply combo discount using centralized logic with merged tiers
     const { 
       appliedTier, 
       discountAmount: comboDiscount 
-    } = calculateComboPricing(totalQuantity, 0, product.comboPricing || []); 
+    } = calculateComboPricing(totalQuantity, 0, normalizedTiers, subtotal); 
 
-    // Recalculate finalTotal based on our subtotal 
+    // Recalculate finalTotal 
     const realFinalTotal = Math.max(0, subtotal - comboDiscount);
 
     return {

@@ -56,7 +56,24 @@ const InvoiceTemplate3: React.FC<InvoiceTemplateProps> = ({ order }) => {
             {items.map((item: any, idx: number) => (
                 <div key={idx} className="grid grid-cols-12 gap-4 text-xs items-center pb-2 border-b border-gray-50 last:border-0 hover:bg-emerald-50/10 transition-colors">
                     <div className="col-span-6">
-                        <p className="font-bold text-gray-900">{item.itemKey}</p>
+                        <p className="font-bold text-gray-900">
+                          {item.product?.basicInfo?.title || item.itemKey}
+                        </p>
+                        {item.selectedVariants && Object.entries(item.selectedVariants).length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {Object.entries(item.selectedVariants).map(([group, variants]: [string, any]) => (
+                              Array.isArray(variants) ? variants.map((v: any, vIdx: number) => (
+                                <span key={`${group}-${vIdx}`} className="text-[9px] text-emerald-500 font-bold uppercase tracking-wide">
+                                  {group}: {v.value}
+                                </span>
+                              )) : (
+                                <span key={group} className="text-[9px] text-emerald-500 font-bold uppercase tracking-wide">
+                                  {group}: {variants.value}
+                                </span>
+                              )
+                            ))}
+                          </div>
+                        )}
                     </div>
                     <div className="col-span-2 text-right text-gray-500">৳{item.price?.toLocaleString()}</div>
                     <div className="col-span-2 text-center font-medium capitalize">{item.quantity}</div>

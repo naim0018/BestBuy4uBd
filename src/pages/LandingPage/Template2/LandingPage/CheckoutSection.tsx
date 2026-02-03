@@ -6,6 +6,7 @@ interface OrderDetails {
   title: string;
   variants: { group: string; item: any; quantity: number }[];
   price: number;
+  subtotal: number;
   quantity: number;
   image?: { url: string; alt?: string };
   product?: any;
@@ -402,43 +403,61 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
               </div>
             )}
 
-            <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm">
-               {/* Quantity controls moved to VariantSelector */}
-              <div className="space-y-3">
-
-                <div className="flex justify-between items-center text-sm md:text-base">
-                  <span className="text-gray-600">সাবটোটাল:</span>
-                  <span className="font-medium">৳{price}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm md:text-base text-gray-600">
-                  <span>ডেলিভারি চার্জ:</span>
-                  <span
-                    className={`font-medium ${product?.additionalInfo?.freeShipping ? "text-brand-600 line-through" : ""}`}
-                  >
-                    ৳
-                    {deliveryChargeType === "insideDhaka"
-                      ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
-                      : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150)}
+            <div className="bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-brand-50">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-sm md:text-base pb-3 border-b border-gray-50">
+                  <span className="text-gray-500 font-medium">আইটেম সংখ্যা:</span>
+                  <span className="font-bold text-gray-800 bg-brand-50 px-3 py-1 rounded-full text-xs">
+                    {quantity} টি
                   </span>
                 </div>
+
+                <div className="flex justify-between items-center text-sm md:text-base pt-1">
+                  <span className="text-gray-600">সাবটোটাল:</span>
+                  <span className="font-semibold text-gray-900">৳{orderDetails.subtotal.toLocaleString()}</span>
+                </div>
+
+                {orderDetails.subtotal > price && (
+                   <div className="flex justify-between items-center text-sm md:text-base text-emerald-600 font-medium">
+                    <span>কম্বো ডিসকাউন্ট (-) :</span>
+                    <span>-৳{(orderDetails.subtotal - price).toLocaleString()}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center text-sm md:text-base text-gray-600">
+                  <span>ডেলিভারি চার্জ (+):</span>
+                  <span
+                    className={`font-semibold ${product?.additionalInfo?.freeShipping ? "text-emerald-600 line-through" : ""}`}
+                  >
+                    ৳{deliveryCharge.toLocaleString()}
+                  </span>
+                </div>
+
                 {product?.additionalInfo?.freeShipping && (
-                  <div className="flex justify-between items-center text-sm md:text-base text-brand-600 font-bold italic">
+                  <div className="flex justify-between items-center text-sm md:text-base text-emerald-600 font-bold italic bg-emerald-50/50 px-3 py-1.5 rounded-lg">
                     <span>শিপিং:</span>
                     <span>ফ্রি</span>
                   </div>
                 )}
+
                 {(discount ?? 0) > 0 && (
-                  <div className="flex justify-between items-center text-sm md:text-base text-brand-600">
-                    <span className="text-gray-600">কুপন ডিসকাউন্ট:</span>
-                    <span className="font-medium">-৳{discount}</span>
+                  <div className="flex justify-between items-center text-sm md:text-base text-emerald-600">
+                    <span className="text-gray-600">কুপন ডিসকাউন্ট (-):</span>
+                    <span className="font-semibold">-৳{(discount || 0).toLocaleString()}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-center bg-brand-50 p-3 md:p-4 rounded-xl">
-                  <span className="text-base md:text-lg font-medium text-gray-700">
-                    মোট মূল্য
-                  </span>
-                  <span className="text-xl md:text-2xl font-bold text-brand-600">
-                    ৳{calculateTotalPrice()}
+
+                <div className="mt-4 pt-4 border-t-2 border-brand-100 flex justify-between items-center">
+                  <div className="flex flex-col">
+                    <span className="text-base md:text-lg font-bold text-gray-800">
+                      সর্বমোট মূল্য
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                      Cash on Delivery
+                    </span>
+                  </div>
+                  <span className="text-2xl md:text-3xl font-black text-brand-600">
+                    ৳{calculateTotalPrice().toLocaleString()}
                   </span>
                 </div>
               </div>

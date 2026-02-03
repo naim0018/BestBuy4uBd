@@ -1,5 +1,6 @@
-import { Minus } from "lucide-react";
+import { Minus, Check } from "lucide-react";
 import { VariantSelection } from "@/hooks/useVariantQuantity";
+import { cn } from "@/lib/utils";
 
 interface VariantSelectorProps {
   selectedVariants: VariantSelection[];
@@ -18,15 +19,21 @@ const VariantSelector = ({
   showBaseVariant = true,
   className = "",
 }: VariantSelectorProps) => {
+  
+  // Helper to determine if a group is a color selector
+  const isColorGroup = (groupName: string) => {
+    return groupName.toLowerCase().includes("color") || groupName.toLowerCase().includes("colour");
+  };
+
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={cn("space-y-6", className)}>
       {/* Base Variant - Auto-injected quantity option */}
       {showBaseVariant && selectedVariants.find((v) => v.isBaseVariant) && (
         <div className="space-y-3">
-          <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] pl-1">
-            Select Quantity
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest pl-1">
+            Quantity
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {selectedVariants
               .filter((v) => v.isBaseVariant)
               .map((variant) => {
@@ -37,27 +44,23 @@ const VariantSelector = ({
                   <button
                     key={variant.item.value}
                     onClick={() => {
-                      // Base variant clicking increments quantity
-                      onVariantUpdate(
-                        variant.group,
-                        variant.item.value,
-                        quantity + 1
-                      );
+                      onVariantUpdate(variant.group, variant.item.value, quantity + 1);
                     }}
-                    className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
+                    className={cn(
+                      "group relative px-5 py-2.5 rounded-lg border text-sm font-medium transition-all duration-200 ease-out",
                       isActive
-                        ? "border-secondary bg-secondary text-white shadow-lg"
-                        : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
-                    }`}
+                        ? "border-brand-500 bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200"
+                        : "border-gray-200 hover:border-brand-300 hover:bg-gray-50 text-gray-700 bg-white"
+                    )}
                   >
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center gap-0.5">
                       <span>{variant.item.value}</span>
-                      <span className="opacity-60 text-[8px]">Base Price</span>
+                      <span className="text-[10px] opacity-70 font-normal">Base Price</span>
                     </div>
 
                     {/* Quantity Badge */}
                     {isActive && (
-                      <div className="absolute -top-2 -right-2 bg-white text-secondary text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-secondary shadow-sm z-10">
+                      <div className="absolute -top-2.5 -right-2.5 bg-brand-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-10 animate-in zoom-in spin-in-12 duration-300">
                         {quantity}
                       </div>
                     )}
@@ -65,14 +68,10 @@ const VariantSelector = ({
                     {/* Decrease Control */}
                     {isActive && (
                       <div
-                        className="absolute -top-2 -left-2 bg-white text-danger text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-danger shadow-sm z-10 hover:bg-danger hover:text-white transition-colors"
+                        className="absolute -top-2.5 -left-2.5 bg-white text-destructive w-5 h-5 rounded-full flex items-center justify-center border border-destructive/20 shadow-sm z-10 hover:bg-destructive hover:text-white transition-colors cursor-pointer ring-2 ring-white"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onVariantUpdate(
-                            variant.group,
-                            variant.item.value,
-                            quantity - 1
-                          );
+                          onVariantUpdate(variant.group, variant.item.value, quantity - 1);
                         }}
                       >
                         <Minus className="w-3 h-3" />
@@ -87,19 +86,35 @@ const VariantSelector = ({
 
       {/* Product Variants */}
       {productVariants?.map((variantGroup: any) => {
+        const isColor = isColorGroup(variantGroup.group);
+        
         return (
           <div key={variantGroup.group} className="space-y-3">
-            <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] pl-1">
-              Select {variantGroup.group}
-            </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest pl-1">
+                Select {variantGroup.group}
+              </label>
+              {isColor && (
+                <span className="text-[10px] text-muted-foreground/80 font-medium px-2">
+                  {/* Optional: Show selected color name specifically here if needed */}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2.5">
               {variantGroup.items.map((item: any) => {
                 const selection = selectedVariants.find(
                   (v) =>
-                    v.group === variantGroup.group && v.item.value === item.value
+                    v.group === variantGroup.group &&
+                    v.item.value === item.value,
                 );
                 const quantity = selection?.quantity || 0;
                 const isActive = quantity > 0;
+                
+                // For color variants, try using the value as the background color
+                // If it's a valid hex/rgb or name, it will work. Otherwise fallback styling handles it.
+                // We use inline styles for the dynamic color.
+                const colorStyle = isColor ? { backgroundColor: item.value } : {};
 
                 return (
                   <button
@@ -107,24 +122,66 @@ const VariantSelector = ({
                     onClick={() => {
                       onVariantAdd(variantGroup.group, item);
                     }}
-                    className={`relative px-6 py-3 rounded-component border-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
-                      isActive
-                        ? "border-secondary bg-secondary text-white shadow-lg"
-                        : "border-border-main hover:border-text-secondary text-text-primary bg-bg-surface"
-                    }`}
+                    title={isColor ? item.value : undefined}
+                    className={cn(
+                      "relative transition-all duration-200 ease-out group",
+                      isColor 
+                        ? (item.price ?? 0) > 0 
+                          ? "px-3 py-2 rounded-lg border shadow-sm flex items-center gap-2" // Color with price (Pill)
+                          : "w-10 h-10 rounded-full border-2 shadow-sm flex items-center justify-center" // Color swatch only
+                        : "px-5 py-2.5 rounded-lg border text-sm font-medium flex flex-col items-center gap-0.5", // Text button
+                      
+                      // Active State
+                      isActive 
+                        ? isColor 
+                          ? "border-brand-500 ring-2 ring-brand-200 ring-offset-1" 
+                          : "border-brand-500 bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200"
+                        : isColor
+                          ? "border-gray-200 hover:border-brand-300 ring-transparent"
+                          : "border-gray-200 hover:border-brand-300 hover:bg-gray-50 text-gray-700 bg-white"
+                    )}
+                    style={isColor && (item.price ?? 0) === 0 ? colorStyle : undefined}
                   >
-                    <div className="flex flex-col items-center">
-                      <span>{item.value}</span>
-                      {(item.price ?? 0) > 0 && (
-                        <span className="opacity-60 text-[8px]">
-                          +৳{item.price}
-                        </span>
-                      )}
-                    </div>
+                     {/* Color Indication for Price Pill */}
+                     {isColor && (item.price ?? 0) > 0 && (
+                        <div 
+                          className="w-4 h-4 rounded-full border border-gray-200 shadow-sm" 
+                          style={colorStyle}
+                        />
+                     )}
+
+                    {/* Content for Non-Color Variants OR Color with Price */}
+                    {(!isColor || ((item.price ?? 0) > 0)) && (
+                      <>
+                        {/* Show value only if NOT color or if color has price (optional, maybe just show price for color to keep it compact) */}
+                         {!isColor && <span>{item.value}</span>} 
+                         
+                        {(item.price ?? 0) > 0 && (
+                          <span className={cn(
+                            "text-[10px] font-normal",
+                             isColor ? "text-gray-700 font-medium whitespace-nowrap" : "text-brand-600/80"
+                          )}>
+                            +৳{item.price}
+                          </span>
+                        )}
+                      </>
+                    )}
+
+                    {/* Content for Color Variants (Checkmark if active) */}
+                    {isColor && isActive && (
+                      <Check className={cn(
+                        "w-4 h-4 shadow-sm",
+                        // Make checkmark visible based on lightness (simplified: usually white works, or toggle based on prop if complex)
+                         "text-white mix-blend-difference"
+                      )} />
+                    )}
 
                     {/* Quantity Badge */}
                     {isActive && (
-                      <div className="absolute -top-2 -right-2 bg-white text-secondary text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-secondary shadow-sm z-10">
+                      <div className={cn(
+                        "absolute w-5 h-5 rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-10 animate-in zoom-in spin-in-12 duration-300 text-[10px]",
+                         isColor ? "-top-1 -right-1 bg-brand-600 text-white" : "-top-2.5 -right-2.5 bg-brand-600 text-white"
+                      )}>
                         {quantity}
                       </div>
                     )}
@@ -132,14 +189,13 @@ const VariantSelector = ({
                     {/* Decrease Control */}
                     {isActive && (
                       <div
-                        className="absolute -top-2 -left-2 bg-white text-danger text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-danger shadow-sm z-10 hover:bg-danger hover:text-white transition-colors"
+                        className={cn(
+                          "absolute w-5 h-5 rounded-full flex items-center justify-center border border-destructive/20 shadow-sm z-10 hover:bg-destructive hover:text-white transition-colors cursor-pointer ring-2 ring-white",
+                          isColor ? "-top-1 -left-1 bg-white text-destructive" : "-top-2.5 -left-2.5 bg-white text-destructive"
+                        )}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onVariantUpdate(
-                            variantGroup.group,
-                            item.value,
-                            quantity - 1
-                          );
+                          onVariantUpdate(variantGroup.group, item.value, quantity - 1);
                         }}
                       >
                         <Minus className="w-3 h-3" />

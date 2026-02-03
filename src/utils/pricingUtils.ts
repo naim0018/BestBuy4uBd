@@ -30,9 +30,10 @@ export interface PricingResult {
 export const calculateComboPricing = (
   quantity: number,
   unitPrice: number,
-  comboPricing: ComboPricing[] = []
+  comboPricing: ComboPricing[] = [],
+  subtotal?: number
 ): PricingResult => {
-  const originalTotal = unitPrice * quantity;
+  const originalTotal = subtotal !== undefined ? subtotal : (unitPrice * quantity);
 
   if (!comboPricing || comboPricing.length === 0 || quantity <= 0) {
     return {

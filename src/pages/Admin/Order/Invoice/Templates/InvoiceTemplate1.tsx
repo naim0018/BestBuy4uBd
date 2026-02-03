@@ -71,7 +71,24 @@ const InvoiceTemplate1: React.FC<InvoiceTemplateProps> = ({ order }) => {
                   <div className="flex items-center gap-3">
                     <img src={item.image} alt={item.product?.name} className="w-10 h-10 rounded object-cover border border-gray-100" />
                     <div>
-                      <p className="font-bold text-gray-900 text-sm">{item.itemKey}</p>
+                      <p className="font-bold text-gray-900 text-sm">
+                        {item.product?.basicInfo?.title || item.itemKey}
+                      </p>
+                      {item.selectedVariants && Object.entries(item.selectedVariants).length > 0 && (
+                        <div className="flex flex-wrap gap-x-2 mt-1">
+                          {Object.entries(item.selectedVariants).map(([group, variants]: [string, any]) => (
+                            Array.isArray(variants) ? variants.map((v: any, vIdx: number) => (
+                              <span key={`${group}-${vIdx}`} className="text-[10px] text-blue-600 font-bold uppercase">
+                                {group}: {v.value}
+                              </span>
+                            )) : (
+                              <span key={group} className="text-[10px] text-blue-600 font-bold uppercase">
+                                {group}: {variants.value}
+                              </span>
+                            )
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </td>

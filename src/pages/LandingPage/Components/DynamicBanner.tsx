@@ -72,7 +72,7 @@ const DynamicBanner: React.FC<DynamicBannerProps> = ({
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
               }
               onPress={onShopNow}
-              className="bg-primary-green text-black font-bold h-14 px-8 text-lg hover:scale-105 transition-all group"
+              className="bg-primary-green text-black font-bold h-14 px-8 text-lg rounded-lg hover:scale-105 transition-all group"
             >
               Shop Now
             </Button>

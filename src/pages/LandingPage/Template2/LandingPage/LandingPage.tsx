@@ -35,7 +35,7 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const effectiveQuantity = totalQuantity;
 
-  const { finalTotal } = usePriceCalculation(
+  const { finalTotal, subtotal } = usePriceCalculation(
     product,
     selectedVariants,
     effectiveQuantity,
@@ -156,6 +156,11 @@ const LandingPage = ({ product }: { product: Product }) => {
             },
           ],
           totalAmount: totalAmount,
+          deliveryCharge: product?.additionalInfo?.freeShipping
+            ? 0
+            : formData.courierCharge === "insideDhaka"
+              ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
+              : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150),
           status: "pending",
           billingInformation: {
             name: formData.name,
@@ -348,6 +353,7 @@ const LandingPage = ({ product }: { product: Product }) => {
               orderDetails={{
                 title: product.basicInfo.title,
                 price: finalTotal,
+                subtotal: subtotal,
                 variants: selectedVariants,
                 quantity: effectiveQuantity,
                 image: product.images[0],

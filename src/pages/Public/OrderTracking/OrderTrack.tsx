@@ -239,6 +239,21 @@ const OrderDetailsCard = ({ order }: { order: any }) => {
                                             <p className="text-gray-400">পরিমাণ: <span className="text-gray-900 font-bold">{item?.quantity}</span></p>
                                             <p className="text-gray-400">মূল্য: <span className="text-gray-900 font-bold">৳{item?.price}</span></p>
                                         </div>
+                                        {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mt-3">
+                                                {Object.entries(item.selectedVariants).map(([group, variants]: [string, any]) => (
+                                                    Array.isArray(variants) ? variants.map((v: any, vIdx: number) => (
+                                                        <span key={`${group}-${vIdx}`} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                                                            {group}: {v.value}
+                                                        </span>
+                                                    )) : (
+                                                        <span key={group} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                                                            {group}: {variants.value}
+                                                        </span>
+                                                    )
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="text-right py-1">
                                         <p className="font-bold text-gray-900">৳{item?.price * item?.quantity}</p>
@@ -246,22 +261,31 @@ const OrderDetailsCard = ({ order }: { order: any }) => {
                                 </div>
                             ))}
                         </div>
-                    </div>
-
-                    <div className="bg-gray-50/50 rounded-3xl p-8 border border-gray-50">
-                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-4">মূল্য বিবরণী</h3>
-                        <div className="space-y-4">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-500 font-medium">সাবটোটাল</span>
-                                <span className="text-gray-900 font-bold">৳{order?.totalAmount - (order?.deliveryCharge || 0)}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-500 font-medium">ডেলিভারি চার্জ</span>
-                                <span className="text-gray-900 font-bold">৳{order?.deliveryCharge || 0}</span>
-                            </div>
-                            <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-                                <span className="text-gray-900 font-black">সর্বমোট</span>
-                                <span className="text-2xl font-black text-green-600 tracking-tight">৳{order?.totalAmount}</span>
+                        <div className="mt-10 bg-gray-50/50 rounded-3xl p-8 border border-gray-50">
+                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-4">মূল্য বিবরণী</h3>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500 font-medium">সাবটোটাল</span>
+                                    <span className="text-gray-900 font-bold">৳{
+                                        (order?.deliveryCharge !== undefined) 
+                                            ? (order?.totalAmount - order?.deliveryCharge + (order?.discount || 0)) 
+                                            : (order?.totalAmount)
+                                    }</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500 font-medium">ডেলিভারি চার্জ</span>
+                                    <span className="text-gray-900 font-bold">৳{order?.deliveryCharge || 0}</span>
+                                </div>
+                                {order?.discount > 0 && (
+                                    <div className="flex justify-between items-center text-sm text-red-600">
+                                        <span className="font-medium">ডিসকাউন্ট</span>
+                                        <span className="font-bold">-৳{order.discount}</span>
+                                    </div>
+                                )}
+                                <div className="pt-6 border-t border-gray-100 flex justify-between items-center">
+                                    <span className="text-gray-900 font-black text-lg">সর্বমোট</span>
+                                    <span className="text-2xl font-black text-green-600 tracking-tight">৳{order?.totalAmount}</span>
+                                </div>
                             </div>
                         </div>
                     </div>

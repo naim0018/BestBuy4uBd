@@ -27,7 +27,6 @@ import ComboPricingDisplay from "../../../components/ComboPricingDisplay";
 const LandingPage = ({ product }: { product: Product }) => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
-  // Removed manual states for quantity/variants
 
   // Utilize new hooks
   const {
@@ -35,7 +34,7 @@ const LandingPage = ({ product }: { product: Product }) => {
     totalQuantity,
     addVariant,
     updateVariantQuantity,
-    initVariants
+    initVariants,
   } = useVariantQuantity(product?.variants, product);
 
   // Initialize variants when product loads
@@ -45,16 +44,11 @@ const LandingPage = ({ product }: { product: Product }) => {
     }
   }, [product, initVariants]);
 
-  // Use effective quantity (fallback to 1 if no variants? or 1 if totalQty is 0?)
   // Use totalQuantity directly as effectiveQuantity since base variant is now handled by hook
   const effectiveQuantity = totalQuantity;
 
-  const {
-      basePrice,
-      finalTotal,
-      appliedComboTier,
-      variantTotal
-  } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
+  const { basePrice, finalTotal, appliedComboTier, subtotal } =
+    usePriceCalculation(product, selectedVariants, effectiveQuantity);
 
   const [currentImage, setCurrentImage] = useState<any>(null);
 
@@ -71,7 +65,6 @@ const LandingPage = ({ product }: { product: Product }) => {
   });
   const [discount, setDiscount] = useState<number>(0);
 
-
   useEffect(() => {
     if (product) {
       setCurrentImage(product.images[0]);
@@ -79,11 +72,9 @@ const LandingPage = ({ product }: { product: Product }) => {
   }, [product]);
 
   if (!product) {
-      // ... existing error UI ...
-     return (
+    return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4">
-        {/* ... */}
-         <Button onPress={() => navigate(-1)}>Go Back</Button>
+        <Button onPress={() => navigate(-1)}>Go Back</Button>
       </div>
     );
   }
@@ -98,8 +89,6 @@ const LandingPage = ({ product }: { product: Product }) => {
     specifications,
   } = product;
 
-  // regularPrice removed as unused if not needed for calculation logic here (used for display only)
-  
   const avgRating = rating?.average || 0;
   const reviewCount = rating?.count || 0;
 
@@ -110,12 +99,15 @@ const LandingPage = ({ product }: { product: Product }) => {
       BestBuy: 50,
     };
     if (availableCoupons[couponCode]) {
-        setDiscount(availableCoupons[couponCode]);
-        setAppliedCoupon({ code: couponCode, discount: availableCoupons[couponCode] });
-        toast.success(`Applied: ${couponCode}`);
+      setDiscount(availableCoupons[couponCode]);
+      setAppliedCoupon({
+        code: couponCode,
+        discount: availableCoupons[couponCode],
+      });
+      toast.success(`Applied: ${couponCode}`);
     } else {
-        setDiscount(0);
-        toast.error("Invalid coupon");
+      setDiscount(0);
+      toast.error("Invalid coupon");
     }
   };
 
@@ -135,25 +127,29 @@ const LandingPage = ({ product }: { product: Product }) => {
     return total > 0 ? total : 0;
   };
 
-
-
   const handleSubmit = async (formData: any) => {
     try {
+      // Validate quantity
+      if (totalQuantity === 0) {
+        toast.error(
+          "Please select at least one variant with quantity greater than 0",
+        );
+        return;
+      }
+
       const totalAmount = calculateTotalAmount(
         formData.courierCharge,
         discount,
       );
-      
-      // Transform variants for Order API
-      // Group -> Items
+
       const variantsPayload: Record<string, any[]> = {};
-      selectedVariants.forEach(sv => {
-          if (!variantsPayload[sv.group]) variantsPayload[sv.group] = [];
-          variantsPayload[sv.group].push({
-              value: sv.item.value,
-              price: sv.item.price,
-              quantity: sv.quantity
-          });
+      selectedVariants.forEach((sv) => {
+        if (!variantsPayload[sv.group]) variantsPayload[sv.group] = [];
+        variantsPayload[sv.group].push({
+          value: sv.item.value,
+          price: sv.item.price,
+          quantity: sv.quantity,
+        });
       });
 
       const orderData = {
@@ -164,11 +160,16 @@ const LandingPage = ({ product }: { product: Product }) => {
               image: currentImage?.url,
               quantity: effectiveQuantity,
               itemKey: `${product._id}-${Date.now()}`,
-              price: finalTotal / effectiveQuantity, // Unit price
+              price: finalTotal / (effectiveQuantity || 1), // Unit price
               selectedVariants: variantsPayload,
             },
           ],
           totalAmount: totalAmount,
+          deliveryCharge: product?.additionalInfo?.freeShipping
+            ? 0
+            : formData.courierCharge === "insideDhaka"
+              ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
+              : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150),
           status: "pending",
           billingInformation: {
             name: formData.name,
@@ -186,8 +187,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       };
 
       const response = await createOrder(orderData).unwrap();
-      // ... success handling ...
-       setSuccessOrderDetails({
+      setSuccessOrderDetails({
         orderId: (response as any).data._id,
         productPrice: finalTotal,
         deliveryCharge: product.additionalInfo?.freeShipping
@@ -200,34 +200,35 @@ const LandingPage = ({ product }: { product: Product }) => {
       });
       setShowSuccessModal(true);
     } catch {
-      toast.error("두ঃখিত! অর্ডার সম্পন্ন করা যায়নি।");
+      toast.error("দুঃখিত! অর্ডার সম্পন্ন করা যায়নি।");
     }
   };
-  
+
   const scrollToCheckout = () => {
-     document.getElementById("checkout")?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("checkout")?.scrollIntoView({ behavior: "smooth" });
   };
-  
-  const discountPercentage = product.price.regular > 0 && finalTotal < (product.price.regular * effectiveQuantity)
-    ? Math.round(
-        (((product.price.regular * effectiveQuantity) - finalTotal) /
-          (product.price.regular * effectiveQuantity)) *
-          100
-      )
-    : 0;
+
+  const discountPercentage =
+    product.price.regular > 0 &&
+    finalTotal < product.price.regular * effectiveQuantity
+      ? Math.round(
+          ((product.price.regular * effectiveQuantity - finalTotal) /
+            (product.price.regular * effectiveQuantity)) *
+            100,
+        )
+      : 0;
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      {/* ... Success Modal ... */}
-       {successOrderDetails && (
+      {successOrderDetails && (
         <OrderSuccessModal
           isOpen={showSuccessModal}
           onClose={() => setShowSuccessModal(false)}
           orderDetails={successOrderDetails}
         />
       )}
-      
-       <DynamicBanner
+
+      <DynamicBanner
         title={basicInfo.title}
         regularPrice={price.regular}
         discountedPrice={finalTotal} // Dynamic Total
@@ -235,169 +236,203 @@ const LandingPage = ({ product }: { product: Product }) => {
         backgroundImage={images?.[0]?.url}
       />
 
-       <div className="container mx-auto px-4 mt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:max-h-[80vh]">
-          {/* ... Image Gallery (Unchanged mostly) ... */}
-           <AnimatedContainer direction="right" className="space-y-4">
+      <div className="container mx-auto px-4 mt-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <AnimatedContainer direction="right" className="space-y-4">
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group  max-h-[70vh]">
-              {/* Image Logic... */}
               <img
-                 src={images?.[selectedImage]?.url || "https://placehold.co/600x600?text=No+Image"}
-                 alt={basicInfo?.title}
-                 className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                src={
+                  images?.[selectedImage]?.url ||
+                  "https://placehold.co/600x600?text=No+Image"
+                }
+                alt={basicInfo?.title}
+                className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
               />
-               {/* Tags */}
-               {additionalInfo?.isOnSale && discountPercentage > 0 && (
+              {additionalInfo && (
                 <div className="absolute top-4 left-4">
-                  <Chip color="danger" variant="shadow" size="lg" className="uppercase font-bold">
+                  <Chip
+                    color="danger"
+                    variant="shadow"
+                    size="lg"
+                    className="uppercase font-bold"
+                  >
                     Sale {discountPercentage}% Off
                   </Chip>
                 </div>
               )}
             </div>
-             {/* Thumbs */}
-             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-               {images?.map((img, index) => (
-                 <button
-                   key={index}
-                   onClick={() => setSelectedImage(index)}
-                   className={`relative flex-shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden transition-all ${
-                     selectedImage === index ? "border-primary-green shadow-md scale-105" : "border-gray-200 hover:border-gray-300"
-                   }`}
-                 >
-                   <img src={img.url} alt="" className="w-full h-full object-cover" />
-                 </button>
-               ))}
-             </div>
-           </AnimatedContainer>
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              {images?.map((img, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  className={`relative flex-shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden transition-all ${
+                    selectedImage === index
+                      ? "border-primary-green shadow-md scale-105"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <img
+                    src={img.url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </AnimatedContainer>
 
           {/* Right Column */}
           <AnimatedContainer direction="left" className="space-y-8">
             <div className="space-y-4">
-                {/* Brand / Chips */}
-                 <div className="flex items-center gap-2">
-                    {basicInfo?.brand && <Chip size="sm" variant="flat" color="primary" className="uppercase font-semibold">{basicInfo.brand}</Chip>}
-                    {stockStatus === "In Stock" ? (
-                        <Chip size="sm" variant="flat" color="success" startContent={<div className="w-2 h-2 rounded-full bg-green-500 animate-pulse ml-1" />}>In Stock</Chip>
-                    ) : <Chip size="sm" variant="flat" color="danger">Out of Stock</Chip>}
-                 </div>
+              <div className="flex items-center gap-2">
+                {basicInfo?.brand && (
+                  <Chip
+                    size="sm"
+                    variant="flat"
+                    color="primary"
+                    className="uppercase text-xs font-semibold"
+                  >
+                    {basicInfo.brand}
+                  </Chip>
+                )}
+                {stockStatus === "In Stock" ? (
+                  <Chip
+                    size="sm"
+                    variant="flat"
+                    color="success"
+                    startContent={
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse ml-1" />
+                    }
+                  >
+                    In Stock
+                  </Chip>
+                ) : (
+                  <Chip size="sm" variant="flat" color="danger">
+                    Out of Stock
+                  </Chip>
+                )}
+              </div>
 
-                 <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                    {basicInfo?.title}
-                 </h1>
-                 
-                 {/* Rating */}
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                      <span className="font-bold text-lg">{avgRating.toFixed(1)}</span>
-                    </div>
-                    <span className="text-gray-500">{reviewCount} Reviews</span>
-                  </div>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                {basicInfo?.title}
+              </h1>
+
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  <span className="font-bold text-lg">
+                    {avgRating.toFixed(1)}
+                  </span>
+                </div>
+                <span className="text-gray-500">{reviewCount} Reviews</span>
+              </div>
             </div>
 
-            <Divider className="my-6" />
+            <Divider className="my-3" />
 
             <div className="flex flex-col gap-6">
-                <div className="flex items-end gap-3">
-                  <span className="text-4xl font-bold text-primary-green">
-                    ৳{finalTotal.toLocaleString()}
-                  </span>
-                  {price.regular > 0 && finalTotal < (price.regular * effectiveQuantity) && (
-                    <div className="flex flex-col mb-1">
-                      <span className="text-lg text-gray-400 line-through decoration-1">
-                        ৳{(price.regular * effectiveQuantity).toLocaleString()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                  {/* reusable Price Breakdown */}
-                   <div className="mt-4">
-                     <PriceBreakdown
-                       quantity={effectiveQuantity}
-                       unitPrice={Math.round((basePrice * effectiveQuantity + variantTotal) / (effectiveQuantity || 1))} // Weighted average unit price
-                       comboPricing={product.comboPricing || []}
-                     />
-                   </div>
-
-                  {/* Reusable Combo Pricing UI */}
-                  <div className="mt-4">
-                    <ComboPricingDisplay
-                      comboPricing={product.comboPricing || []}
-                      currentQuantity={effectiveQuantity}
-                      appliedTier={appliedComboTier || undefined}
-                      variant="primary"
-                    />
+              <div className="flex items-end gap-3">
+                <span className="text-4xl font-bold text-primary-green">
+                  ৳{(totalQuantity > 0 ? finalTotal : basePrice).toLocaleString()}
+                </span>
+                {totalQuantity > 0 && subtotal > finalTotal && (
+                  <div className="flex flex-col mb-1">
+                    <span className="text-lg text-gray-400 line-through decoration-1">
+                      ৳{subtotal.toLocaleString()}
+                    </span>
                   </div>
+                )}
+              </div>
 
-                {/* Variant Selection */}
-            <div className="mb-8">
-                <VariantSelector
-                    selectedVariants={selectedVariants}
-                    productVariants={product.variants}
-                    onVariantAdd={(group, item) => {
-                        addVariant(group, item);
-                        if (item.image?.url) {
-                            const imgIndex = images.findIndex((img: any) => img.url === item.image.url);
-                            if (imgIndex !== -1) setSelectedImage(imgIndex);
-                        }
-                    }}
-                    onVariantUpdate={updateVariantQuantity}
-                    showBaseVariant={true}
+              <div className="mt-4">
+                <PriceBreakdown
+                  quantity={effectiveQuantity}
+                  unitPrice={Math.round(basePrice)} 
+                  comboPricing={product.comboPricing || []}
+                  subtotal={subtotal}
                 />
-            </div>
-            </div>
-                        
-             {/* Features Card (unchanged) */}
-            {/* Quantity & Buy Now */}
-            {/* Quantity & Buy Now - Simplified to just button since VariantSelector handles quantity */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              </div>
 
-                 
-                 <div className="flex-1 flex gap-3">
-                    <Button 
-                        size="lg" 
-                        color="primary" 
-                        className={`flex-1 font-bold shadow-lg ${
-                            totalQuantity === 0 
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                : 'text-white'
-                        }`}
-                        startContent={<ShoppingCart className="w-5 h-5" />} 
-                        onPress={() => {
-                            if (totalQuantity === 0) {
-                                toast.error('Please select at least one variant with quantity greater than 0');
-                                return;
-                            }
-                            scrollToCheckout();
-                        }}
-                        isDisabled={totalQuantity === 0 || stockStatus !== "In Stock"}
-                    >
-                        Buy Now - ৳{finalTotal.toLocaleString()}
-                    </Button>
-                 </div>
+              <div className="mt-4">
+                <ComboPricingDisplay
+                  comboPricing={product.comboPricing || []}
+                  currentQuantity={effectiveQuantity}
+                  appliedTier={appliedComboTier || undefined}
+                  variant="primary"
+                />
+              </div>
+
+              <div className="mb-8">
+                <VariantSelector
+                  selectedVariants={selectedVariants}
+                  productVariants={product.variants}
+                  onVariantAdd={(group, item) => {
+                    addVariant(group, item);
+                    if (item.image?.url) {
+                      const imgIndex = images.findIndex(
+                        (img: any) => img.url === item.image.url,
+                      );
+                      if (imgIndex !== -1) setSelectedImage(imgIndex);
+                    }
+                  }}
+                  onVariantUpdate={updateVariantQuantity}
+                  showBaseVariant={true}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div className="flex-1 flex gap-3">
+                <Button
+                  size="lg"
+                  color="primary"
+                  className={`flex-1 font-bold shadow-lg rounded-lg ${
+                    totalQuantity === 0
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "text-white"
+                  }`}
+                  startContent={<ShoppingCart className="w-5 h-5" />}
+                  onPress={() => {
+                    if (totalQuantity === 0) {
+                      toast.error(
+                        "Please select at least one variant with quantity greater than 0",
+                      );
+                      return;
+                    }
+                    scrollToCheckout();
+                  }}
+                  isDisabled={totalQuantity === 0 || stockStatus !== "In Stock"}
+                >
+                  Buy Now - ৳{finalTotal.toLocaleString()}
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 bg-gray-50 rounded-xl p-4 gap-4 border border-gray-100">
-               {/* ... */}
-                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white rounded-lg shadow-sm"><Truck className="w-5 h-5 text-primary-green" /></div>
-                  <div><p className="font-semibold text-sm">Free Delivery</p><p className="text-xs text-gray-500">Orders over ৳5000</p></div>
-                 </div>
-                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white rounded-lg shadow-sm"><ShieldCheck className="w-5 h-5 text-primary-green" /></div>
-                  <div><p className="font-semibold text-sm">Official Warranty</p><p className="text-xs text-gray-500">Available</p></div>
-                 </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <Truck className="w-5 h-5 text-primary-green" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Free Delivery</p>
+                  <p className="text-xs text-gray-500">Orders over ৳5000</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <ShieldCheck className="w-5 h-5 text-primary-green" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Official Warranty</p>
+                  <p className="text-xs text-gray-500">Available</p>
+                </div>
+              </div>
             </div>
-
           </AnimatedContainer>
         </div>
-        {/* ... Info Sections ... */}
 
-        {/* Flattened Information Sections */}
         <div className="mt-20 space-y-16">
-          {/* Description */}
           {basicInfo?.description && (
             <AnimatedContainer>
               <section>
@@ -420,7 +455,6 @@ const LandingPage = ({ product }: { product: Product }) => {
             </AnimatedContainer>
           )}
 
-          {/* Specifications */}
           {specifications && specifications.length > 0 && (
             <AnimatedContainer delay={0.1}>
               <section>
@@ -464,7 +498,6 @@ const LandingPage = ({ product }: { product: Product }) => {
             </AnimatedContainer>
           )}
 
-          {/* Reviews placeholder */}
           {reviewCount > 0 && (
             <AnimatedContainer delay={0.2}>
               <section>
@@ -485,13 +518,13 @@ const LandingPage = ({ product }: { product: Product }) => {
             </AnimatedContainer>
           )}
 
-          {/* Checkout Section */}
           <AnimatedContainer direction="none" delay={0.3}>
             <div id="checkout" className="pt-10">
               <CheckoutSection
                 orderDetails={{
                   title: basicInfo.title,
                   price: finalTotal,
+                  subtotal: subtotal,
                   variants: selectedVariants,
                   quantity: effectiveQuantity,
                   image: images?.[0],
@@ -510,7 +543,6 @@ const LandingPage = ({ product }: { product: Product }) => {
             </div>
           </AnimatedContainer>
 
-          {/* Related Products */}
           <AnimatedContainer>
             <RelatedProducts
               category={basicInfo?.category}

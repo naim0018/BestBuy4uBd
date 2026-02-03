@@ -85,8 +85,25 @@ const InvoiceTemplate2: React.FC<InvoiceTemplateProps> = ({ order }) => {
             {items.map((item: any, idx: number) => (
               <tr key={idx} className="group hover:bg-teal-50/20 transition-colors">
                 <td className="p-4">
-                  <p className="font-bold text-gray-900 text-sm">{item.itemKey}</p>
-                  <p className="text-[10px] text-gray-400 uppercase mt-1">PRODUCT ID: {item.product?._id || 'N/A'}</p>
+                  <p className="font-bold text-gray-900 text-sm">
+                    {item.product?.basicInfo?.title || item.itemKey}
+                  </p>
+                  {item.selectedVariants && Object.entries(item.selectedVariants).length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-1.5">
+                      {Object.entries(item.selectedVariants).map(([group, variants]: [string, any]) => (
+                        Array.isArray(variants) ? variants.map((v: any, vIdx: number) => (
+                          <span key={`${group}-${vIdx}`} className="bg-teal-50 text-teal-700 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter">
+                            {group}: {v.value}
+                          </span>
+                        )) : (
+                          <span key={group} className="bg-teal-50 text-teal-700 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter">
+                            {group}: {variants.value}
+                          </span>
+                        )
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-[10px] text-gray-400 uppercase mt-1">PRODUCT ID: {item.product?._id?.slice(-6) || 'N/A'}</p>
                 </td>
                 <td className="p-4 text-center text-sm font-medium">{item.quantity}</td>
                 <td className="p-4 text-right text-sm text-gray-500">৳{item.price?.toLocaleString()}</td>

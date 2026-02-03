@@ -41,8 +41,8 @@ const LandingPage = ({ product }: { product: Product }) => {
   const {
       finalTotal,
       basePrice,
-      variantTotal,
-      appliedComboTier
+      appliedComboTier,
+      subtotal
   } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
 
   const [currentImage, setCurrentImage] = useState<any>(null);
@@ -143,6 +143,7 @@ const LandingPage = ({ product }: { product: Product }) => {
             },
           ],
           totalAmount: total,
+          deliveryCharge: (product?.additionalInfo?.freeShipping) ? 0 : (formData.courierCharge === 'insideDhaka' ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80) : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150)),
           status: "pending",
           billingInformation: {
             name: formData.name,
@@ -277,8 +278,9 @@ const LandingPage = ({ product }: { product: Product }) => {
                 <div className="w-full max-w-md mx-auto bg-gray-50 p-4 rounded-xl border border-gray-200">
                    <PriceBreakdown
                      quantity={effectiveQuantity}
-                     unitPrice={Math.round(((basePrice * effectiveQuantity) + variantTotal) / (effectiveQuantity || 1))}
+                     unitPrice={Math.round(basePrice)}
                      comboPricing={product.comboPricing || []}
+                     subtotal={subtotal}
                    />
                 </div>
 
@@ -420,6 +422,7 @@ const LandingPage = ({ product }: { product: Product }) => {
                 orderDetails={{
                   title: product.basicInfo.title,
                   price: finalTotal,
+                  subtotal: subtotal,
                   variants: selectedVariants,
                   quantity: effectiveQuantity,
                   image: currentImage,

@@ -299,9 +299,17 @@ const OrderDetails = () => {
                           {item.selectedVariants && Object.entries(item.selectedVariants).length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {Object.entries(item.selectedVariants).map(([group, variant]: [string, any]) => (
-                                <Chip key={group} size="sm" variant="flat" color="secondary" className="text-[10px] h-5">
-                                  {group}: {variant.value}
-                                </Chip>
+                                Array.isArray(variant) ? (
+                                  variant.map((v: any, vIdx: number) => (
+                                    <Chip key={`${group}-${vIdx}`} size="sm" variant="flat" color="secondary" className="text-[10px] h-5">
+                                      {group}: {v.value}
+                                    </Chip>
+                                  ))
+                                ) : (
+                                  <Chip key={group} size="sm" variant="flat" color="secondary" className="text-[10px] h-5">
+                                    {group}: {variant.value}
+                                  </Chip>
+                                )
                               ))}
                             </div>
                           )}
@@ -330,21 +338,34 @@ const OrderDetails = () => {
                     >
                       Subtotal
                     </td>
-                    <td className="px-2 md:px-4 py-3 text-right font-bold text-xs md:text-sm">
-                      ৳{order.totalAmount?.toLocaleString()}
+                    <td className="px-2 md:px-4 py-2 text-right font-bold text-gray-500 text-xs md:text-sm">
+                      ৳{(order.totalAmount - (order.deliveryCharge || 0) + (order.discount || 0)).toLocaleString()}
                     </td>
                   </tr>
                   <tr>
                     <td
                       colSpan={3}
-                      className="px-2 md:px-4 py-2 text-right text-gray-600 font-medium text-xs md:text-sm"
+                      className="px-2 md:px-4 py-2 text-right text-gray-400 font-bold text-xs md:text-sm"
                     >
                       Shipping
                     </td>
                     <td className="px-2 md:px-4 py-2 text-right font-bold text-gray-500 text-xs md:text-sm">
-                      Free
+                      {order.deliveryCharge ? `৳${order.deliveryCharge.toLocaleString()}` : 'Free'}
                     </td>
                   </tr>
+                  {order.discount > 0 && (
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="px-2 md:px-4 py-2 text-right text-red-400 font-bold text-xs md:text-sm"
+                      >
+                        Discount
+                      </td>
+                      <td className="px-2 md:px-4 py-2 text-right font-bold text-red-500 text-xs md:text-sm">
+                        -৳{order.discount.toLocaleString()}
+                      </td>
+                    </tr>
+                  )}
                   <tr>
                     <td
                       colSpan={3}

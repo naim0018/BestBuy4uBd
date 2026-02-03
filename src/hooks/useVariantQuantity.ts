@@ -92,7 +92,7 @@ export const useVariantQuantity = (
 
   const totalQuantity = useMemo(() => {
     const sum = selectedVariants.reduce((sum, v) => sum + v.quantity, 0);
-    return Math.max(1, sum); // Ensure at least 1
+    return sum; // Returns the actual sum of all variant quantities
   }, [selectedVariants]);
 
   const addVariant = useCallback((group: string, item: any) => {
