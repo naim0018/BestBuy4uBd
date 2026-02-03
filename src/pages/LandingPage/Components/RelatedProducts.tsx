@@ -26,7 +26,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
     <div className="mt-16 px-4">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Related Products</h2>
-        <Link to="/products" className="text-primary-green font-semibold hover:underline">
+        <Link to="/shop" className="text-primary-green font-semibold hover:underline">
           View All
         </Link>
       </div>

@@ -17,36 +17,30 @@ import VideoGallery from "../Components/VideoGallery";
 import PriceBreakdown from "../../../../components/PriceBreakdown";
 import ComboPricingDisplay from "../../../../components/ComboPricingDisplay";
 
-
-
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
   const host = useGetHost();
 
   // Hooks
   const {
-      selectedVariants,
-      totalQuantity,
-      addVariant,
-      updateVariantQuantity,
-      initVariants
+    selectedVariants,
+    totalQuantity,
+    addVariant,
+    updateVariantQuantity,
+    initVariants,
   } = useVariantQuantity(product?.variants, product);
 
   useEffect(() => {
-     if(product?.variants) initVariants(product.variants, product);
+    if (product?.variants) initVariants(product.variants, product);
   }, [product, initVariants]);
 
   const effectiveQuantity = totalQuantity;
 
-  const {
-      finalTotal,
-      basePrice,
-      appliedComboTier,
-      subtotal
-  } = usePriceCalculation(product, selectedVariants, effectiveQuantity);
+  const { finalTotal, basePrice, appliedComboTier, subtotal } =
+    usePriceCalculation(product, selectedVariants, effectiveQuantity);
 
   const [currentImage, setCurrentImage] = useState<any>(null);
-  
+
   const [couponCode, setCouponCode] = useState<string>("");
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
@@ -71,13 +65,11 @@ const LandingPage = ({ product }: { product: Product }) => {
   if (!product) return null;
 
   const handleVariantChange = (groupName: string, variant: any) => {
-      addVariant(groupName, variant);
-      if (variant.image?.url) setCurrentImage(variant.image);
+    addVariant(groupName, variant);
+    if (variant.image?.url) setCurrentImage(variant.image);
   };
 
   // Manual quantity handling removed in favor of VariantSelector
-
-
 
   const applyCoupon = () => {
     const availableCoupons: Record<string, number> = {
@@ -113,7 +105,9 @@ const LandingPage = ({ product }: { product: Product }) => {
     try {
       // Validate quantity
       if (totalQuantity === 0) {
-        toast.error('Please select at least one variant with quantity greater than 0');
+        toast.error(
+          "Please select at least one variant with quantity greater than 0",
+        );
         return;
       }
 
@@ -121,13 +115,13 @@ const LandingPage = ({ product }: { product: Product }) => {
 
       // Transform variants for Order API
       const variantsPayload: Record<string, any[]> = {};
-      selectedVariants.forEach(sv => {
-          if (!variantsPayload[sv.group]) variantsPayload[sv.group] = [];
-          variantsPayload[sv.group].push({
-              value: sv.item.value,
-              price: sv.item.price,
-              quantity: sv.quantity
-          });
+      selectedVariants.forEach((sv) => {
+        if (!variantsPayload[sv.group]) variantsPayload[sv.group] = [];
+        variantsPayload[sv.group].push({
+          value: sv.item.value,
+          price: sv.item.price,
+          quantity: sv.quantity,
+        });
       });
 
       const orderData = {
@@ -143,7 +137,11 @@ const LandingPage = ({ product }: { product: Product }) => {
             },
           ],
           totalAmount: total,
-          deliveryCharge: (product?.additionalInfo?.freeShipping) ? 0 : (formData.courierCharge === 'insideDhaka' ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80) : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150)),
+          deliveryCharge: product?.additionalInfo?.freeShipping
+            ? 0
+            : formData.courierCharge === "insideDhaka"
+              ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
+              : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150),
           status: "pending",
           billingInformation: {
             name: formData.name,
@@ -275,7 +273,7 @@ const LandingPage = ({ product }: { product: Product }) => {
 
           <AnimatedContainer direction="up" delay={0.3}>
             <div className="flex flex-col items-center gap-4 mt-4">
-                <div className="w-full max-w-md mx-auto bg-gray-50 p-4 rounded-xl border border-gray-200">
+              {/* <div className="w-full  mx-auto bg-gray-50 p-4 rounded-xl border border-gray-200">
                    <PriceBreakdown
                      quantity={effectiveQuantity}
                      unitPrice={Math.round(basePrice)}
@@ -291,16 +289,11 @@ const LandingPage = ({ product }: { product: Product }) => {
                     appliedTier={appliedComboTier || undefined} 
                     variant="primary"
                   />
-                </div>
-
-
-
-
-
+                </div> */}
 
               <button
                 onClick={scrollToCheckout}
-                className="bg-brand-600 hover:bg-brand-700 text-xl md:text-2xl font-black py-4 px-10 rounded-xl shadow-[0_6px_0_0_#000] hover:shadow-[0_4px_0_0_#000] transition-all duration-200 active:translate-y-1 active:shadow-none mt-4 animate-pulse text-white transition-colors duration-500"
+                className="bg-brand-600 hover:bg-brand-700 text-xl md:text-2xl font-black py-4 px-10 rounded-xl shadow-[0_6px_0_0_#000] hover:shadow-[0_4px_0_0_#000] transition-all duration-2000 active:translate-y-1 active:shadow-none mt-4 text-white duration-500 animate-pulse"
               >
                 অর্ডার করতে চাই
               </button>
@@ -313,7 +306,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <AnimatedContainer direction="left">
           <div className="bg-brand-600 text-white p-4 rounded-t-2xl text-center">
-            <h2 className="text-xl md:text-3xl font-black uppercase">
+            <h2 className="text-xl md:text-3xl font-black text-white uppercase">
               {product?.basicInfo?.title || "Product Title"}
             </h2>
           </div>
@@ -341,7 +334,8 @@ const LandingPage = ({ product }: { product: Product }) => {
 
             <div className="text-center mt-10 bg-brand-100 py-4 rounded-xl border-2 border-dashed border-brand-300">
               <h3 className="text-2xl md:text-4xl font-black text-brand-700">
-                {product.price.discounted || product.price.regular}
+                {product.price.discounted || product.price.regular}{" "}
+                <span className="text-brand-900 text-base">টাকা মাত্র</span>
               </h3>
             </div>
 
@@ -361,7 +355,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <AnimatedContainer direction="right">
           <div className="bg-brand-600 text-white p-4 rounded-t-2xl text-center">
-            <h2 className="text-xl md:text-3xl font-black uppercase">
+            <h2 className="text-xl md:text-3xl font-black uppercase text-white">
               আমাদের কাছে কেন কিনবেন?
             </h2>
           </div>
@@ -387,7 +381,7 @@ const LandingPage = ({ product }: { product: Product }) => {
         >
           <AnimatedContainer direction="up">
             <div className="bg-brand-600 text-white p-4 rounded-t-2xl text-center">
-              <h2 className="text-xl md:text-3xl font-black uppercase">
+              <h2 className="text-xl md:text-3xl font-semibold uppercase text-white">
                 Product Video Review
               </h2>
             </div>
@@ -399,9 +393,9 @@ const LandingPage = ({ product }: { product: Product }) => {
       )}
 
       {/* Contact Bar */}
-      <div className="bg-brand-600 text-white py-3 sticky top-0 z-40 mb-8 shadow-md">
+      <div className="bg-brand-600 text-white py-8 sticky top-0 z-40 mb-8 shadow-md">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-lg md:text-2xl font-black tracking-wide">
+          <p className="text-lg md:text-3xl font-black tracking-wide">
             যে কোন প্রয়োজনে যোগাযোগ করুন {host?.phone || "01610403011"}
           </p>
         </div>
@@ -412,12 +406,12 @@ const LandingPage = ({ product }: { product: Product }) => {
         <AnimatedContainer direction="none" delay={0.1}>
           <div className="bg-white rounded-[2rem] shadow-xl border border-brand-100 overflow-hidden">
             <div className="bg-brand-50 py-8 text-center border-b border-brand-100">
-              <h2 className="text-2xl md:text-4xl font-black text-brand-700 px-4">
+              <h2 className="text-xl md:text-2xl font-black text-brand-700 px-4">
                 অর্ডার করতে নিচের ফর্মটি পূরণ করুন
               </h2>
             </div>
 
-            <div className="p-3 md:p-8">
+            <div className="">
               <CheckoutSection
                 orderDetails={{
                   title: product.basicInfo.title,
