@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
-import VariantSelector from "../../Components/VariantSelector";
+import VariantSelector from "../Components/VariantSelector";
 
 interface OrderDetails {
   title: string;
@@ -12,6 +12,7 @@ interface OrderDetails {
   product?: any;
   discount?: number;
   totalAmount?: number;
+  payablePrice?: number;
 }
 
 interface CheckoutSectionProps {
@@ -36,22 +37,26 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
   setCouponCode,
   applyCoupon,
 }) => {
-
-
-  const { title, variants, price, quantity, image, product, discount } =
-    orderDetails;
+  const {
+    title,
+    variants,
+    price,
+    quantity,
+    image,
+    product,
+    discount,
+    payablePrice,
+  } = orderDetails;
   const [formValid, setFormValid] = useState(false);
   const [deliveryChargeType, setDeliveryChargeType] = useState("insideDhaka");
 
   // Quantity controls handled by VariantSelector
-
 
   const handleDeliveryChargeChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     setDeliveryChargeType(e.target.value);
   };
-
   const deliveryCharge = product?.additionalInfo?.freeShipping
     ? 0
     : deliveryChargeType === "insideDhaka"
@@ -59,7 +64,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
       : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150);
 
   const calculateTotalPrice = () => {
-    const subtotal = price; // Price passed is already the total (finalTotal)
+    const subtotal = payablePrice; // Price passed is already the total (finalTotal)
     const total = subtotal + deliveryCharge - (discount || 0);
     return total > 0 ? total : 0;
   };
@@ -379,7 +384,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                   {title}
                 </h3>
                 <div className="flex justify-between items-center">
-                  <p className="text-xl md:text-2xl font-bold text-brand-600">
+                  <p className="text-xl md:text-2xl font-bold text-brand-600 ">
                     ৳{price}
                   </p>
                 </div>
@@ -406,7 +411,9 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
             <div className="bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-brand-50">
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-sm md:text-base pb-3 border-b border-gray-50">
-                  <span className="text-gray-500 font-medium">আইটেম সংখ্যা:</span>
+                  <span className="text-gray-500 font-medium">
+                    আইটেম সংখ্যা:
+                  </span>
                   <span className="font-bold text-gray-800 bg-brand-50 px-3 py-1 rounded-full text-xs">
                     {quantity} টি
                   </span>
@@ -414,13 +421,27 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
 
                 <div className="flex justify-between items-center text-sm md:text-base pt-1">
                   <span className="text-gray-600">সাবটোটাল:</span>
-                  <span className="font-semibold text-gray-900">৳{orderDetails.subtotal.toLocaleString()}</span>
+                  <span className="font-semibold text-gray-900 text-xs space-x-2">
+                    <span className="text-brand-600 text-xs font-bold">
+                     ( {quantity} টি )
+                    </span>
+                    <span className="text-brand-600 text-xl font-bold">
+                      ৳{orderDetails.subtotal.toLocaleString()}
+                    </span>
+                  </span>
                 </div>
 
                 {orderDetails.subtotal > price && (
-                   <div className="flex justify-between items-center text-sm md:text-base text-emerald-600 font-medium">
+                  <div className="text-sm md:text-base text-emerald-600 font-medium">
+                    <div className="flex justify-between items-center">
                     <span>কম্বো ডিসকাউন্ট (-) :</span>
-                    <span>-৳{(orderDetails.subtotal - price).toLocaleString()}</span>
+                    <span className="space-x-2">
+                    <span className="text-brand-600 text-xs font-bold">
+                      (-)
+                    </span>
+                    <span className="text-brand-600 text-xl font-bold">৳{(orderDetails.subtotal - payablePrice!).toLocaleString()}</span>
+                    </span>
+                    </div>
                   </div>
                 )}
 
@@ -443,7 +464,9 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
                 {(discount ?? 0) > 0 && (
                   <div className="flex justify-between items-center text-sm md:text-base text-emerald-600">
                     <span className="text-gray-600">কুপন ডিসকাউন্ট (-):</span>
-                    <span className="font-semibold">-৳{(discount || 0).toLocaleString()}</span>
+                    <span className="font-semibold">
+                      -৳{(discount || 0).toLocaleString()}
+                    </span>
                   </div>
                 )}
 
@@ -464,7 +487,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
             </div>
 
             <div className="mt-6 md:mt-8">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
+              <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
                 <span className="bg-brand-100 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mr-3 md:mr-4">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

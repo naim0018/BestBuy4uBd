@@ -9,13 +9,12 @@ import AnimatedContainer from "@/common/Components/AnimatedContainer";
 import CountdownTimer from "../Components/CountdownTimer";
 import { useVariantQuantity } from "@/hooks/useVariantQuantity";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
-import CheckoutSection from "../../Template2/LandingPage/CheckoutSection";
-import OrderSuccessModal from "../../Template2/LandingPage/OrderSuccessModal";
+import CheckoutSection from "../../Checkout/CheckoutSection";
+import OrderSuccessModal from "../../Checkout/OrderSuccessModal";
 import RelatedProducts from "@/pages/LandingPage/Components/RelatedProducts";
 import WhyBuyFromUs from "../Components/WhyBuyFromUs";
 import VideoGallery from "../Components/VideoGallery";
-import PriceBreakdown from "../../../../components/PriceBreakdown";
-import ComboPricingDisplay from "../../../../components/ComboPricingDisplay";
+
 
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
@@ -38,7 +37,7 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const { finalTotal, basePrice, appliedComboTier, subtotal } =
     usePriceCalculation(product, selectedVariants, effectiveQuantity);
-
+console.log({finalTotal,basePrice,appliedComboTier,subtotal})
   const [currentImage, setCurrentImage] = useState<any>(null);
 
   const [couponCode, setCouponCode] = useState<string>("");
@@ -123,7 +122,7 @@ const LandingPage = ({ product }: { product: Product }) => {
           quantity: sv.quantity,
         });
       });
-
+console.log(basePrice)
       const orderData = {
         body: {
           items: [
@@ -131,7 +130,7 @@ const LandingPage = ({ product }: { product: Product }) => {
               product: product._id,
               image: currentImage?.url,
               quantity: effectiveQuantity,
-              price: finalTotal / effectiveQuantity,
+              price: basePrice,
               itemKey: `${product._id}-${Date.now()}`,
               selectedVariants: variantsPayload,
             },
@@ -415,7 +414,8 @@ const LandingPage = ({ product }: { product: Product }) => {
               <CheckoutSection
                 orderDetails={{
                   title: product.basicInfo.title,
-                  price: finalTotal,
+                  price: basePrice,
+                  payablePrice:finalTotal,
                   subtotal: subtotal,
                   variants: selectedVariants,
                   quantity: effectiveQuantity,
