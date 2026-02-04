@@ -3,6 +3,7 @@ import { useGetProductByIdQuery } from "@/store/Api/ProductApi";
 import Template1LandingPage from "./Template1/LandingPage";
 import Template2LandingPage from "./Template2/LandingPage/LandingPage";
 import Template3LandingPage from "./Template3/LandingPage/LandingPage";
+import Template4LandingPage from "./Template4/LandingPage/LandingPage";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 const LandingPageContainer = () => {
@@ -44,6 +45,8 @@ const LandingPageContainer = () => {
 
   const renderTemplate = () => {
     switch (template.toLowerCase()) {
+      case "template4":
+        return <Template4LandingPage product={product} />;
       case "template3":
         return <Template3LandingPage product={product} />;
       case "template2":

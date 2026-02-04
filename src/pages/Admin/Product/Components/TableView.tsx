@@ -46,6 +46,7 @@ const TableView = ({ products }: TableViewProps) => {
     { value: "template1", label: "Template 1" },
     { value: "template2", label: "Template 2" },
     { value: "template3", label: "Template 3" },
+    { value: "template4", label: "Template 4" },
   ];
 
   const handleTemplateChange = async (
