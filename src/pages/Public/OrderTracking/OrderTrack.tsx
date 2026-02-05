@@ -268,27 +268,28 @@ const OrderDetailsCard = ({ order }: { order: any }) => {
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-500 font-medium">সাবটোটাল</span>
                                     <span className="text-gray-900 font-bold">৳{
-                                        order.totalAmount
+                                        order.subTotal || order.items.reduce((acc : number, item : any) => acc + item.price * item.quantity, 0)
                                     }</span>
                                 </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500 font-medium">সাবটোটাল</span>
-                                    <span className="text-gray-900 font-bold">৳{
-                                        (order?.deliveryCharge !== undefined) 
-                                            ? (order?.totalAmount - order?.deliveryCharge + (order?.discount || 0)) 
-                                            : (order?.totalAmount)
-                                    }</span>
-                                </div>
+                                
+                                {/* Combo Savings - Highlighted in Green */}
+                                {order?.totalDiscount > 0 && (
+                                    <div className="flex justify-between items-center text-sm bg-green-50 -mx-2 px-2 py-2 rounded-lg border border-green-200">
+                                        <div className="flex items-center gap-2">
+                                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span className="text-green-700 font-semibold">কম্বো সেভিংস</span>
+                                        </div>
+                                        <span className="font-bold text-green-700">-৳{order.totalDiscount}</span>
+                                    </div>
+                                )}
+                                
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-500 font-medium">ডেলিভারি চার্জ</span>
                                     <span className="text-gray-900 font-bold">৳{order?.deliveryCharge || 0}</span>
                                 </div>
-                                {order?.discount > 0 && (
-                                    <div className="flex justify-between items-center text-sm text-red-600">
-                                        <span className="font-medium">ডিসকাউন্ট</span>
-                                        <span className="font-bold">-৳{order.discount}</span>
-                                    </div>
-                                )}
+                                
                                 <div className="pt-6 border-t border-gray-100 flex justify-between items-center">
                                     <span className="text-gray-900 font-black text-lg">সর্বমোট</span>
                                     <span className="text-2xl font-black text-green-600 tracking-tight">৳{order?.totalAmount}</span>

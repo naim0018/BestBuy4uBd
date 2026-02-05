@@ -332,6 +332,72 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
               "অর্ডার কনফার্ম করুন"
             )}
           </button>
+
+          {/* Combo Pricing Offers Card */}
+          {product?.comboPricing && product.comboPricing.length > 0 && (
+            <div className="mt-6 bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-2xl p-4 md:p-6">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="bg-emerald-500 p-2 rounded-lg">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base md:text-lg font-bold text-emerald-900 mb-1">
+                    🎉 কম্বো অফার পাওয়া যাচ্ছে!
+                  </h3>
+                  <p className="text-xs md:text-sm text-emerald-700">
+                    বেশি পরিমাণে কিনুন এবং সাশ্রয় করুন
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                {product.comboPricing
+                  .sort((a: any, b: any) => a.minQuantity - b.minQuantity)
+                  .map((combo: any, index: number) => {
+                    const savingsPerUnit = combo.discountType === 'per_product' 
+                      ? combo.discount 
+                      : combo.discount / combo.minQuantity;
+                    const totalSavings = combo.discountType === 'per_product'
+                      ? combo.discount * combo.minQuantity
+                      : combo.discount;
+                    
+                    return (
+                      <div 
+                        key={index}
+                        className="bg-white rounded-xl p-3 md:p-4 border border-emerald-100 hover:border-emerald-300 transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="bg-emerald-100 text-emerald-700 px-2 md:px-3 py-1 rounded-lg text-xs md:text-sm font-bold">
+                              {combo.minQuantity}+ টি
+                            </span>
+                            <span className="text-gray-700 text-xs md:text-sm font-medium">
+                              কিনুন
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-emerald-600 font-bold text-sm md:text-base">
+                              ৳{totalSavings} সাশ্রয়
+                            </div>
+                            <div className="text-[10px] md:text-xs text-gray-500">
+                              (৳{savingsPerUnit.toFixed(0)}/pcs ছাড়)
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-emerald-200">
+                <p className="text-xs text-emerald-700 text-center italic">
+                  💡 পরিমাণ বাড়ান এবং স্বয়ংক্রিয়ভাবে ছাড় পান!
+                </p>
+              </div>
+            </div>
+          )}
         </form>
 
         {/* Order Summary Section */}

@@ -37,22 +37,8 @@ export const usePriceCalculation = (
     // Normalize comboPricing and bulkPricing into a single tiers array
     const normalizedTiers: ComboPricing[] = [...(product.comboPricing || [])];
     
-    if (product.bulkPricing && product.bulkPricing.length > 0) {
-      product.bulkPricing.forEach((bp: any) => {
-        // If bp.price is a total for the bundle (e.g. 3 for 900), 
-        // convert it to a per-product discount
-        const unitPriceInTier = bp.price >= basePrice * 1.5 ? bp.price / bp.minQuantity : bp.price;
-        const perProductDiscount = basePrice - unitPriceInTier;
-        
-        if (perProductDiscount > 0) {
-          normalizedTiers.push({
-            minQuantity: bp.minQuantity,
-            discount: perProductDiscount,
-            discountType: 'per_product'
-          });
-        }
-      });
-    }
+    // Legacy Bulk Pricing Logic REMOVED per user request
+    // We now strictly use comboPricing tiers
 
     // Check if base variant exists in selectedVariants
     const baseVariant = selectedVariants.find(v => v.isBaseVariant);

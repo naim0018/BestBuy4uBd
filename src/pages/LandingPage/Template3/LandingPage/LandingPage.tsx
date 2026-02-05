@@ -170,14 +170,17 @@ console.log(basePrice)
 
       const response = await createOrder(orderData).unwrap();
       setSuccessOrderDetails({
-        orderId: (response as any).data._id,
-        productPrice: finalTotal,
+        orderId: (response as any).data.orderId || (response as any).data._id, // Use human-readable orderId from backend
+        subTotal: (response as any).data.subTotal, // Subtotal before discounts
+        totalDiscount: (response as any).data.totalDiscount, // Combo + Coupon savings
+        comboInfo: (response as any).data.comboInfo, // Combo description
+        productPrice: finalTotal, // For backward compatibility
         deliveryCharge: product?.additionalInfo?.freeShipping
           ? 0
           : formData.courierCharge === "insideDhaka"
             ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
             : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150),
-        totalAmount: total,
+        totalAmount: (response as any).data.totalAmount, // Use backend-calculated total
         appliedCoupon: appliedCoupon,
       });
       setShowSuccessModal(true);
