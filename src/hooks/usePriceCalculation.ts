@@ -34,7 +34,6 @@ export const usePriceCalculation = (
 
     // Base price is discounted price if available, otherwise regular price
     const basePrice = product.price.discounted || product.price.regular;
-    console.log({basePrice})
     // Normalize comboPricing and bulkPricing into a single tiers array
     const normalizedTiers: ComboPricing[] = [...(product.comboPricing || [])];
     

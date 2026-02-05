@@ -14,11 +14,13 @@ import OrderSuccessModal from "../../Checkout/OrderSuccessModal";
 import RelatedProducts from "@/pages/LandingPage/Components/RelatedProducts";
 import WhyBuyFromUs from "../Components/WhyBuyFromUs";
 import VideoGallery from "../Components/VideoGallery";
+import { useTracking } from "@/hooks/useTracking";
 
 
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
   const host = useGetHost();
+  const { trackViewItem, trackBeginCheckout, trackPurchase } = useTracking();
 
   // Hooks
   const {
@@ -35,9 +37,8 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const effectiveQuantity = totalQuantity;
 
-  const { finalTotal, basePrice, appliedComboTier, subtotal } =
+  const { finalTotal, basePrice, subtotal } =
     usePriceCalculation(product, selectedVariants, effectiveQuantity);
-console.log({finalTotal,basePrice,appliedComboTier,subtotal})
   const [currentImage, setCurrentImage] = useState<any>(null);
 
   const [couponCode, setCouponCode] = useState<string>("");
@@ -60,6 +61,17 @@ console.log({finalTotal,basePrice,appliedComboTier,subtotal})
       if (product) dispatch(clearCart());
     };
   }, [product, dispatch]);
+
+  useEffect(() => {
+    if (product) {
+      trackViewItem({
+        id: product._id,
+        name: product.basicInfo.title,
+        price: product.price.discounted || product.price.regular,
+        category: product.basicInfo.category,
+      });
+    }
+  }, [product, trackViewItem]);
 
   if (!product) return null;
 
@@ -169,12 +181,61 @@ console.log(basePrice)
         appliedCoupon: appliedCoupon,
       });
       setShowSuccessModal(true);
+
+      trackPurchase({
+        transaction_id: (response as any).data._id,
+        value: total,
+        tax: 0,
+        shipping: product?.additionalInfo?.freeShipping
+          ? 0
+          : formData.courierCharge === "insideDhaka"
+            ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
+            : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150),
+        currency: "BDT",
+        coupon: appliedCoupon.code,
+        items: [
+          {
+            item_id: product._id,
+            item_name: product.basicInfo.title,
+            price: basePrice,
+            quantity: effectiveQuantity,
+            item_category: product.basicInfo.category,
+            item_variant: selectedVariants
+              .map((v) => `${v.group}: ${v.item.value}`)
+              .join(", "),
+          },
+        ],
+        user_data: {
+          email: formData.email,
+          phone_number: formData.phone,
+          address: {
+            street: formData.address,
+            country: "Bangladesh",
+          },
+        },
+      });
     } catch (err: any) {
       toast.error(err.data?.message || "Order failed");
     }
   };
 
   const scrollToCheckout = () => {
+    trackBeginCheckout(
+      [
+        {
+          id: product._id,
+          name: product.basicInfo.title,
+          price: basePrice,
+          quantity: effectiveQuantity,
+          category: product.basicInfo.category,
+          variant: selectedVariants
+            .map((v) => `${v.group}: ${v.item.value}`)
+            .join(", "),
+        },
+      ],
+      finalTotal,
+      couponCode,
+    );
     document.getElementById("checkout")?.scrollIntoView({ behavior: "smooth" });
   };
 

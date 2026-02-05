@@ -188,7 +188,7 @@ const OrderDetailsCard = ({ order }: { order: any }) => {
                                 ID: {order?._id}
                             </span>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900">অর্ডারটির বর্তমান অবস্থা</h2>
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900">অর্ডারটির বর্তমান অবস্থা</h2>
                     </div>
                     
                     <div className="flex items-center gap-6 md:gap-12 bg-white p-6 rounded-3xl border border-gray-50 shadow-sm">
@@ -241,14 +241,15 @@ const OrderDetailsCard = ({ order }: { order: any }) => {
                                         </div>
                                         {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
                                             <div className="flex flex-wrap gap-2 mt-3">
+                                                Available Variant :
                                                 {Object.entries(item.selectedVariants).map(([group, variants]: [string, any]) => (
                                                     Array.isArray(variants) ? variants.map((v: any, vIdx: number) => (
                                                         <span key={`${group}-${vIdx}`} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">
-                                                            {group}: {v.value}
+                                                             {v.value} ,
                                                         </span>
                                                     )) : (
-                                                        <span key={group} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">
-                                                            {group}: {variants.value}
+                                                        <span key={group} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider after:content-[' ,'] last:after:content-['']">
+                                                             {variants.value} 
                                                         </span>
                                                     )
                                                 ))}
@@ -264,6 +265,12 @@ const OrderDetailsCard = ({ order }: { order: any }) => {
                         <div className="mt-10 bg-gray-50/50 rounded-3xl p-8 border border-gray-50">
                             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-4">মূল্য বিবরণী</h3>
                             <div className="space-y-4">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500 font-medium">সাবটোটাল</span>
+                                    <span className="text-gray-900 font-bold">৳{
+                                        order.totalAmount
+                                    }</span>
+                                </div>
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-500 font-medium">সাবটোটাল</span>
                                     <span className="text-gray-900 font-bold">৳{

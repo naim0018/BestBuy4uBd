@@ -1,20 +1,49 @@
-import { useGetAllOrdersQuery, useDeleteOrderMutation } from "@/store/Api/OrderApi";
+import {
+  useGetAllOrdersQuery,
+  useDeleteOrderMutation,
+} from "@/store/Api/OrderApi";
 import { useCreateSteadfastOrderMutation } from "@/store/Api/SteadfastApi";
 import { useGetDashboardStatsQuery } from "@/store/Api/DashboardApi";
 import { toast } from "sonner";
-import { Eye, Trash2, CheckCircle, XCircle, Clock, Truck, Package, LayoutTemplate, RefreshCw, Search, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Eye,
+  Trash2,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Truck,
+  Package,
+  LayoutTemplate,
+  RefreshCw,
+  Search,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Card, Select, SelectItem, Button, Input, Pagination } from "@heroui/react";
+import {
+  Card,
+  Select,
+  SelectItem,
+  Button,
+  Input,
+  Pagination,
+} from "@heroui/react";
 import { useState, useEffect, cloneElement, ReactElement } from "react";
 
 const AllOrders = () => {
-  const [selectedTemplates, setSelectedTemplates] = useState<Record<string, string>>({});
+  const [selectedTemplates, setSelectedTemplates] = useState<
+    Record<string, string>
+  >({});
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' | null }>({ key: 'createdAt', direction: 'desc' });
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc" | null;
+  }>({ key: "createdAt", direction: "desc" });
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -23,7 +52,11 @@ const AllOrders = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const { data: apiData, isLoading, refetch } = useGetAllOrdersQuery({
+  const {
+    data: apiData,
+    isLoading,
+    refetch,
+  } = useGetAllOrdersQuery({
     page,
     limit,
     search: debouncedSearch,
@@ -33,41 +66,51 @@ const AllOrders = () => {
   });
   const { data: statsData } = useGetDashboardStatsQuery(undefined);
   const [deleteOrder] = useDeleteOrderMutation();
-  const [createSteadfastOrder, { isLoading: isSendingToSteadfast }] = useCreateSteadfastOrderMutation();
+  const [createSteadfastOrder, { isLoading: isSendingToSteadfast }] =
+    useCreateSteadfastOrderMutation();
   const navigate = useNavigate();
 
   const handleSort = (key: string) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
     }
     setSortConfig({ key, direction });
     setPage(1); // Reset to first page on sort
   };
 
   const renderSortIcon = (key: string) => {
-    if (sortConfig.key !== key) return <ArrowUpDown className="w-3 h-3 text-gray-400" />;
-    return sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-blue-600" /> : <ChevronDown className="w-3 h-3 text-blue-600" />;
+    if (sortConfig.key !== key)
+      return <ArrowUpDown className="w-3 h-3 text-gray-400" />;
+    return sortConfig.direction === "asc" ? (
+      <ChevronUp className="w-3 h-3 text-blue-600" />
+    ) : (
+      <ChevronDown className="w-3 h-3 text-blue-600" />
+    );
   };
 
   const handleCheckStatus = async (consignmentId: string) => {
     if (!consignmentId) return;
     try {
-        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-        const response = await fetch(`${baseUrl}/steadfast/status/${consignmentId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-        });
-        const result = await response.json();
-        if(result.success){
-            toast.success(`Status updated: ${result.data.delivery_status}`);
-            refetch();
-        } else {
-            toast.error(result.message || "Failed to sync status");
-        }
+      const baseUrl =
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+      const response = await fetch(
+        `${baseUrl}/steadfast/status/${consignmentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        },
+      );
+      const result = await response.json();
+      if (result.success) {
+        toast.success(`Status updated: ${result.data.delivery_status}`);
+        refetch();
+      } else {
+        toast.error(result.message || "Failed to sync status");
+      }
     } catch {
-        toast.error("An error occurred while syncing status");
+      toast.error("An error occurred while syncing status");
     }
   };
 
@@ -76,11 +119,41 @@ const AllOrders = () => {
   const stats = statsData?.data?.overview;
 
   const statCards = [
-    { title: "Total Orders", value: stats?.totalOrders || 0, icon: <Package className="w-5 h-5" />, color: "text-blue-600", bg: "bg-blue-50" },
-    { title: "Pending", value: stats?.pendingCount || 0, icon: <Clock className="w-5 h-5" />, color: "text-orange-600", bg: "bg-orange-50" },
-    { title: "Processing", value: stats?.processingCount || 0, icon: <Truck className="w-5 h-5" />, color: "text-indigo-600", bg: "bg-indigo-50" },
-    { title: "Delivered", value: stats?.deliveredCount || 0, icon: <CheckCircle className="w-5 h-5" />, color: "text-green-600", bg: "bg-green-50" },
-    { title: "Cancelled", value: stats?.canceledCount || 0, icon: <XCircle className="w-5 h-5" />, color: "text-red-600", bg: "bg-red-50" },
+    {
+      title: "Total Orders",
+      value: stats?.totalOrders || 0,
+      icon: <Package className="w-5 h-5" />,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      title: "Pending",
+      value: stats?.pendingCount || 0,
+      icon: <Clock className="w-5 h-5" />,
+      color: "text-orange-600",
+      bg: "bg-orange-50",
+    },
+    {
+      title: "Processing",
+      value: stats?.processingCount || 0,
+      icon: <Truck className="w-5 h-5" />,
+      color: "text-indigo-600",
+      bg: "bg-indigo-50",
+    },
+    {
+      title: "Delivered",
+      value: stats?.deliveredCount || 0,
+      icon: <CheckCircle className="w-5 h-5" />,
+      color: "text-green-600",
+      bg: "bg-green-50",
+    },
+    {
+      title: "Cancelled",
+      value: stats?.canceledCount || 0,
+      icon: <XCircle className="w-5 h-5" />,
+      color: "text-red-600",
+      bg: "bg-red-50",
+    },
   ];
 
   const handleDelete = async (id: string) => {
@@ -97,9 +170,9 @@ const AllOrders = () => {
   };
 
   const handleSendToSteadfast = async (row: any) => {
-    if(row.consignment_id) {
-        toast.info(`Already sent! ID: ${row.consignment_id}`);
-        return;
+    if (row.consignment_id) {
+      toast.info(`Already sent! ID: ${row.consignment_id}`);
+      return;
     }
     try {
       await createSteadfastOrder({ orderId: row._id }).unwrap();
@@ -112,9 +185,12 @@ const AllOrders = () => {
 
   const getStatusBadge = (status: string) => {
     const s = status?.toLowerCase();
-    
+
     const formatStatus = (str: string) => {
-        return str?.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      return str
+        ?.split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
     };
 
     const formattedStatus = formatStatus(status);
@@ -201,15 +277,19 @@ const AllOrders = () => {
   // Mobile Card Component
   const OrderCard = ({ order }: { order: any }) => {
     const template = selectedTemplates[order._id] || "template1";
-    
+
     return (
       <Card className="p-4 mb-3 border border-gray-200">
         <div className="space-y-3">
           {/* Header */}
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs text-gray-500 font-mono">#{order._id?.slice(-6).toUpperCase()}</p>
-              <p className="font-semibold text-gray-900">{order.billingInformation?.name || "Unknown"}</p>
+              <p className="text-xs text-gray-500 font-mono">
+                #{order._id?.slice(-6).toUpperCase()}
+              </p>
+              <p className="font-semibold text-gray-900">
+                {order.billingInformation?.name || "Unknown"}
+              </p>
             </div>
             {getStatusBadge(order.status)}
           </div>
@@ -217,11 +297,17 @@ const AllOrders = () => {
           {/* Details */}
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">Amount</p>
-              <p className="font-bold text-gray-900 text-sm">৳{order.totalAmount?.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">
+                Amount
+              </p>
+              <p className="font-bold text-gray-900 text-sm">
+                ৳{order.totalAmount?.toLocaleString()}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">Date</p>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">
+                Date
+              </p>
               <p className="text-gray-700 text-sm">
                 {new Date(order.createdAt).toLocaleDateString("en-US", {
                   month: "short",
@@ -232,21 +318,31 @@ const AllOrders = () => {
           </div>
 
           {/* Invoice Template */}
-          <div>
+          <div >
             <p className="text-xs text-gray-500 mb-1">Invoice Template</p>
             <Select
               size="sm"
               aria-label="Select Invoice Template"
               selectedKeys={[template]}
+              
               onSelectionChange={(keys) => {
                 const val = Array.from(keys)[0] as string;
                 setSelectedTemplates((prev) => ({ ...prev, [order._id]: val }));
               }}
+              className="bg-white"
             >
-              <SelectItem key="template1" textValue="Template 1">Modern</SelectItem>
-              <SelectItem key="template2" textValue="Template 2">Professional</SelectItem>
-              <SelectItem key="template3" textValue="Template 3">Minimalist</SelectItem>
-              <SelectItem key="template4" textValue="Template 4">Purchase Order</SelectItem>
+              <SelectItem key="template1" textValue="Template 1">
+                Modern
+              </SelectItem>
+              <SelectItem key="template2" textValue="Template 2">
+                Professional
+              </SelectItem>
+              <SelectItem key="template3" textValue="Template 3">
+                Minimalist
+              </SelectItem>
+              <SelectItem key="template4" textValue="Template 4">
+                Purchase Order
+              </SelectItem>
             </Select>
           </div>
 
@@ -267,7 +363,12 @@ const AllOrders = () => {
               variant="flat"
               color="secondary"
               startContent={<LayoutTemplate className="w-4 h-4" />}
-              onClick={() => window.open(`/admin/orders/invoice/${order._id}?template=${template}`, "_blank")}
+              onClick={() =>
+                window.open(
+                  `/admin/orders/invoice/${order._id}?template=${template}`,
+                  "_blank",
+                )
+              }
               className="w-full"
             >
               Invoice
@@ -316,7 +417,9 @@ const AllOrders = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center px-1">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Order Management</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            Order Management
+          </h1>
           <p className="text-gray-500 text-xs md:text-sm mt-0.5">
             Manage your customer orders
           </p>
@@ -325,17 +428,26 @@ const AllOrders = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">
         {statCards.map((card, idx) => (
-           <Card key={idx} className="p-3 md:p-4 border-none shadow-sm flex flex-col justify-between">
-              <div className="flex items-start justify-between">
-                  <div>
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{card.title}</p>
-                      <h3 className="text-lg md:text-2xl font-bold text-gray-900 mt-0.5">{card.value}</h3>
-                  </div>
-                  <div className={`p-1.5 md:p-2 rounded-lg ${card.bg} ${card.color}`}>
-                      {cloneElement(card.icon as ReactElement, { size: 16 } as any)}
-                  </div>
+          <Card
+            key={idx}
+            className="p-3 md:p-4 border-none shadow-sm flex flex-col justify-between"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  {card.title}
+                </p>
+                <h3 className="text-lg md:text-2xl font-bold text-gray-900 mt-0.5">
+                  {card.value}
+                </h3>
               </div>
-           </Card>
+              <div
+                className={`p-1.5 md:p-2 rounded-lg ${card.bg} ${card.color}`}
+              >
+                {cloneElement(card.icon as ReactElement, { size: 16 } as any)}
+              </div>
+            </div>
+          </Card>
         ))}
       </div>
 
@@ -371,18 +483,57 @@ const AllOrders = () => {
                 size="sm"
                 variant="bordered"
               >
-                <SelectItem key="all" textValue="All Status">All Status</SelectItem>
-                <SelectItem key="pending" textValue="Pending">Pending</SelectItem>
-                <SelectItem key="delivered_approval_pending" textValue="Delivered (Approval Pending)">Delivered (Approval Pending)</SelectItem>
-                <SelectItem key="partial_delivered_approval_pending" textValue="Partial Delivered (Approval Pending)">Partial Delivered (Approval Pending)</SelectItem>
-                <SelectItem key="cancelled_approval_pending" textValue="Cancelled (Approval Pending)">Cancelled (Approval Pending)</SelectItem>
-                <SelectItem key="unknown_approval_pending" textValue="Unknown (Approval Pending)">Unknown (Approval Pending)</SelectItem>
-                <SelectItem key="delivered" textValue="Delivered">Delivered</SelectItem>
-                <SelectItem key="partial_delivered" textValue="Partial Delivered">Partial Delivered</SelectItem>
-                <SelectItem key="cancelled" textValue="Cancelled">Cancelled</SelectItem>
-                <SelectItem key="hold" textValue="Hold">Hold</SelectItem>
-                <SelectItem key="in_review" textValue="In Review">In Review</SelectItem>
-                <SelectItem key="unknown" textValue="Unknown">Unknown</SelectItem>
+                <SelectItem key="all" textValue="All Status">
+                  All Status
+                </SelectItem>
+                <SelectItem key="pending" textValue="Pending">
+                  Pending
+                </SelectItem>
+                <SelectItem
+                  key="delivered_approval_pending"
+                  textValue="Delivered (Approval Pending)"
+                >
+                  Delivered (Approval Pending)
+                </SelectItem>
+                <SelectItem
+                  key="partial_delivered_approval_pending"
+                  textValue="Partial Delivered (Approval Pending)"
+                >
+                  Partial Delivered (Approval Pending)
+                </SelectItem>
+                <SelectItem
+                  key="cancelled_approval_pending"
+                  textValue="Cancelled (Approval Pending)"
+                >
+                  Cancelled (Approval Pending)
+                </SelectItem>
+                <SelectItem
+                  key="unknown_approval_pending"
+                  textValue="Unknown (Approval Pending)"
+                >
+                  Unknown (Approval Pending)
+                </SelectItem>
+                <SelectItem key="delivered" textValue="Delivered">
+                  Delivered
+                </SelectItem>
+                <SelectItem
+                  key="partial_delivered"
+                  textValue="Partial Delivered"
+                >
+                  Partial Delivered
+                </SelectItem>
+                <SelectItem key="cancelled" textValue="Cancelled">
+                  Cancelled
+                </SelectItem>
+                <SelectItem key="hold" textValue="Hold">
+                  Hold
+                </SelectItem>
+                <SelectItem key="in_review" textValue="In Review">
+                  In Review
+                </SelectItem>
+                <SelectItem key="unknown" textValue="Unknown">
+                  Unknown
+                </SelectItem>
               </Select>
             </div>
           </div>
@@ -396,7 +547,9 @@ const AllOrders = () => {
             {meta.total || 0} Orders
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-400 font-bold hidden xs:block">SHOW:</span>
+            <span className="text-[10px] text-gray-400 font-bold hidden xs:block">
+              SHOW:
+            </span>
             <Select
               size="sm"
               className="w-20"
@@ -438,11 +591,11 @@ const AllOrders = () => {
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : orders.length === 0 ? (
-          <Card className="p-8 text-center text-gray-500">
-            No orders found
-          </Card>
+          <Card className="p-8 text-center text-gray-500">No orders found</Card>
         ) : (
-          orders.map((order: any) => <OrderCard key={order._id} order={order} />)
+          orders.map((order: any) => (
+            <OrderCard key={order._id} order={order} />
+          ))
         )}
       </div>
 
@@ -452,35 +605,45 @@ const AllOrders = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th 
+                <th
                   className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors"
-                  onClick={() => handleSort('_id')}
+                  onClick={() => handleSort("_id")}
                 >
                   <div className="flex items-center gap-1">
-                    Order ID {renderSortIcon('_id')}
+                    Order ID {renderSortIcon("_id")}
                   </div>
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase hidden xl:table-cell">Contact</th>
-                <th 
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  Customer
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase hidden xl:table-cell">
+                  Contact
+                </th>
+                <th
                   className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors"
-                  onClick={() => handleSort('createdAt')}
+                  onClick={() => handleSort("createdAt")}
                 >
                   <div className="flex items-center gap-1">
-                    Date {renderSortIcon('createdAt')}
+                    Date {renderSortIcon("createdAt")}
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors"
-                  onClick={() => handleSort('totalAmount')}
+                  onClick={() => handleSort("totalAmount")}
                 >
                   <div className="flex items-center gap-1 justify-end">
-                    Amount {renderSortIcon('totalAmount')}
+                    Amount {renderSortIcon("totalAmount")}
                   </div>
                 </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Invoice</th>
-                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase">
+                  Status
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  Invoice
+                </th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -495,7 +658,10 @@ const AllOrders = () => {
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                  <td
+                    colSpan={8}
+                    className="px-4 py-12 text-center text-gray-500"
+                  >
                     No orders found
                   </td>
                 </tr>
@@ -503,7 +669,10 @@ const AllOrders = () => {
                 orders.map((order: any) => {
                   const template = selectedTemplates[order._id] || "template1";
                   return (
-                    <tr key={order._id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={order._id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-3 py-3">
                         <span className="font-mono text-xs text-gray-500 whitespace-nowrap">
                           #{order._id?.slice(-6).toUpperCase()}
@@ -544,13 +713,24 @@ const AllOrders = () => {
                           selectedKeys={[template]}
                           onSelectionChange={(keys) => {
                             const val = Array.from(keys)[0] as string;
-                            setSelectedTemplates((prev) => ({ ...prev, [order._id]: val }));
+                            setSelectedTemplates((prev) => ({
+                              ...prev,
+                              [order._id]: val,
+                            }));
                           }}
                         >
-                          <SelectItem key="template1" textValue="Template 1">Modern</SelectItem>
-                          <SelectItem key="template2" textValue="Template 2">Professional</SelectItem>
-                          <SelectItem key="template3" textValue="Template 3">Minimalist</SelectItem>
-                          <SelectItem key="template4" textValue="Template 4">Purchase Order</SelectItem>
+                          <SelectItem key="template1" textValue="Template 1">
+                            Modern
+                          </SelectItem>
+                          <SelectItem key="template2" textValue="Template 2">
+                            Professional
+                          </SelectItem>
+                          <SelectItem key="template3" textValue="Template 3">
+                            Minimalist
+                          </SelectItem>
+                          <SelectItem key="template4" textValue="Template 4">
+                            Purchase Order
+                          </SelectItem>
                         </Select>
                       </td>
                       <td className="px-3 py-3">
@@ -560,7 +740,9 @@ const AllOrders = () => {
                             variant="flat"
                             color="primary"
                             isIconOnly
-                            onClick={() => navigate(`/admin/orders/${order._id}`)}
+                            onClick={() =>
+                              navigate(`/admin/orders/${order._id}`)
+                            }
                             title="View/Edit"
                           >
                             <Eye className="w-4 h-4" />
@@ -570,7 +752,12 @@ const AllOrders = () => {
                             variant="flat"
                             color="secondary"
                             isIconOnly
-                            onClick={() => window.open(`/admin/orders/invoice/${order._id}?template=${template}`, "_blank")}
+                            onClick={() =>
+                              window.open(
+                                `/admin/orders/invoice/${order._id}?template=${template}`,
+                                "_blank",
+                              )
+                            }
                             title="View Invoice"
                           >
                             <LayoutTemplate className="w-4 h-4" />
@@ -593,7 +780,9 @@ const AllOrders = () => {
                               variant="flat"
                               color="success"
                               isIconOnly
-                              onClick={() => handleCheckStatus(order.consignment_id)}
+                              onClick={() =>
+                                handleCheckStatus(order.consignment_id)
+                              }
                               title="Check Courier Status"
                             >
                               <RefreshCw className="w-4 h-4" />
@@ -623,12 +812,15 @@ const AllOrders = () => {
       {/* Bottom Pagination */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6 md:mt-8 bg-white p-2 md:p-4 rounded-xl border border-gray-100 shadow-sm">
         <div className="text-xs md:text-sm font-medium text-gray-500 w-full text-center md:text-left px-1">
-          Showing {Math.min((page - 1) * limit + 1, meta.total)} - {Math.min(page * limit, meta.total)} of {meta.total}
+          Showing {Math.min((page - 1) * limit + 1, meta.total)} -{" "}
+          {Math.min(page * limit, meta.total)} of {meta.total}
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 w-full md:w-auto">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 whitespace-nowrap font-bold uppercase">Rows:</span>
+            <span className="text-xs text-gray-500 whitespace-nowrap font-bold uppercase">
+              Rows:
+            </span>
             <Select
               size="sm"
               className="w-16"
