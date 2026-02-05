@@ -35,8 +35,11 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const effectiveQuantity = totalQuantity;
 
-  const { finalTotal, basePrice } =
-    usePriceCalculation(product, selectedVariants, effectiveQuantity);
+  const { finalTotal, basePrice } = usePriceCalculation(
+    product,
+    selectedVariants,
+    effectiveQuantity,
+  );
 
   const [currentImage, setCurrentImage] = useState<any>(null);
   const [couponCode, setCouponCode] = useState<string>("");
@@ -188,7 +191,10 @@ const LandingPage = ({ product }: { product: Product }) => {
       <SocialProof />
 
       {/* Checkout Section */}
-      <section id="order" className="py-20 bg-gradient-to-b from-slate-900 to-purple-900">
+      <section
+        id="order"
+        className="py-20 bg-gradient-to-b from-slate-900 to-purple-900"
+      >
         <div className="max-w-4xl mx-auto px-4">
           <AnimatedContainer>
             <CheckoutSection
@@ -210,7 +216,10 @@ const LandingPage = ({ product }: { product: Product }) => {
       {product?._id && (
         <section className="py-20 bg-slate-900">
           <div className="max-w-7xl mx-auto px-4">
-            <RelatedProducts productId={product._id} />
+            <RelatedProducts
+              currentProductId={product._id}
+              category={product.basicInfo.category}
+            />
           </div>
         </section>
       )}
