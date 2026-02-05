@@ -19,7 +19,6 @@ interface CartItem {
   image?: string;
   selectedVariants?: Array<{ group: string; value: string }>;
 }
-
 import { useEffect } from "react";
 import { useTracking } from "@/hooks/useTracking";
 
