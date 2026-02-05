@@ -4,9 +4,10 @@ import { Product } from '@/types/Product/Product';
 
 interface HeroProps {
   product: Product;
+  scrollToCheckout: () => void;
 }
 
-export default function Hero({ product }: HeroProps) {
+export default function Hero({ product, scrollToCheckout }: HeroProps) {
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -105,10 +106,9 @@ export default function Hero({ product }: HeroProps) {
             <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/30 to-purple-500/30 rounded-3xl blur-2xl -z-10" />
           </div>
 
-          {/* CTA Button */}
           <div className="reveal flex flex-col items-center gap-4">
-            <a
-              href="#order"
+            <button
+              onClick={scrollToCheckout}
               className="group inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-lg shadow-lg hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
             >
               <span>এখনই অর্ডার করুন</span>
@@ -116,7 +116,7 @@ export default function Hero({ product }: HeroProps) {
                 ৳{product?.price?.discounted || product?.price?.regular}
               </span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </a>
+            </button>
             <p className="text-white/60 text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               ফ্রি ডেলিভারি ঢাকার ভেতর

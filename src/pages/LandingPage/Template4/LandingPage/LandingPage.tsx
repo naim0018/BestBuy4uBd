@@ -15,10 +15,12 @@ import Hero from "../Components/Hero";
 import Features from "../Components/Features";
 import ProductShowcase from "../Components/ProductShowcase";
 import SocialProof from "../Components/SocialProof";
+import { useTracking } from "@/hooks/useTracking";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
   const host = useGetHost();
+  const { trackBeginCheckout, trackPurchase } = useTracking();
 
   // Hooks
   const {
@@ -149,6 +151,39 @@ const LandingPage = ({ product }: { product: Product }) => {
         totalAmount: total,
         appliedCoupon: appliedCoupon,
       });
+
+      trackPurchase({
+        transaction_id: (response as any).data._id,
+        value: total,
+        tax: 0,
+        shipping: product.additionalInfo?.freeShipping
+          ? 0
+          : formData.courierCharge === "insideDhaka"
+            ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
+            : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150),
+        currency: "BDT",
+        coupon: appliedCoupon.code,
+        items: [
+          {
+            item_id: product._id,
+            item_name: product.basicInfo.title,
+            price: finalTotal / effectiveQuantity,
+            quantity: effectiveQuantity,
+            item_category: product.basicInfo.category,
+            item_variant: selectedVariants
+              .map((v) => `${v.group}: ${v.item.value}`)
+              .join(", "),
+          },
+        ],
+        user_data: {
+          email: formData.email,
+          phone_number: formData.phone,
+          address: {
+            street: formData.address,
+            country: "Bangladesh",
+          },
+        },
+      });
     } catch (err: any) {
       toast.error(err.data?.message || "Order failed");
     }
@@ -170,7 +205,30 @@ const LandingPage = ({ product }: { product: Product }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
       {/* Hero Section */}
-      <Hero product={product} />
+      <Hero
+        product={product}
+        scrollToCheckout={() => {
+          trackBeginCheckout(
+            [
+              {
+                id: product._id,
+                name: product.basicInfo.title,
+                price: finalTotal / effectiveQuantity,
+                quantity: effectiveQuantity,
+                category: product.basicInfo.category,
+                variant: selectedVariants
+                  .map((v) => `${v.group}: ${v.item.value}`)
+                  .join(", "),
+              },
+            ],
+            finalTotal,
+            couponCode,
+          );
+          document
+            .getElementById("order")
+            ?.scrollIntoView({ behavior: "smooth" });
+        }}
+      />
 
       {/* Product Showcase with Variants */}
       <ProductShowcase

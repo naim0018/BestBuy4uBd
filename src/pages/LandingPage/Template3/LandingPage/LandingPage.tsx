@@ -20,7 +20,7 @@ import { useTracking } from "@/hooks/useTracking";
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
   const host = useGetHost();
-  const { trackViewItem, trackBeginCheckout, trackPurchase } = useTracking();
+  const { trackBeginCheckout, trackPurchase } = useTracking();
 
   // Hooks
   const {
@@ -61,17 +61,6 @@ const LandingPage = ({ product }: { product: Product }) => {
       if (product) dispatch(clearCart());
     };
   }, [product, dispatch]);
-
-  useEffect(() => {
-    if (product) {
-      trackViewItem({
-        id: product._id,
-        name: product.basicInfo.title,
-        price: product.price.discounted || product.price.regular,
-        category: product.basicInfo.category,
-      });
-    }
-  }, [product, trackViewItem]);
 
   if (!product) return null;
 

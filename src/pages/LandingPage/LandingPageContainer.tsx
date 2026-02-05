@@ -5,9 +5,12 @@ import Template2LandingPage from "./Template2/LandingPage/LandingPage";
 import Template3LandingPage from "./Template3/LandingPage/LandingPage";
 import Template4LandingPage from "./Template4/LandingPage/LandingPage";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { useTracking } from "@/hooks/useTracking";
+import { useEffect } from "react";
 
 const LandingPageContainer = () => {
   const { id } = useParams<{ id: string }>();
+  const { trackViewItem } = useTracking();
   
   const {
     data: response,
@@ -22,6 +25,17 @@ const LandingPageContainer = () => {
 
   const product = response?.data;
   const template = product?.additionalInfo?.landingPageTemplate || "template1";
+
+  useEffect(() => {
+    if (product) {
+      trackViewItem({
+        id: product._id,
+        name: product.basicInfo.title,
+        price: product.price.discounted || product.price.regular,
+        category: product.basicInfo.category,
+      });
+    }
+  }, [product, trackViewItem]);
 
   if (isLoading) {
     return (
