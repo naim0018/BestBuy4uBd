@@ -4,7 +4,6 @@ import Template1LandingPage from "./Template1/LandingPage";
 import Template2LandingPage from "./Template2/LandingPage/LandingPage";
 import Template3LandingPage from "./Template3/LandingPage/LandingPage";
 import Template4LandingPage from "./Template4/LandingPage/LandingPage";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { useTracking } from "@/hooks/useTracking";
 import { useEffect } from "react";
 
@@ -73,7 +72,6 @@ const LandingPageContainer = () => {
 
   return (
     <>
-      <ThemeSwitcher />
       {renderTemplate()}
     </>
   );

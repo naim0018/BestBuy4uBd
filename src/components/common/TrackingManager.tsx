@@ -7,25 +7,25 @@ const TrackingManager = () => {
   const location = useLocation();
     console.log(trackingData)
   useEffect(() => {
-    if (isLoading || !trackingData?.data) return;
-    const settings = trackingData.data;
+    // Initialize dataLayer immediately
     window.dataLayer = window.dataLayer || [];
-    // const settings = {
-    //     googleTagManagerId: "GTM-TEST1234",
-    //     googleAnalyticsId: "",
-    //     facebookPixelId: "",
-    //     tiktokPixelId: "",
-    //     clarityId: ""
-    // };
+
+    if (isLoading || !trackingData?.data) {
+      console.log("TrackingManager: Waiting for data...", { isLoading, hasData: !!trackingData?.data });
+      return;
+    }
+
+    const settings = trackingData.data;
 
     // 0. Google Tag Manager (GTM)
     const gtmId = settings.gtmId || 
-                  (settings.googleAnalyticsId?.startsWith('GTM-') ? settings.googleAnalyticsId : null) ||
-                  (settings.googleAnalyticsId?.startsWith('GT-') ? settings.googleAnalyticsId : null);
+                  (settings.googleAnalyticsId?.startsWith('GTM-') ? settings.googleAnalyticsId : null);
+    
+    // Google Tag (GT-) - specifically for newer tracking implementations
+    const googleTagId = (settings.googleAnalyticsId?.startsWith('GT-') ? settings.googleAnalyticsId : null);
 
     if (gtmId) {
         if (!document.querySelector(`script[src*="googletagmanager.com/gtm.js?id=${gtmId}"]`)) {
-            // GTM Head Script
             const script = document.createElement('script');
             script.innerHTML = `
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -36,7 +36,6 @@ const TrackingManager = () => {
             `;
             document.head.appendChild(script);
 
-            // GTM Body Noscript
             const noscript = document.createElement('noscript');
             const iframe = document.createElement('iframe');
             iframe.src = `https://www.googletagmanager.com/ns.html?id=${gtmId}`;
@@ -47,22 +46,21 @@ const TrackingManager = () => {
             noscript.appendChild(iframe);
             document.body.prepend(noscript);
             
-            console.log("GTM Injected with ID:", gtmId);
+            console.log("TrackingManager: GTM Injected ->", gtmId);
         }
 
-        // Track virtual pageview in GTM for SPA route changes
-        if (window.dataLayer) {
-            window.dataLayer.push({
-                event: 'pageview',
-                page_path: location.pathname + location.search,
-                page_title: document.title
-            });
-        }
+        // Track virtual pageview
+        window.dataLayer.push({
+            event: 'pageview',
+            page_path: location.pathname + location.search,
+            page_title: document.title
+        });
     }
 
-    // 1. Google Analytics 4 (GA4) - standalone injection if not GTM
-    if (settings.googleAnalyticsId && settings.googleAnalyticsId.startsWith('G-')) {
-        const gaId = settings.googleAnalyticsId;
+    // 1. Google Analytics 4 (GA4) or Google Tag (GT-)
+    const gaId = (settings.googleAnalyticsId?.startsWith('G-') ? settings.googleAnalyticsId : null) || googleTagId;
+    
+    if (gaId) {
         if (!document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`)) {
             const script = document.createElement('script');
             script.async = true;
@@ -77,10 +75,9 @@ const TrackingManager = () => {
                 gtag('config', '${gaId}');
             `;
             document.head.appendChild(configScript);
-            console.log("GA4 Injected with ID:", gaId);
+            console.log("TrackingManager: GA4/GoogleTag Injected ->", gaId);
         }
         
-        // Track pageview on route change
         if (window.gtag) {
             window.gtag('config', gaId, {
                 page_path: location.pathname + location.search,
@@ -160,7 +157,7 @@ const TrackingManager = () => {
         }
     }
 
-  }, [trackingData, location]);
+  }, [trackingData, location, isLoading]);
 
   return null;
 };

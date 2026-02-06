@@ -1,7 +1,5 @@
 import Layout from "./Layout/PublicLayout/Layout";
-import { ThemeSwitcher } from "./components/ThemeSwitcher";
 import { HeroUIProvider } from "@heroui/react";
-import TrackingManager from "./components/common/TrackingManager";
 import { useEffect } from "react";
 import { useGetHost } from "./utils/useGetHost";
 
@@ -22,8 +20,6 @@ function App() {
   return (
     <>
       <HeroUIProvider>
-        <TrackingManager />
-        <ThemeSwitcher />
         <Layout />
       </HeroUIProvider>
     </>

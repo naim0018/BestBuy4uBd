@@ -13,63 +13,71 @@ import { userRoutes } from "./UserRoutes";
 
 import ProtectedRoute from "./ProtectedRoute";
 
+import SharedLayout from "@/components/common/SharedLayout";
+
 const routes = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
-    children: [
-      ...routesGenerator(publicRoutes),
-      {
-        path: "/form",
-        element: <Form />,
-      },
-      {
-        path: "/login",
-        element: <Login />,
-      },
-      {
-        path: "/signup",
-        element: <Signup />,
-      },
-    ],
-  },
-  {
-    path: "/admin",
-    element: (
-      <ProtectedRoute allowedRoles={['admin']}>
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
+    element: <SharedLayout />,
     children: [
       {
-        index: true,
-        element: <Navigate to="dashboard" replace />,
+        path: "/",
+        element: <App />,
+        children: [
+          ...routesGenerator(publicRoutes),
+          {
+            path: "/form",
+            element: <Form />,
+          },
+          {
+            path: "/login",
+            element: <Login />,
+          },
+          {
+            path: "/signup",
+            element: <Signup />,
+          },
+        ],
       },
-      ...routesGenerator(adminRoutes),
-    ],
-  },
-  {
-    path: "/user",
-    element: (
-      <ProtectedRoute allowedRoles={['user', 'admin']}>
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
-    children: [
       {
-        index: true,
-        element: <Navigate to="dashboard" replace />,
+        path: "/admin",
+        element: (
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            index: true,
+            element: <Navigate to="dashboard" replace />,
+          },
+          ...routesGenerator(adminRoutes),
+        ],
       },
-      ...routesGenerator(userRoutes),
+      {
+        path: "/user",
+        element: (
+          <ProtectedRoute allowedRoles={['user', 'admin']}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            index: true,
+            element: <Navigate to="dashboard" replace />,
+          },
+          ...routesGenerator(userRoutes),
+        ],
+      },
+      {
+        path: "/:id",
+        element: <LandingPageContainer />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
+      },
     ],
-  },
-  {
-    path: "/:id",
-    element: <LandingPageContainer />,
-  },
-  {
-    path: "*",
-    element: <NotFound />,
   },
 ]);
 
