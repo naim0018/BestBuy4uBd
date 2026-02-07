@@ -132,7 +132,7 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
           </div>
 
           {/* Product Image (Right side) */}
-          <div className="absolute right-0 top-0 bottom-0 w-full h-full hidden md:flex items-center justify-center pointer-events-none">
+          <div className="absolute right-0 top-0 bottom-0 w-full h-full flex items-center justify-center pointer-events-none opacity-40 md:opacity-100">
             <div className="relative w-full h-full flex items-center justify-center ">
               {data.image ? (
                 <img

@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { clearCart } from "@/store/Slices/CartSlice";
 import { useCreateOrderMutation } from "@/store/Api/OrderApi";
 import { Product } from "@/types/Product/Product";
-import { useGetHost } from "@/utils/useGetHost";
 import AnimatedContainer from "@/common/Components/AnimatedContainer";
 import { useVariantQuantity } from "@/hooks/useVariantQuantity";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
@@ -19,7 +18,6 @@ import { useTracking } from "@/hooks/useTracking";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const dispatch = useDispatch();
-  const host = useGetHost();
   const { trackBeginCheckout, trackPurchase } = useTracking();
 
   // Hooks
@@ -111,20 +109,36 @@ const LandingPage = ({ product }: { product: Product }) => {
     try {
       const total = calculateTotal(formData.courierCharge);
 
+      // Transform variants for Order API
+      const variantsPayload: Record<string, any[]> = {};
+      selectedVariants.forEach((sv) => {
+        if (!variantsPayload[sv.group]) variantsPayload[sv.group] = [];
+        variantsPayload[sv.group].push({
+          value: sv.item.value,
+          price: sv.item.price,
+          quantity: sv.quantity,
+        });
+      });
+
       const orderData = {
-        host,
-        payload: {
-          items: selectedVariants.map((variant) => ({
-            product: product._id,
-            quantity: variant.quantity,
-            selectedVariants: {
-              [variant.group]: {
-                value: variant.item.value,
-                price: variant.item.price,
-                quantity: variant.quantity,
-              },
+        body: {
+          items: [
+            {
+              product: product._id,
+              image: currentImage?.url,
+              quantity: effectiveQuantity,
+              price: basePrice, // Base unit price (NOT finalTotal/quantity)
+              itemKey: `${product._id}-${Date.now()}`,
+              selectedVariants: variantsPayload,
             },
-          })),
+          ],
+          totalAmount: total,
+          deliveryCharge: product?.additionalInfo?.freeShipping
+            ? 0
+            : formData.courierCharge === "insideDhaka"
+              ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
+              : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150),
+          status: "pending",
           billingInformation: {
             name: formData.name,
             phone: formData.phone,
@@ -141,14 +155,17 @@ const LandingPage = ({ product }: { product: Product }) => {
 
       const response = await createOrder(orderData).unwrap();
       handleOrderSuccess({
-        orderId: (response as any).data._id,
+        orderId: (response as any).data.orderId || (response as any).data._id,
+        subTotal: (response as any).data.subTotal,
+        totalDiscount: (response as any).data.totalDiscount,
+        comboInfo: (response as any).data.comboInfo,
         productPrice: finalTotal,
         deliveryCharge: product?.additionalInfo?.freeShipping
           ? 0
           : formData.courierCharge === "insideDhaka"
             ? (product?.basicInfo?.deliveryChargeInsideDhaka ?? 80)
             : (product?.basicInfo?.deliveryChargeOutsideDhaka ?? 150),
-        totalAmount: total,
+        totalAmount: (response as any).data.totalAmount,
         appliedCoupon: appliedCoupon,
       });
 
@@ -167,7 +184,7 @@ const LandingPage = ({ product }: { product: Product }) => {
           {
             item_id: product._id,
             item_name: product.basicInfo.title,
-            price: finalTotal / effectiveQuantity,
+            price: basePrice,
             quantity: effectiveQuantity,
             item_category: product.basicInfo.category,
             item_variant: selectedVariants
@@ -213,7 +230,7 @@ const LandingPage = ({ product }: { product: Product }) => {
               {
                 id: product._id,
                 name: product.basicInfo.title,
-                price: finalTotal / effectiveQuantity,
+                price: basePrice,
                 quantity: effectiveQuantity,
                 category: product.basicInfo.category,
                 variant: selectedVariants

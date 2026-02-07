@@ -353,7 +353,7 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
               </div>
               
               <div className="space-y-2">
-                {product.comboPricing
+                {[...product.comboPricing]
                   .sort((a: any, b: any) => a.minQuantity - b.minQuantity)
                   .map((combo: any, index: number) => {
                     const savingsPerUnit = combo.discountType === 'per_product' 

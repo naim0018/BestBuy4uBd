@@ -35,7 +35,7 @@ const LandingPage = ({ product }: { product: Product }) => {
 
   const effectiveQuantity = totalQuantity;
 
-  const { finalTotal, subtotal } = usePriceCalculation(
+  const { finalTotal, basePrice, subtotal } = usePriceCalculation(
     product,
     selectedVariants,
     effectiveQuantity,
@@ -151,7 +151,7 @@ const LandingPage = ({ product }: { product: Product }) => {
               image: currentImage?.url,
               quantity: effectiveQuantity,
               itemKey: `${product._id}-${Date.now()}`,
-              price: finalTotal / effectiveQuantity, // Unit price
+              price: basePrice, // Base unit price (NOT finalTotal/quantity)
               selectedVariants: variantsPayload,
             },
           ],
@@ -179,14 +179,17 @@ const LandingPage = ({ product }: { product: Product }) => {
 
       const response = await createOrder(orderData).unwrap();
       setSuccessOrderDetails({
-        orderId: (response as any).data._id,
+        orderId: (response as any).data.orderId || (response as any).data._id,
+        subTotal: (response as any).data.subTotal,
+        totalDiscount: (response as any).data.totalDiscount,
+        comboInfo: (response as any).data.comboInfo,
         productPrice: finalTotal,
         deliveryCharge: product.additionalInfo?.freeShipping
           ? 0
           : formData.courierCharge === "insideDhaka"
             ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80)
             : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150),
-        totalAmount: totalAmount,
+        totalAmount: (response as any).data.totalAmount,
         appliedCoupon: appliedCoupon,
       });
 
@@ -204,7 +207,7 @@ const LandingPage = ({ product }: { product: Product }) => {
         items: [{
           item_id: product._id,
           item_name: product.basicInfo.title,
-          price: finalTotal / effectiveQuantity,
+          price: basePrice,
           quantity: effectiveQuantity,
           item_category: product.basicInfo.category,
           item_variant: selectedVariants.map((v) => `${v.group}: ${v.item.value}`).join(", "),
@@ -230,7 +233,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       [{
         id: product._id,
         name: product.basicInfo.title,
-        price: finalTotal / effectiveQuantity,
+        price: basePrice,
         quantity: effectiveQuantity,
         category: product.basicInfo.category,
         variant: selectedVariants.map((v) => `${v.group}: ${v.item.value}`).join(", "),
@@ -271,7 +274,6 @@ const LandingPage = ({ product }: { product: Product }) => {
         <LandingPageHeroSection
           product={product}
           currentImage={currentImage}
-          currentPrice={finalTotal}
           setCurrentImage={setCurrentImage}
           selectedVariants={selectedVariants}
           handleVariantSelect={addVariant}
@@ -286,7 +288,7 @@ const LandingPage = ({ product }: { product: Product }) => {
         <DynamicBanner
           title={product.basicInfo.title}
           regularPrice={product.price.regular}
-          discountedPrice={finalTotal}
+          discountedPrice={product.price.discounted || product.price.regular}
           onShopNow={scrollToCheckout}
           backgroundImage={product.images[0]?.url}
         />
@@ -352,7 +354,8 @@ const LandingPage = ({ product }: { product: Product }) => {
             <CheckoutSection
               orderDetails={{
                 title: product.basicInfo.title,
-                price: finalTotal,
+                price: basePrice,
+                payablePrice: finalTotal,
                 subtotal: subtotal,
                 variants: selectedVariants,
                 quantity: effectiveQuantity,

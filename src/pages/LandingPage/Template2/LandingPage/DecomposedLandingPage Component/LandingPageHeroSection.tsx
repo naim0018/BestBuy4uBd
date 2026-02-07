@@ -10,7 +10,6 @@ import ComboPricingDisplay from '../../../../../components/ComboPricingDisplay';
 interface LandingPageHeroSectionProps {
   product: Product;
   currentImage: ProductImage | null;
-  currentPrice: number;
   setCurrentImage: (img: ProductImage) => void;
   quantity: number;
   handleVariantSelect: (groupName: string, variant: ProductVariantItem) => void;
@@ -22,7 +21,6 @@ interface LandingPageHeroSectionProps {
 const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
   product,
   currentImage,
-  currentPrice,
   setCurrentImage,
   quantity,
   handleVariantSelect,
@@ -153,7 +151,7 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-100">
                 <PriceBreakdown
                   quantity={quantity}
-                  unitPrice={Math.round(quantity > 0 ? currentPrice / quantity : product.price.regular)}
+                  unitPrice={product.price.discounted || product.price.regular}
                   comboPricing={product.comboPricing || []}
                 />
               </div>

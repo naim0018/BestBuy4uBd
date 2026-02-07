@@ -162,7 +162,7 @@ const LandingPage = ({ product }: { product: Product }) => {
               image: currentImage?.url,
               quantity: effectiveQuantity,
               itemKey: `${product._id}-${Date.now()}`,
-              price: finalTotal / (effectiveQuantity || 1), // Unit price
+              price: basePrice, // Base unit price (NOT finalTotal/quantity)
               selectedVariants: variantsPayload,
             },
           ],
@@ -190,14 +190,17 @@ const LandingPage = ({ product }: { product: Product }) => {
 
       const response = await createOrder(orderData).unwrap();
       setSuccessOrderDetails({
-        orderId: (response as any).data._id,
+        orderId: (response as any).data.orderId || (response as any).data._id,
+        subTotal: (response as any).data.subTotal,
+        totalDiscount: (response as any).data.totalDiscount,
+        comboInfo: (response as any).data.comboInfo,
         productPrice: finalTotal,
         deliveryCharge: product.additionalInfo?.freeShipping
           ? 0
           : formData.courierCharge === "insideDhaka"
             ? (product.basicInfo.deliveryChargeInsideDhaka ?? 80)
             : (product.basicInfo.deliveryChargeOutsideDhaka ?? 150),
-        totalAmount: totalAmount,
+        totalAmount: (response as any).data.totalAmount,
         appliedCoupon: appliedCoupon,
       });
       setShowSuccessModal(true);
@@ -282,7 +285,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       <DynamicBanner
         title={basicInfo.title}
         regularPrice={price.regular}
-        discountedPrice={finalTotal} // Dynamic Total
+        discountedPrice={product.price.discounted || product.price.regular} 
         onShopNow={scrollToCheckout}
         backgroundImage={images?.[0]?.url}
       />
@@ -385,12 +388,12 @@ const LandingPage = ({ product }: { product: Product }) => {
             <div className="flex flex-col gap-6">
               <div className="flex items-end gap-3">
                 <span className="text-4xl font-bold text-primary-green">
-                  ৳{(totalQuantity > 0 ? finalTotal : basePrice).toLocaleString()}
+                  ৳{(product.price.discounted || product.price.regular).toLocaleString()}
                 </span>
-                {totalQuantity > 0 && subtotal > finalTotal && (
+                {product.price.discounted && product.price.discounted < product.price.regular && (
                   <div className="flex flex-col mb-1">
                     <span className="text-lg text-gray-400 line-through decoration-1">
-                      ৳{subtotal.toLocaleString()}
+                      ৳{product.price.regular.toLocaleString()}
                     </span>
                   </div>
                 )}
@@ -574,7 +577,8 @@ const LandingPage = ({ product }: { product: Product }) => {
               <CheckoutSection
                 orderDetails={{
                   title: basicInfo.title,
-                  price: finalTotal,
+                  price: basePrice,
+                  payablePrice: finalTotal,
                   subtotal: subtotal,
                   variants: selectedVariants,
                   quantity: effectiveQuantity,

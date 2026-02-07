@@ -45,6 +45,14 @@
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
+  /* Map Semantic Colors to Theme */
+  --color-bg-base: hsl(var(--bg-base));
+  --color-bg-surface: hsl(var(--bg-surface));
+  --color-text-primary: hsl(var(--text-primary));
+  --color-text-secondary: hsl(var(--text-secondary));
+  --color-text-muted: hsl(var(--text-muted));
+  --color-border-main: hsl(var(--border-main));
+
   /* Map Legacy Variable Names to the Theme System */
   --color-primary-green: var(--brand-500, #3bb77e);
   --color-primary-blue: var(--brand-500, #3e70ff);
@@ -87,7 +95,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 222.2 47.4% 20%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -97,9 +105,9 @@
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 215 20.2% 65.1%;
 
     /* Brand defaults */
     --brand-50: #eef2ff;
@@ -109,6 +117,14 @@
     --brand-600: #3460e0;
     --brand-700: #2a4ec2;
     --brand-shadow: rgba(62, 112, 255, 0.15);
+
+    /* Sidebar & Semantic Colors */
+    --bg-base: 210 40% 98%;
+    --bg-surface: 0 0% 100%;
+    --text-primary: 222.2 84% 4.9%;
+    --text-secondary: 215.4 16.3% 46.9%;
+    --text-muted: 215.4 16.3% 56.9%;
+    --border-main: 220 13% 91%;
   }
 
   /* Preset Themes */
@@ -159,6 +175,11 @@
     -ms-overflow-style: none !important;
   }
 
+  /* Focus Ring Reset */
+  *:focus {
+    @apply outline-none ring-0 focus-visible:ring-2 focus-visible:ring-brand-500/50;
+  }
+
   /* Theme-aware Headings */
   h1,
   h2,
@@ -171,11 +192,16 @@
 
   /* Global Soft Borders & Roundness */
   /* Target main content containers safely */
-  main div:not([class*="heroui"]), 
-  aside div:not([class*="heroui"]),
-  .custom-card {
-    @apply border-gray-200 rounded-lg;
+  /* main div:not([class*="heroui"]), 
+  aside div:not([class*="heroui"]), */
+  .custom-card,
+  .card-container {
+    @apply rounded-xl;
   }
+}
+
+@utility rounded-component {
+  @apply rounded-xl;
 }
 
 .no-scrollbar::-webkit-scrollbar {

@@ -123,7 +123,6 @@ const LandingPage = ({ product }: { product: Product }) => {
           quantity: sv.quantity,
         });
       });
-console.log(basePrice)
       const orderData = {
         body: {
           items: [

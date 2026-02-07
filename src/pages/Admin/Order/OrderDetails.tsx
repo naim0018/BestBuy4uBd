@@ -71,20 +71,30 @@ const OrderDetails = () => {
   const handleSendToSteadfast = async () => {
     if (!order) return;
     try {
+      // Align with backend payload structure
       const payload = {
-        invoice: order.orderId.toString(),
-        recipient_name: order.billingInformation?.name || order.name, // Fallback safely
-        recipient_phone: order.billingInformation?.phone || order.phone,
-        recipient_address: order.billingInformation?.address || order.address,
-        cod_amount: order.paymentMethod === "cod" ? order.totalAmount : 0,
-        note: order.note || "Handle with care",
+        invoice: order.orderId?.toString() || order._id?.toString(), // Use orderId (human-readable) with fallback
+        recipient_name: order.billingInformation?.name || order.name || "N/A",
+        recipient_phone: order.billingInformation?.phone || order.phone || "N/A",
+        recipient_address: order.billingInformation?.address || order.address || "N/A",
+        // Always send totalAmount for COD orders (case-insensitive check)
+        cod_amount: order.paymentMethod?.toLowerCase() === "cod" || 
+                    order.paymentMethod?.toLowerCase() === "cash on delivery" 
+                    ? order.totalAmount 
+                    : 0,
+        note: order.billingInformation?.notes || order.note || "Handle with care",
       };
+      
+      // Log payload for debugging
+      console.log("Steadfast Payload:", JSON.stringify(payload, null, 2));
+      
       const result = await createSteadfastOrder(payload).unwrap();
       toast.success(
         `Sent to Steadfast! Consignment ID: ${result?.consignment?.consignment_id}`
       );
       refetch(); // Refresh order details to show new status and disable button
     } catch (err: any) {
+      console.error("Steadfast Error:", err);
       toast.error(err?.data?.message || "Failed to send to Steadfast");
     }
   };
