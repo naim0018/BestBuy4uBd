@@ -1,5 +1,4 @@
 import Layout from "./Layout/PublicLayout/Layout";
-import { HeroUIProvider } from "@heroui/react";
 import { useEffect } from "react";
 import { useGetHost } from "./utils/useGetHost";
 
@@ -19,9 +18,7 @@ function App() {
 
   return (
     <>
-      <HeroUIProvider>
-        <Layout />
-      </HeroUIProvider>
+      <Layout />
     </>
   );
 }
