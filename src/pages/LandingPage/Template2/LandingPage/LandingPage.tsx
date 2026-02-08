@@ -350,7 +350,7 @@ const LandingPage = ({ product }: { product: Product }) => {
 
         {/* Checkout Section Integration */}
         <AnimatedContainer direction="none" delay={0.1}>
-          <div id="checkout" className="pt-20">
+          <div id="checkout" className="">
             <CheckoutSection
               orderDetails={{
                 title: product.basicInfo.title,
@@ -376,7 +376,7 @@ const LandingPage = ({ product }: { product: Product }) => {
         </AnimatedContainer>
 
         {/* Related Products */}
-        <div className="pt-20">
+        <div className="">
           <RelatedProducts
             currentProductId={product._id}
             category={product.basicInfo.category}

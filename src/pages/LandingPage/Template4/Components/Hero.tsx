@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { Play, Sparkles, ArrowRight, Star } from 'lucide-react';
-import { Product } from '@/types/Product/Product';
+import { useEffect, useRef } from "react";
+import { Play, Sparkles, ArrowRight, Star } from "lucide-react";
+import { Product } from "@/types/Product/Product";
 
 interface HeroProps {
   product: Product;
@@ -15,14 +15,14 @@ export default function Hero({ product, scrollToCheckout }: HeroProps) {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('active');
+            entry.target.classList.add("active");
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
-    const elements = heroRef.current?.querySelectorAll('.reveal');
+    const elements = heroRef.current?.querySelectorAll(".reveal");
     elements?.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
@@ -38,13 +38,22 @@ export default function Hero({ product, scrollToCheckout }: HeroProps) {
     >
       {/* Decorative floating orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '5s' }} />
+        <div
+          className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDuration: "8s" }}
+        />
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDuration: "10s", animationDelay: "2s" }}
+        />
+        <div
+          className="absolute top-1/2 left-1/3 w-64 h-64 bg-indigo-400/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDuration: "12s", animationDelay: "5s" }}
+        />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 ">
         <div className="flex flex-col items-center text-center">
           {/* Badge */}
           <div className="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-sm font-medium mb-6">
@@ -53,9 +62,9 @@ export default function Hero({ product, scrollToCheckout }: HeroProps) {
           </div>
 
           {/* Title */}
-          <h1 className="reveal text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight max-w-4xl mb-6">
+          <h1 className="reveal text-xl sm:text-2xl lg:text-4xl font-extrabold text-white leading-tight mb-6">
             <span className="block">{product?.basicInfo?.title}</span>
-            <span className="block mt-2 bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-300 bg-clip-text text-transparent">
+            <span className="block mt-2 bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-300 bg-clip-text text-2xl text-transparent">
               {product?.basicInfo?.brand}
             </span>
           </h1>
@@ -68,8 +77,8 @@ export default function Hero({ product, scrollToCheckout }: HeroProps) {
                   key={i}
                   className={`w-5 h-5 ${
                     i < Math.floor(rating)
-                      ? 'text-yellow-400 fill-yellow-400'
-                      : 'text-gray-400'
+                      ? "text-yellow-400 fill-yellow-400"
+                      : "text-gray-400"
                   }`}
                 />
               ))}
@@ -80,8 +89,8 @@ export default function Hero({ product, scrollToCheckout }: HeroProps) {
           </div>
 
           {/* Subtitle */}
-          <p className="reveal text-lg sm:text-xl text-white/80 max-w-2xl mb-10 leading-relaxed">
-            {product?.basicInfo?.description?.substring(0, 150)}...
+          <p className="reveal text-lg sm:text-xl text-white/80 max-w-4xl mb-10 leading-relaxed">
+            {product?.basicInfo?.description?.substring(0, 300)}...
           </p>
 
           {/* Product Image */}

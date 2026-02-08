@@ -125,6 +125,18 @@
     --text-secondary: 215.4 16.3% 46.9%;
     --text-muted: 215.4 16.3% 56.9%;
     --border-main: 220 13% 91%;
+
+
+  /* ===============================
+     Headings (Responsive)
+  =============================== */
+  --h1-size: clamp(2.2rem, 4vw, 3.5rem);   /* Page titles */
+  --h2-size: clamp(1.8rem, 3vw, 2.6rem);   /* Section titles */
+  --h3-size: clamp(1.4rem, 2.2vw, 2rem);   /* Sub-sections */
+  --h4-size: clamp(1.2rem, 1.6vw, 1.6rem); /* Card titles */
+  --h5-size: 1.125rem;                     /* Small headers */
+  --h6-size: 1rem;                         /* Labels / UI headers */
+
   }
 
   /* Preset Themes */

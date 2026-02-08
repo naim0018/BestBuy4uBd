@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { Product } from '@/types/Product/Product';
-import VariantSelector from '../../Components/VariantSelector';
-import ComboPricingDisplay from '@/components/ComboPricingDisplay';
-import PriceBreakdown from '@/components/PriceBreakdown';
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Product } from "@/types/Product/Product";
+import VariantSelector from "../../Components/VariantSelector";
+
+import PriceBreakdown from "@/components/PriceBreakdown";
 
 interface ProductShowcaseProps {
   product: Product;
@@ -11,7 +11,11 @@ interface ProductShowcaseProps {
   setCurrentImage: (image: any) => void;
   selectedVariants: any;
   handleVariantChange: (groupName: string, variant: any) => void;
-  updateVariantQuantity: (groupName: string, variantValue: string, quantity: number) => void;
+  updateVariantQuantity: (
+    groupName: string,
+    variantValue: string,
+    quantity: number,
+  ) => void;
   basePrice: number;
   effectiveQuantity: number;
 }
@@ -30,31 +34,35 @@ export default function ProductShowcase({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const handlePrevImage = () => {
-    const newIndex = activeImageIndex === 0 ? product.images.length - 1 : activeImageIndex - 1;
+    const newIndex =
+      activeImageIndex === 0 ? product.images.length - 1 : activeImageIndex - 1;
     setActiveImageIndex(newIndex);
     setCurrentImage(product.images[newIndex]);
   };
 
   const handleNextImage = () => {
-    const newIndex = activeImageIndex === product.images.length - 1 ? 0 : activeImageIndex + 1;
+    const newIndex =
+      activeImageIndex === product.images.length - 1 ? 0 : activeImageIndex + 1;
     setActiveImageIndex(newIndex);
     setCurrentImage(product.images[newIndex]);
   };
-
   return (
-    <section id="product" className="py-20 bg-gradient-to-b from-slate-900 to-purple-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section
+      id="product"
+      className="py-20 bg-gradient-to-b from-slate-900 to-purple-900"
+    >
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Image Gallery */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 group">
+            <div className="relative rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 group">
               <img
                 src={currentImage?.url || product.images[0]?.url}
                 alt={currentImage?.alt || product.images[0]?.alt}
                 className="w-full h-auto object-cover"
               />
-              
+
               {/* Navigation Arrows */}
               <button
                 onClick={handlePrevImage}
@@ -81,8 +89,8 @@ export default function ProductShowcase({
                   }}
                   className={`rounded-lg overflow-hidden border-2 transition-all ${
                     activeImageIndex === index
-                      ? 'border-emerald-500 shadow-lg shadow-emerald-500/50'
-                      : 'border-white/20 hover:border-white/40'
+                      ? "border-emerald-500 shadow-lg shadow-emerald-500/50"
+                      : "border-white/20 hover:border-white/40"
                   }`}
                 >
                   <img
@@ -102,33 +110,34 @@ export default function ProductShowcase({
               <h2 className="text-3xl font-bold text-white mb-2">
                 {product.basicInfo.title}
               </h2>
-              <p className="text-white/70 text-lg">
-                {product.basicInfo.brand}
-              </p>
+              <p className="text-white/70 text-lg">{product.basicInfo.brand}</p>
             </div>
 
             {/* Price Display */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
               <PriceBreakdown
                 quantity={effectiveQuantity}
                 unitPrice={basePrice}
                 comboPricing={product.comboPricing || []}
                 subtotal={subtotal}
+                className="bg-transparent text-white backdrop-blur-sm rounded-2xl p-6 border border-white/10"
               />
             </div>
 
             {/* Combo Pricing */}
-            {product.comboPricing && product.comboPricing.length > 0 && (
+            {/* {product.comboPricing && product.comboPricing.length > 0 && (
               <ComboPricingDisplay
                 comboPricing={product.comboPricing}
                 currentQuantity={effectiveQuantity}
               />
-            )}
+            )} */}
 
             {/* Variants */}
             {product.variants && product.variants.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-white">অপশন নির্বাচন করুন</h3>
+                <h3 className="text-xl font-bold text-white">
+                  অপশন নির্বাচন করুন
+                </h3>
                 <VariantSelector
                   selectedVariants={selectedVariants}
                   productVariants={product.variants}
@@ -139,21 +148,28 @@ export default function ProductShowcase({
             )}
 
             {/* Key Features */}
-            {product.basicInfo.keyFeatures && product.basicInfo.keyFeatures.length > 0 && (
-              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                <h3 className="text-xl font-bold text-white mb-4">মুখ্য বৈশিষ্ট্য</h3>
-                <ul className="space-y-3">
-                  {product.basicInfo.keyFeatures.slice(0, 5).map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="w-3 h-3 text-emerald-400" />
-                      </div>
-                      <span className="text-white/80 text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {product.basicInfo.keyFeatures &&
+              product.basicInfo.keyFeatures.length > 0 && (
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    মুখ্য বৈশিষ্ট্য
+                  </h3>
+                  <ul className="space-y-3">
+                    {product.basicInfo.keyFeatures
+                      .slice(0, 5)
+                      .map((feature, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Check className="w-3 h-3 text-emerald-400" />
+                          </div>
+                          <span className="text-white/80 text-sm">
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
 
             {/* CTA to Checkout */}
             <a

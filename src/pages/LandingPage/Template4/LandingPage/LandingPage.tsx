@@ -270,7 +270,7 @@ const LandingPage = ({ product }: { product: Product }) => {
         id="order"
         className="py-20 bg-gradient-to-b from-slate-900 to-purple-900"
       >
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="container mx-auto px-4">
           <AnimatedContainer>
             <CheckoutSection
               orderDetails={orderDetails}
@@ -282,6 +282,7 @@ const LandingPage = ({ product }: { product: Product }) => {
               couponCode={couponCode}
               setCouponCode={setCouponCode}
               applyCoupon={applyCoupon}
+              isDark={true}
             />
           </AnimatedContainer>
         </div>
@@ -290,7 +291,7 @@ const LandingPage = ({ product }: { product: Product }) => {
       {/* Related Products */}
       {product?._id && (
         <section className="py-20 bg-slate-900">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="container mx-auto px-4">
             <RelatedProducts
               currentProductId={product._id}
               category={product.basicInfo.category}

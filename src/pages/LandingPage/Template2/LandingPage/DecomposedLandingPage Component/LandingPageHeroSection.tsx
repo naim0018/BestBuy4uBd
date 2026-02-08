@@ -1,11 +1,15 @@
-import React from 'react';
+import React from "react";
 
-import { Product, ProductImage, ProductVariantItem } from '@/types/Product/Product';
-import TrustSignals from './TrustSignals';
-import AnimatedContainer from '@/common/Components/AnimatedContainer';
-import VariantSelector from '@/pages/LandingPage/Components/VariantSelector';
-import PriceBreakdown from '../../../../../components/PriceBreakdown';
-import ComboPricingDisplay from '../../../../../components/ComboPricingDisplay';
+import {
+  Product,
+  ProductImage,
+  ProductVariantItem,
+} from "@/types/Product/Product";
+import TrustSignals from "./TrustSignals";
+import AnimatedContainer from "@/common/Components/AnimatedContainer";
+import VariantSelector from "@/pages/LandingPage/Components/VariantSelector";
+import PriceBreakdown from "../../../../../components/PriceBreakdown";
+import ComboPricingDisplay from "../../../../../components/ComboPricingDisplay";
 
 interface LandingPageHeroSectionProps {
   product: Product;
@@ -28,14 +32,13 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
   onVariantUpdate,
   scrollToCheckout,
 }) => {
-
   const { title } = product.basicInfo;
   const { regular: regularPrice, discounted: discountedPrice } = product.price;
 
   // --- Helper: Savings ---
   const hasDiscount = discountedPrice && discountedPrice < regularPrice;
 
-   const savings = hasDiscount
+  const savings = hasDiscount
     ? product.price.regular - (product.price.discounted || 0)
     : 0;
 
@@ -59,13 +62,20 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
               <div className="relative group">
                 <div className="aspect-square rounded-2xl overflow-hidden bg-white shadow-2xl border border-gray-100">
                   <img
-                    src={currentImage?.url || "https://placehold.co/600x600?text=No+Image"}
+                    src={
+                      currentImage?.url ||
+                      "https://placehold.co/600x600?text=No+Image"
+                    }
                     alt={currentImage?.alt || title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement;
-                      if (target.src !== "https://placehold.co/600x600?text=No+Image") {
-                        target.src = "https://placehold.co/600x600?text=No+Image";
+                      if (
+                        target.src !==
+                        "https://placehold.co/600x600?text=No+Image"
+                      ) {
+                        target.src =
+                          "https://placehold.co/600x600?text=No+Image";
                       }
                     }}
                   />
@@ -113,13 +123,19 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                     }`}
                   >
                     <img
-                      src={img.url || "https://placehold.co/100x100?text=No+Image"}
+                      src={
+                        img.url || "https://placehold.co/100x100?text=No+Image"
+                      }
                       alt={img.alt}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.currentTarget as HTMLImageElement;
-                        if (target.src !== "https://placehold.co/100x100?text=No+Image") {
-                          target.src = "https://placehold.co/100x100?text=No+Image";
+                        if (
+                          target.src !==
+                          "https://placehold.co/100x100?text=No+Image"
+                        ) {
+                          target.src =
+                            "https://placehold.co/100x100?text=No+Image";
                         }
                       }}
                     />
@@ -156,8 +172,8 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                 />
               </div>
 
-               {/* Combo Pricing UI */}
-               <div className="mt-4">
+              {/* Combo Pricing UI */}
+              <div className="mt-4">
                 <ComboPricingDisplay
                   comboPricing={product.comboPricing || []}
                   currentQuantity={quantity}
@@ -172,40 +188,41 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
               </div>
 
               {/* Key Features */}
-              {product.basicInfo.keyFeatures && product.basicInfo.keyFeatures.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    ✨ Key Features
-                  </h3>
-                  <ul className="space-y-2">
-                    {product.basicInfo.keyFeatures
-                      .slice(0, 4)
-                      .map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-gray-700">{feature}</span>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              )}
+              {product.basicInfo.keyFeatures &&
+                product.basicInfo.keyFeatures.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      ✨ Key Features
+                    </h3>
+                    <ul className="space-y-2">
+                      {product.basicInfo.keyFeatures
+                        .slice(0, 4)
+                        .map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-3">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
+                            <span className="text-gray-700">{feature}</span>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
 
               {/* Variants & Quantity */}
               <div className="space-y-4">
-                 <VariantSelector
-                    selectedVariants={selectedVariants}
-                    productVariants={product.variants}
-                    onVariantAdd={handleVariantSelect}
-                    onVariantUpdate={onVariantUpdate}
-                    showBaseVariant={true}
-                    className="text-sm"
-                 />
+                <VariantSelector
+                  selectedVariants={selectedVariants}
+                  productVariants={product.variants}
+                  onVariantAdd={handleVariantSelect}
+                  onVariantUpdate={onVariantUpdate}
+                  showBaseVariant={true}
+                  className="text-sm"
+                />
               </div>
 
               {/* CTA Button */}
               <button
                 onClick={scrollToCheckout}
-                className="animate-bounce w-full bg-gradient-to-r from-green-600 to-green-500 text-white py-4 px-8 rounded-2xl text-xl font-bold hover:from-green-700 hover:to-green-600 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
+                className="animate-bounce w-full bg-gradient-to-r from-green-600 to-green-500 text-white py-4 px-8 rounded-2xl text-xl font-bold hover:from-green-700 hover:to-green-600 transition-all duration-1500 transform hover:scale-105 shadow-xl hover:shadow-2xl"
               >
                 🛒 অর্ডার করুন এখনই (Order Now)
               </button>

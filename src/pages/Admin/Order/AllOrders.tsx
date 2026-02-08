@@ -2,7 +2,10 @@ import {
   useGetAllOrdersQuery,
   useDeleteOrderMutation,
 } from "@/store/Api/OrderApi";
-import { useCreateSteadfastOrderMutation } from "@/store/Api/SteadfastApi";
+import {
+  useCreateSteadfastOrderMutation,
+  useBulkCheckSteadfastStatusMutation,
+} from "@/store/Api/SteadfastApi";
 import { useGetDashboardStatsQuery } from "@/store/Api/DashboardApi";
 import { toast } from "sonner";
 import {
@@ -29,7 +32,7 @@ import {
   Input,
   Pagination,
 } from "@heroui/react";
-import { useState, useEffect, cloneElement, ReactElement } from "react";
+import { useState, useEffect, useCallback, cloneElement, ReactElement } from "react";
 
 const AllOrders = () => {
   const [selectedTemplates, setSelectedTemplates] = useState<
@@ -44,6 +47,7 @@ const AllOrders = () => {
     key: string;
     direction: "asc" | "desc" | null;
   }>({ key: "createdAt", direction: "desc" });
+  const [syncedPages, setSyncedPages] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -68,6 +72,7 @@ const AllOrders = () => {
   const [deleteOrder] = useDeleteOrderMutation();
   const [createSteadfastOrder, { isLoading: isSendingToSteadfast }] =
     useCreateSteadfastOrderMutation();
+  const [bulkCheckStatus, { isLoading: isSyncingStatus }] = useBulkCheckSteadfastStatusMutation();
   const navigate = useNavigate();
 
   const handleSort = (key: string) => {
@@ -112,6 +117,44 @@ const AllOrders = () => {
     } catch {
       toast.error("An error occurred while syncing status");
     }
+  };
+
+  // Automatic Sync Logic
+  const performBulkSync = useCallback(async (ordersToSync: any[]) => {
+    if (ordersToSync.length === 0) return;
+    const consignmentIds = ordersToSync.map((o: any) => o.consignment_id);
+    try {
+      await bulkCheckStatus(consignmentIds).unwrap();
+      toast.success(`Synced status for ${consignmentIds.length} orders`);
+      refetch();
+    } catch (err) {
+      console.error("Failed to sync statuses automatically", err);
+    }
+  }, [bulkCheckStatus, refetch]);
+
+  useEffect(() => {
+    if (!apiData?.data || isLoading || syncedPages.has(page)) return;
+
+    const ordersToSync = apiData.data.filter((order: any) => 
+      order.consignment_id && 
+      !['delivered', 'cancelled', 'partial_delivered'].includes(order.status?.toLowerCase())
+    );
+
+    if (ordersToSync.length > 0) {
+      performBulkSync(ordersToSync);
+    }
+    
+    setSyncedPages(prev => new Set(prev).add(page));
+  }, [apiData, page, isLoading, syncedPages, performBulkSync]);
+
+  const handleManualSync = () => {
+    if (!apiData?.data) return;
+    const ordersToSync = apiData.data.filter((order: any) => order.consignment_id);
+    if (ordersToSync.length === 0) {
+      toast.info("No orders with consignment ID to sync");
+      return;
+    }
+    performBulkSync(ordersToSync);
   };
 
   const orders = apiData?.data || [];
@@ -424,6 +467,16 @@ const AllOrders = () => {
             Manage your customer orders
           </p>
         </div>
+        <Button
+          size="sm"
+          color="primary"
+          variant="flat"
+          startContent={<RefreshCw className={`w-4 h-4 ${isSyncingStatus ? 'animate-spin' : ''}`} />}
+          onClick={handleManualSync}
+          isLoading={isSyncingStatus}
+        >
+          Sync Status
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">

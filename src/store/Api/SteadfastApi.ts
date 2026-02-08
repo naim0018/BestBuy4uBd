@@ -13,6 +13,14 @@ export const steadfastApi = baseApi.injectEndpoints({
     checkSteadfastStatus: build.query({
       query: (id) => `/steadfast/status/${id}`,
     }),
+    bulkCheckSteadfastStatus: build.mutation({
+      query: (consignmentIds) => ({
+        url: "/steadfast/status/bulk",
+        method: "POST",
+        body: { consignmentIds },
+      }),
+      invalidatesTags: ["Orders"],
+    }),
     getSteadfastBalance: build.query({
       query: () => "/steadfast/balance",
       providesTags: ["Steadfast"],
@@ -34,7 +42,8 @@ export const steadfastApi = baseApi.injectEndpoints({
 export const {
   useCreateSteadfastOrderMutation,
   useCheckSteadfastStatusQuery,
+  useBulkCheckSteadfastStatusMutation,
   useGetSteadfastBalanceQuery,
   useGetSteadfastReturnRequestsQuery,
-  useGetSteadfastPoliceStationsQuery
+  useGetSteadfastPoliceStationsQuery,
 } = steadfastApi;
