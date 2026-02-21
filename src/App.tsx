@@ -15,7 +15,6 @@ function App() {
       favicon.href = brand.logo;
     }
   }, [brand]);
-
   return (
     <>
       <Layout />
