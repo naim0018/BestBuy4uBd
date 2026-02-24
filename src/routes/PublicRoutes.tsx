@@ -1,5 +1,5 @@
 import Contact from "../pages/Public/Contact/Contact";
-import Services from "@/pages/Public/Services/Services";
+// import Services from "@/pages/Public/Services/Services";
 import Home from "@/pages/Public/Home/Home1/Home";
 import Shop from "@/pages/Public/Shop/Shop";
 import ProductDetails from "@/pages/Public/Shop/Components/ProductDetails/ProductDetails";
@@ -43,9 +43,9 @@ export const publicRoutes = [
     path: "/cart",
     element: <Cart />,
   },
-  {
-    label: "Services",
-    path: "/services",
-    element: <Services />,
-  },
+  // {
+  //   label: "Services",
+  //   path: "/services",
+  //   element: <Services />,
+  // },
 ];
