@@ -1,10 +1,10 @@
 import { BannerGrid } from "./Components/Banner";
 import FeaturedCategories from "./Components/Categories/FeaturedCategories";
-// import DealsSection from "./Components/Deals/DealsSection";
 import NewArrival from "./Components/NewArrival/NewArrival";
-
 import RecommendedSection from "./Components/Recommended/RecommendedSection";
 import PromotionalSection from "./Components/Promotional/PromotionalSection";
+import TrendingNow from "@/components/TrendingNow/TrendingNow";
+import FeaturedSection from "@/components/FeaturedSection/FeaturedSection";
 
 const Home = () => {
   return (
@@ -16,17 +16,20 @@ const Home = () => {
           {/* Shop by Category */}
           <FeaturedCategories />
 
+          {/* Recommended For You Section */}
+          <RecommendedSection />
+
+          {/* Trending Now Section */}
+          <TrendingNow />
+
+          {/* Featured Collections Section (banner grid like the image) */}
+          <FeaturedSection />
+
           {/* New Arrival Section */}
           <NewArrival />
 
-          {/* Recommended Section */}
-          <RecommendedSection />
-
           {/* Promotional Section */}
           <PromotionalSection />
-
-          {/* Today's Hot Deals */}
-          {/* <DealsSection /> */}
         </div>
       </>
     </>
