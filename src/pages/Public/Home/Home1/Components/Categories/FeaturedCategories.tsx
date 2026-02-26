@@ -11,7 +11,10 @@ import {
   Tablet,
   Printer,
   ShoppingBag,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetAllCategoriesQuery } from "../../../../../../store/Api/CategoriesApi";
 
@@ -55,12 +58,43 @@ const getCategoryConfig = (name: string) => {
 
 const FeaturedCategories = () => {
   const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const {
     data: categoriesData,
     isLoading,
     isError,
   } = useGetAllCategoriesQuery({});
   const categories = categoriesData?.data || [];
+
+  const handleScroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      const scrollAmount = 300;
+      const halfWidth = (scrollWidth - 24) / 2; // Subtracting gap/padding adjustments
+
+      if (direction === "right") {
+        if (scrollLeft + clientWidth >= scrollWidth - 50) {
+          // If at the very end, jump back to start of second half
+          scrollRef.current.scrollLeft = 0;
+        } else {
+          scrollRef.current.scrollBy({
+            left: scrollAmount,
+            behavior: "smooth",
+          });
+        }
+      } else {
+        if (scrollLeft <= 50) {
+          // If at the very start, jump to middle
+          scrollRef.current.scrollLeft = halfWidth;
+        } else {
+          scrollRef.current.scrollBy({
+            left: -scrollAmount,
+            behavior: "smooth",
+          });
+        }
+      }
+    }
+  };
 
   if (isError) {
     return null; // Or handle error gracefully
@@ -77,8 +111,8 @@ const FeaturedCategories = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl font-black text-brand-700 mb-4 text-center">
-            <span className="text-secondary">Shop</span> by Category
+          <h2 className="text-3xl font-bold text-brand-700 mb-4 text-center">
+            Shop by Category
           </h2>
           <p className="text-text-muted max-w-2xl mx-auto uppercase tracking-widest text-xs font-medium">
             Explore our curated collections of premium products across multiple
@@ -86,105 +120,99 @@ const FeaturedCategories = () => {
           </p>
         </motion.div>
 
-        {/* Categories Marquee */}
-        <div 
-          className="overflow-hidden relative pause-on-hover py-4"
-          style={{
-            maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
-          }}
-        >
-          <div className="flex w-max animate-marquee gap-6">
-            {isLoading
-              ? Array.from({ length: 12 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="bg-bg-base rounded-component p-6 border border-border-main shadow-lg animate-pulse w-[250px] flex-shrink-0"
-                  >
-                    <div className="flex flex-col items-center space-y-4">
-                      <div className="w-12 h-12 rounded-component bg-border-main/50" />
-                      <div className="h-4 w-24 bg-border-main/50 rounded" />
-                    </div>
-                  </div>
-                ))
-              : [...categories, ...categories].map((category: any, index: number) => {
-                  const { icon: Icon, color } = getCategoryConfig(category.name);
-                  return (
-                    <motion.div
-                      key={`${category._id}-${index}`}
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5 }}
-                      whileHover={{
-                        scale: 1.05,
-                        y: -8,
-                      }}
-                      onClick={() => navigate(`/shop?category=${encodeURIComponent(category.name)}`)}
-                      className="group cursor-pointer w-[250px] flex-shrink-0"
+        {/* Categories Carousel Container */}
+        <div className="relative group/carousel">
+          {/* Navigation Buttons */}
+          <button
+            onClick={() => handleScroll("left")}
+            className="absolute top-1/2 -translate-y-1/2 z-20 bg-brand-500 shadow-md p-1.5 rounded opacity-0 group-hover/carousel:opacity-100 transition-opacity -left-4 hidden md:flex items-center justify-center hover:bg-brand-600"
+          >
+            <ChevronLeft size={18} className="text-white" />
+          </button>
+
+          <button
+            onClick={() => handleScroll("right")}
+            className="absolute top-1/2 -translate-y-1/2 z-20 bg-brand-500 shadow-md p-1.5 rounded opacity-0 group-hover/carousel:opacity-100 transition-opacity -right-4 hidden md:flex items-center justify-center hover:bg-brand-600"
+          >
+            <ChevronRight size={18} className="text-white" />
+          </button>
+
+          {/* Scrolling Area */}
+          <div
+            ref={scrollRef}
+            className="overflow-x-auto no-scrollbar relative pause-on-hover py-4 scroll-smooth"
+            style={{
+              maskImage:
+                "linear-gradient(to right, transparent, black 1%, black 99%, transparent)",
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent, black 1%, black 99%, transparent)",
+            }}
+          >
+            <div className="flex w-max animate-marquee gap-6">
+              {isLoading
+                ? Array.from({ length: 12 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="bg-white rounded-lg border border-gray-100 shadow-sm animate-pulse w-[180px] aspect-[1/1.1] p-4 flex flex-col items-center justify-center"
                     >
-                      {/* Glassmorphic Card */}
-                      <div className="relative bg-bg-surface rounded-component p-6 border border-border-main shadow-lg  transition-all duration-300 overflow-hidden">
-                        {/* Gradient Background on Hover */}
-                        <div
-                          className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-                        />
-
-                        {/* Content */}
-                        <div className="relative z-10 flex flex-col items-center text-center space-y-4">
-                          {/* Icon with Gradient */}
-                          <motion.div
-                            whileHover={{ rotate: 360 }}
-                            transition={{ duration: 0.6 }}
-                            className={`size-12 rounded-component bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}
-                          >
-                            <Icon
-                              className="w-6 h-6 text-white"
-                              strokeWidth={2}
-                            />
-                          </motion.div>
-
-                          {/* Category Name */}
-                          <h3 className="text-text-primary line-clamp-1 h6">
-                            {category.name}
-                          </h3>
-
-                          {/* View Collection Label */}
-                          <p className="small text-text-muted">View Collection</p>
-
-                          {/* CTA Arrow */}
-                          <motion.div
-                            className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                            initial={{ x: -10 }}
-                            whileHover={{ x: 0 }}
-                          >
-                            <span className="text-[10px] font-semibold text-primary flex items-center gap-2 uppercase tracking-widest">
-                              Explore
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 5l7 7-7 7"
+                      <div className="w-24 h-24 rounded bg-gray-50 mb-6" />
+                      <div className="w-full h-8 bg-gray-100 rounded" />
+                    </div>
+                  ))
+                : [...categories, ...categories].map(
+                    (category: any, index: number) => {
+                      const { icon: Icon } = getCategoryConfig(category.name);
+                      return (
+                        <motion.div
+                          key={`${category._id}-${index}`}
+                          initial={{ opacity: 0 }}
+                          whileInView={{ opacity: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.5 }}
+                          whileHover={{
+                            y: -5,
+                          }}
+                          onClick={() =>
+                            navigate(
+                              `/shop?category=${encodeURIComponent(category.name)}`,
+                            )
+                          }
+                          className="group cursor-pointer w-[180px] flex-shrink-0"
+                        >
+                          {/* Simple Brand Card */}
+                          <div className="relative bg-white  rounded-lg border border-gray-100 shadow-sm transition-all duration-300 flex flex-col items-center justify-center">
+                            {/* Image/Icon Container */}
+                            <div className="w-full aspect-square flex items-center justify-center">
+                              {category.image ? (
+                                <img
+                                  src={category.image}
+                                  alt={category.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
-                              </svg>
-                            </span>
-                          </motion.div>
-                        </div>
+                              ) : (
+                                <div className="size-16 rounded-full bg-gray-50 flex items-center justify-center">
+                                  <Icon
+                                    className="w-8 h-8 text-gray-400"
+                                    strokeWidth={1.5}
+                                  />
+                                </div>
+                              )}
+                            </div>
 
-                        {/* Decorative Corner */}
-                        <div
-                          className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${color} opacity-10 rounded-bl-full`}
-                        />
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                            {/* Pill Label at Bottom */}
+                            <div className="absolute bottom-3 left-3 right-3">
+                              <div className="bg-gray-100/80 group-hover:bg-gray-200/80 transition-colors py-1.5 px-2 rounded flex items-center justify-center">
+                                <h3 className="text-[11px] font-bold text-gray-800 uppercase tracking-tight text-center truncate">
+                                  {category.name}
+                                </h3>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    },
+                  )}
+            </div>
           </div>
         </div>
       </div>

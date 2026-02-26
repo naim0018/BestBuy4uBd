@@ -1,5 +1,6 @@
 import Settings from "@/pages/Admin/Settings/Settings";
 import Dashboard from "@/pages/Admin/Dashboard/Dashboard";
+import Category from "@/pages/Admin/Category/Category";
 import AddProduct from "@/pages/Admin/AddProduct/AddProduct";
 import Product from "@/pages/Admin/Product/Product";
 import CMS from "@/pages/Admin/CMS/CMS";
@@ -16,7 +17,8 @@ import {
   LayoutTemplate,
   ShoppingCart,
   Briefcase,
-  Truck
+  Truck,
+  LayoutGrid
 } from "lucide-react";
 
 export const adminRoutes = [
@@ -64,6 +66,12 @@ export const adminRoutes = [
         icon: <PackageSearch />,
         path: "add-product",
         element: <AddProduct />,
+      },
+      {
+        label: "Categories",
+        icon: <LayoutGrid />,
+        path: "categories",
+        element: <Category />,
       },
       {
         path: "update-product/:id",
