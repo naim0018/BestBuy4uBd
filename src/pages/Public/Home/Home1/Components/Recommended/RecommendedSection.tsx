@@ -11,135 +11,78 @@ import { useGetAllProductsQuery } from "../../../../../../store/Api/ProductApi";
 const FETCH_LIMIT = 12;
 const ITEMS_PER_VIEW = 4;
 
-const RecommendedSection = () => {
-  const [activeTab, setActiveTab] = useState("all");
+const mapProductData = (item: any): ProductData => ({
+  id: item._id,
+  category: item.basicInfo.category,
+  title: item.basicInfo.title,
+  brand: item.basicInfo.brand,
+  price: item.price.discounted || item.price.regular,
+  oldPrice: item.price.discounted ? item.price.regular : undefined,
+  discount: item.price.discounted
+    ? Math.round(
+        ((item.price.regular - item.price.discounted) / item.price.regular) *
+          100,
+      )
+    : undefined,
+  rating: item.rating?.average || 0,
+  reviews: item.rating?.count || 0,
+  image: item.images?.[0]?.url || "https://placehold.co/400",
+  colors:
+    item.variants?.flatMap((v: any) => v.items.map((i: any) => i.value)) || [],
+  tag:
+    item.stockStatus === "Out of Stock"
+      ? "SALE"
+      : item.additionalInfo?.isFeatured
+        ? "HOT"
+        : undefined,
+  description: item.basicInfo.description,
+  purchases: item.sold || 0,
+});
+
+const CategorySection = ({
+  category,
+  label,
+  onOpenModal,
+}: {
+  category: string;
+  label: string;
+  onOpenModal: (product: ProductData) => void;
+}) => {
   const [currentPage, setCurrentPage] = useState(0);
-  const [selectedProduct, setSelectedProduct] = useState<ProductData | null>(
-    null,
-  );
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // 1. Fetch Categories for Tabs
-  const { data: categoriesData, isLoading: isCategoriesLoading } =
-    useGetAllCategoriesQuery({});
-
-  const tabs = useMemo(() => {
-    const fetchedTabs =
-      categoriesData?.data?.map((cat: any) => ({
-        id: cat.name,
-        label: cat.name,
-        value: cat.name,
-      })) || [];
-
-    return [{ id: "all", label: "All Products", value: "all" }, ...fetchedTabs];
-  }, [categoriesData]);
-
-  // 2. Fetch Products
-  const queryOptions = useMemo(() => {
-    const options: any = {
-      page: 1, // Always fetch page 1
-      limit: FETCH_LIMIT, // Fetch 12 items
-    };
-    if (activeTab !== "all") {
-      options.category = activeTab;
-    }
-    return options;
-  }, [activeTab]);
 
   const {
     data: productsData,
-    isLoading: isProductsLoading,
+    isLoading,
     isFetching,
-  } = useGetAllProductsQuery(queryOptions);
+  } = useGetAllProductsQuery({
+    category,
+    limit: FETCH_LIMIT,
+  });
 
   const products: ProductData[] = useMemo(() => {
     if (!productsData?.data) return [];
-
-    return productsData.data.map((item: any) => ({
-      id: item._id,
-      category: item.basicInfo.category,
-      title: item.basicInfo.title,
-      brand: item.basicInfo.brand,
-      price: item.price.discounted || item.price.regular,
-      oldPrice: item.price.discounted ? item.price.regular : undefined,
-      discount: item.price.discounted
-        ? Math.round(
-            ((item.price.regular - item.price.discounted) /
-              item.price.regular) *
-              100,
-          )
-        : undefined,
-      rating: item.rating?.average || 0,
-      reviews: item.rating?.count || 0,
-      image: item.images?.[0]?.url || "https://placehold.co/400",
-      colors:
-        item.variants?.flatMap((v: any) => v.items.map((i: any) => i.value)) ||
-        [],
-      tag:
-        item.stockStatus === "Out of Stock"
-          ? "SALE"
-          : item.additionalInfo?.isFeatured
-            ? "HOT"
-            : undefined,
-      description: item.basicInfo.description,
-      purchases: item.sold || 0,
-    }));
+    return productsData.data.map(mapProductData);
   }, [productsData]);
 
   const totalPages = Math.ceil(products.length / ITEMS_PER_VIEW) || 1;
 
-  const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
-    setCurrentPage(0);
-  };
-
-  const handleOpenModal = (product: ProductData) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  };
-
-  const nextPage = () => setCurrentPage((prev) => (prev + 1) % totalPages);
-  const prevPage = () =>
-    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+  if (!isLoading && products.length < 2) return null;
 
   const currentProducts = products.slice(
     currentPage * ITEMS_PER_VIEW,
     (currentPage + 1) * ITEMS_PER_VIEW,
   );
 
+  const nextPage = () => setCurrentPage((prev) => (prev + 1) % totalPages);
+  const prevPage = () =>
+    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+
   return (
-    <section className="py-16 bg-bg-base relative overflow-hidden">
+    <section className=" relative overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-black text-[#0F172A] mb-2">
-            <span className="text-secondary">Recomm</span>ended
-          </h2>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
-          {isCategoriesLoading
-            ? // Simple Skeleton for tabs
-              Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-10 w-24 bg-border-main/20 rounded-component animate-pulse"
-                />
-              ))
-            : tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`px-5 py-2 rounded-component text-sm font-semibold transition-all duration-300 ${
-                    activeTab === tab.id
-                      ? "bg-secondary text-white shadow-md transform scale-105"
-                      : "bg-bg-surface text-text-primary hover:bg-bg-surface/80 border border-border-main"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+          <h2 className="text-3xl font-bold text-brand-700 mb-2">{label}</h2>
         </div>
 
         {/* Carousel Content */}
@@ -170,8 +113,7 @@ const RecommendedSection = () => {
           {/* Product Grid */}
           <div className="flex-1 overflow-hidden min-h-[420px]">
             <AnimatePresence mode="wait">
-              {isProductsLoading || isFetching ? (
-                // Product Grid Skeleton
+              {isLoading || isFetching ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
                   {Array.from({ length: ITEMS_PER_VIEW }).map((_, i) => (
                     <div
@@ -190,28 +132,20 @@ const RecommendedSection = () => {
                 </div>
               ) : (
                 <motion.div
-                  key={`${activeTab}-${currentPage}`}
+                  key={`${category}-${currentPage}`}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.4 }}
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full"
                 >
-                  {currentProducts.length > 0 ? (
-                    currentProducts.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        onOpen={handleOpenModal}
-                      />
-                    ))
-                  ) : (
-                    <div className="col-span-full flex flex-col items-center justify-center text-text-muted h-64">
-                      <p className="text-lg">
-                        No products found in this category.
-                      </p>
-                    </div>
-                  )}
+                  {currentProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onOpen={onOpenModal}
+                    />
+                  ))}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -260,14 +194,85 @@ const RecommendedSection = () => {
           </button>
         </div>
       </div>
+    </section>
+  );
+};
 
-      {/* Modal */}
+const RecommendedSection = () => {
+  const [selectedProduct, setSelectedProduct] = useState<ProductData | null>(
+    null,
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { data: categoriesData, isLoading: isCategoriesLoading } =
+    useGetAllCategoriesQuery({});
+
+  const categories = useMemo(() => {
+    return (
+      categoriesData?.data?.map((cat: any) => ({
+        id: cat.name,
+        name: cat.name,
+      })) || []
+    );
+  }, [categoriesData]);
+
+  const handleOpenModal = (product: ProductData) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  if (isCategoriesLoading) {
+    return (
+      <div className="container mx-auto px-4">
+        {Array.from({ length: 2 }).map((_, idx) => (
+          <div key={idx} className="pt-20 animate-pulse">
+            <div className="flex justify-center mb-12">
+              <div className="h-10 w-48 bg-bg-surface rounded-component" />
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex flex-col items-center gap-4 bg-bg-surface p-2 rounded-component border border-border-main w-12 h-40" />
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-bg-surface rounded-component p-4 border border-border-main shadow-sm h-[380px]"
+                  >
+                    <div className="w-full h-48 bg-bg-base rounded-inner mb-4" />
+                    <div className="h-4 w-3/4 bg-bg-base rounded mb-2" />
+                    <div className="h-4 w-1/2 bg-bg-base rounded mb-4" />
+                    <div className="flex justify-between mt-auto">
+                      <div className="h-6 w-20 bg-bg-base rounded" />
+                      <div className="h-8 w-8 bg-bg-base rounded-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="hidden md:flex flex-col items-center gap-4 bg-bg-surface p-2 rounded-component border border-border-main w-12 h-40" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-10">
+      {categories.map((category: any) => (
+        <CategorySection
+          key={category.id}
+          category={category.name}
+          label={category.name}
+          onOpenModal={handleOpenModal}
+        />
+      ))}
+
+      {/* Shared Modal */}
       <ProductModal
         product={selectedProduct}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-    </section>
+    </div>
   );
 };
 

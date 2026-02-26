@@ -75,7 +75,7 @@ const NewArrival: React.FC = () => {
         rating: product.rating?.average || 0,
         reviews: product.rating?.count || 0,
         purchases: product.sold || 0,
-        badges: hasCombo ? ["NEW", "GIFT"] : ["NEW"],
+        badges: hasCombo ? ["COMBO"] : ["NEW"],
         promotion,
         product,
       };
@@ -87,13 +87,13 @@ const NewArrival: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-white">
+    <section className="pb-20 bg-white">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div className="flex items-baseline gap-2">
-            <h2 className="text-3xl font-black text-brand-700 mb-0">
-              <span className="text-secondary">New</span> Arrival
+            <h2 className="text-3xl font-bold text-brand-700 mb-0">
+              New Arrival
             </h2>
           </div>
 

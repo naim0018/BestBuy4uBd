@@ -50,8 +50,8 @@ const PromotionalSection = () => {
   const positionClasses = getPositionClasses(promoBanner.textPosition);
 
   return (
-    <section className="container mx-auto px-4 pb-12">
-      <div className="relative w-full h-[400px] rounded-container overflow-hidden group">
+    <section className="container mx-auto px-4 rounded-container">
+      <div className="relative w-full aspect-[16/6] rounded-container overflow-hidden group rounded-xl">
         {/* Background Image */}
         <img
           src={promoBanner.image}
@@ -69,16 +69,16 @@ const PromotionalSection = () => {
             style={{ color: promoBanner.textColor }}
           >
             {promoBanner.subtitle && (
-              <span 
+              <span
                 className="block font-bold uppercase tracking-[0.3em] mb-4 opacity-80"
                 style={{ fontSize: promoBanner.subtitleSize || "0.875rem" }}
               >
                 {promoBanner.subtitle}
               </span>
             )}
-            
+
             {promoBanner.title && promoBanner.showTitle !== false && (
-              <h2 
+              <h2
                 className="font-black mb-6 leading-[1.1] uppercase tracking-tighter"
                 style={{ fontSize: promoBanner.titleSize || "inherit" }}
               >

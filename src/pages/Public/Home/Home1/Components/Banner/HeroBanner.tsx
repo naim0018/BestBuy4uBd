@@ -54,7 +54,7 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
   return (
     <div
       className={`relative ${data.bgColor || "bg-bg-base"
-        } rounded-container overflow-hidden h-full min-h-[400px] flex items-center transition-colors duration-500`}
+        } rounded-container overflow-hidden h-full min-h-[400px] flex items-center transition-colors duration-500 rounded-xl`}
     >
       <AnimatePresence mode="wait">
         <motion.div

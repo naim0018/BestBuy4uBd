@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Heart, Star, ShoppingCart, Eye } from "lucide-react";
+import { Heart, ShoppingCart, Eye } from "lucide-react";
 import { ProductData } from "./types";
 import { useDispatch, useSelector } from "react-redux";
 import { addToWishlist, removeFromWishlist } from "@/store/Slices/wishlistSlice";
@@ -71,11 +71,16 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
       </button>
 
       {/* Image Container */}
-      <div className="relative h-48 mb-4 flex items-center justify-center overflow-hidden card-inner bg-bg-base group-hover:bg-bg-surface transition-colors ">
+      <div className="relative h-48 mb-4 flex items-center justify-center overflow-hidden card-inner bg-bg-base group-hover:bg-bg-surface transition-colors rounded-xl shadow-sm">
+          {product.discount && (
+              <span className="absolute top-4 left-4 text-[10px] font-bold text-white bg-brand-600 rounded-full px-1.5 py-0.5 z-10">
+                {product.discount}% OFF
+              </span>
+            )}
         <motion.img
           src={product.image}
           alt={product.title}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-xl"
         />
 
         {/* Hover Actions Overlay */}
@@ -111,7 +116,7 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
         </h3>
 
         {/* Rating */}
-        <div className="flex items-center gap-1 mb-3">
+        {/* <div className="flex items-center gap-1 mb-3">
           <div className="flex text-accent">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
@@ -125,20 +130,16 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
             ))}
           </div>
           <span className="small">({product.reviews})</span>
-        </div>
+        </div> */}
 
         <div className="mt-auto flex items-center justify-between">
-          <div>
+          <div className="flex items-center">
             {product.oldPrice && (
               <span className="text-xs text-text-muted line-through mr-2">
                 ৳{product.oldPrice.toFixed(0)}
               </span>
             )}
-            {product.discount && (
-              <span className="text-[10px] font-bold text-danger bg-danger/10 px-1.5 py-0.5 rounded-inner">
-                {product.discount}% OFF
-              </span>
-            )}
+          
             <div className="text-lg font-bold text-text-primary">
               ৳
               {product.price.toLocaleString(undefined, {

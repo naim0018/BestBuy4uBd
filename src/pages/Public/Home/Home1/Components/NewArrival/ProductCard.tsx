@@ -60,7 +60,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <Card
-      className={`group relative h-full bg-white border border-gray-100 shadow-none hover:shadow-lg transition-all duration-500 rounded-xl overflow-hidden ${className}`}
+      className={`group relative h-full bg-white border border-gray-200 shadow-none hover:shadow-lg transition-all duration-500 rounded-xl overflow-hidden ${className}`}
     >
       <Link to={`/product/${id}`} className="flex flex-col h-full">
         <CardBody className="p-0 overflow-visible flex flex-col h-full">
@@ -75,7 +75,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                       <Chip
                         key={idx}
                         size="sm"
-                        className="bg-black text-white text-[9px] uppercase font-bold px-2.5 h-6 min-w-fit border-none"
+                        className="bg-brand-600 text-white text-[9px] uppercase font-bold px-2.5 h-6 min-w-fit border-none"
                       >
                         {badge}
                       </Chip>
@@ -177,13 +177,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </div>
           ) : (
             /* REGULAR CARD LAYOUT */
-            <div className="flex flex-col h-full p-5 border rounded-xl">
-              <h3 className="font-bold text-[#0F172A] text-base leading-tight mb-2 line-clamp-2">
-                {title}
-              </h3>
-
+            <div className="flex flex-col h-full p-5 border border-gray-50 rounded-xl">
               <div className="flex flex-col items-center text-center">
-                <div className="flex items-center my-2 justify-between w-full">
+                {/* <div className="flex items-center my-2 justify-between w-full">
                   <div className="flex items-center gap-1">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
@@ -204,25 +200,28 @@ const ProductCard: React.FC<ProductCardProps> = ({
                       <Chip
                         key={idx}
                         size="sm"
-                        className="bg-black text-white text-[9px] uppercase font-bold px-2.5 h-6 min-w-fit border-none"
+                        className="bg-brand-600 text-white text-[9px] uppercase font-bold px-2.5 h-6 min-w-fit border-none"
                       >
                         {badge}
                       </Chip>
                     ))}
                   </div>
-                </div>
+                </div> */}
 
-                <div className=" bg-gray-50/50 mb-4 rounded-lg flex items-center justify-center border p-0">
+                <div className=" bg-gray-50/50 mb-4 rounded-lg flex items-center justify-center  p-0">
                   <img
                     src={image}
                     alt={title}
-                    className=" aspect-square rounded-lg border group-hover:scale-102 transition-transform duration-500"
+                    className=" aspect-square rounded-lg  group-hover:scale-102 transition-transform duration-500"
                   />
                 </div>
+                <h3 className="font-semibold text-[#0F172A] text-sm leading-tight mb-4 line-clamp-2">
+                  {title}
+                </h3>
                 <div className="mt-auto flex items-center justify-between w-full">
-                  <span className="text-[11px] text-gray-400 font-medium">
+                  {/* <span className="text-[11px] text-gray-400 font-medium">
                     {purchases}
-                  </span>
+                  </span> */}
                   <div className="text-xl font-black text-brand-700">
                     ৳{price}
                   </div>

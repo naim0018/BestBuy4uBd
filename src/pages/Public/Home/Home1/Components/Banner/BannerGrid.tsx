@@ -92,7 +92,7 @@ const BannerGrid = () => {
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 space-y-6 space-x-6">
         {/* Left Column - Large Hero Banner Carousel */}
-        <div className="lg:col-span-2 lg:row-span-2 h-[500px]">
+        <div className="lg:col-span-2 lg:row-span-2 h-[500px] rounded-xl overflow-hidden">
           {heroBanners.length > 0 ? (
             <HeroBanner banners={heroBanners} />
           ) : (
