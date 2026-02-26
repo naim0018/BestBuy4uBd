@@ -8,13 +8,11 @@ export const productApi = baseApi.injectEndpoints({
     getAllProducts: builder.query<ApiResponse<Product[]>, void | QueryOptions>({
       query: (options = {}) => {
         const queryParams = new URLSearchParams();
-        Object.entries(options as QueryOptions).forEach(
-          ([key, value]: [string, string]) => {
-            if (value !== "" && value !== "undefined" && value !== null) {
-              queryParams.append(key, value);
-            }
+        Object.entries(options as QueryOptions).forEach(([key, value]) => {
+          if (value !== "" && value !== undefined && value !== null) {
+            queryParams.append(key, String(value));
           }
-        );
+        });
         return {
           url: `/product`,
           method: "GET",
@@ -24,7 +22,10 @@ export const productApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map(({ _id }) => ({ type: "Product" as const, id: _id })),
+              ...result.data.map(({ _id }) => ({
+                type: "Product" as const,
+                id: _id,
+              })),
               { type: "Product", id: "LIST" },
             ]
           : [{ type: "Product", id: "LIST" }],
@@ -64,7 +65,10 @@ export const productApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map(({ _id }) => ({ type: "Product" as const, id: _id })),
+              ...result.data.map(({ _id }) => ({
+                type: "Product" as const,
+                id: _id,
+              })),
               { type: "Product", id: "LIST" },
             ]
           : [{ type: "Product", id: "LIST" }],

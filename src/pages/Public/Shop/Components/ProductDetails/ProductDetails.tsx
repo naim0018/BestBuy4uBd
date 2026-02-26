@@ -49,7 +49,7 @@ const ProductDetailsSkeleton = () => (
           </div>
         </div>
         <div className="lg:col-span-5 space-y-8">
-          <Skeleton className="h-10 w-3/4 rounded-lg" />
+          <Skeleton className="h-10 w-3/4 rounded-xl" />
           <Skeleton className="h-6 w-1/4 rounded-md" />
           <Skeleton className="h-24 w-full rounded-xl" />
           <Skeleton className="h-64 w-full rounded-xl" />
@@ -265,7 +265,7 @@ const ProductDetails = () => {
                   )}
                 </div>
 
-                <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm border border-gray-200 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm border border-gray-200 p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300">
                   <Maximize2 className="w-5 h-5 text-gray-700" />
                 </div>
               </div>
@@ -275,7 +275,7 @@ const ProductDetails = () => {
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
-                    className={`size-20 rounded-lg border transition-all p-1 bg-white flex-shrink-0 relative group ${
+                    className={`size-20 rounded-xl border transition-all p-1 bg-white flex-shrink-0 relative group ${
                       selectedImage === idx ? "border-secondary ring-2 ring-secondary/20" : "border-gray-200 hover:border-gray-400"
                     }`}
                   >
@@ -368,7 +368,7 @@ const ProductDetails = () => {
                     size="lg"
                     onPress={handleAddToCart}
                     isDisabled={totalQuantity === 0}
-                    className="flex-1 h-12 bg-secondary text-white font-bold text-base shadow-lg shadow-secondary/20 rounded-lg hover:shadow-secondary/40 transition-all"
+                    className="flex-1 h-12 bg-secondary text-white font-bold text-base shadow-lg shadow-secondary/20 rounded-xl hover:shadow-secondary/40 transition-all"
                     startContent={<ShoppingCart className="w-5 h-5" />}
                   >
                     Add to Cart - ৳{finalTotal.toLocaleString()}
@@ -377,7 +377,7 @@ const ProductDetails = () => {
                     isIconOnly
                     size="lg"
                     onPress={handleWishlist}
-                    className={`h-12 w-12 rounded-lg border transition-all ${
+                    className={`h-12 w-12 rounded-xl border transition-all ${
                       isWishlisted 
                         ? "bg-danger border-danger text-white shadow-lg" 
                         : "bg-white border-gray-200 text-gray-400 hover:border-danger hover:text-danger"
@@ -390,8 +390,8 @@ const ProductDetails = () => {
 
             {/* Trust Signals */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white p-3 rounded-lg border border-gray-100 flex items-center gap-3 shadow-sm">
-                <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+              <div className="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center">
                   <Truck className="w-5 h-5 text-gray-700" />
                 </div>
                 <div>
@@ -399,8 +399,8 @@ const ProductDetails = () => {
                   <p className="text-[10px] text-gray-500">2-3 Days</p>
                 </div>
               </div>
-              <div className="bg-white p-3 rounded-lg border border-gray-100 flex items-center gap-3 shadow-sm">
-                <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+              <div className="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center">
                   <ShieldCheck className="w-5 h-5 text-gray-700" />
                 </div>
                 <div>
@@ -467,7 +467,7 @@ const ProductDetails = () => {
                       Have questions about this product? Contact our support team for assistance.
                     </p>
                     <Divider className="bg-white/10" />
-                    <Button className="w-full bg-white text-slate-900 font-bold text-xs uppercase tracking-widest h-10 rounded-lg">
+                    <Button className="w-full bg-white text-slate-900 font-bold text-xs uppercase tracking-widest h-10 rounded-xl">
                       Contact Us
                     </Button>
                   </div>

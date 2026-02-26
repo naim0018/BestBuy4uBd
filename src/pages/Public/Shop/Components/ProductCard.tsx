@@ -105,7 +105,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="group relative card-container p-4 h-full flex flex-col hover:border-primary/20"
+        className="group relative card-container p-4 h-full flex flex-col hover:border-primary/20 rounded-xl"
       >
         {/* Badges */}
         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
@@ -139,15 +139,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </button>
 
         {/* Image Container */}
-        <div className="relative h-56 flex items-center justify-center overflow-hidden card-inner bg-bg-base/50 group-hover:bg-bg-surface transition-colors duration-500 border border-b-0 rounded-b-none -mb-1 hover:mb-0">
+        <div className="relative h-56 flex items-center justify-center overflow-hidden card-inner group-hover:bg-bg-surface transition-colors duration-500 border border-gray-100 rounded-b-none -mb-1 hover:mb-0 rounded-t-xl ">
           <motion.img
             src={images[0]?.url || "https://via.placeholder.com/300"}
             alt={basicInfo.title}
-            className="h-full w-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 rounded-t-xl"
           />
 
           {/* Hover Actions Overlay */}
-          <div className="absolute inset-0 bg-black/10 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
+          <div className="absolute inset-0 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
             <motion.button
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.9 }}
@@ -174,7 +174,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col p-3 bg-gray-100 rounded-lg">
+        <div className="flex-1 flex flex-col p-3 shadow-sm rounded-xl">
           <div className="text-[10px] font-semibold text-secondary uppercase tracking-widest mb-1">
             {basicInfo.category}
           </div>

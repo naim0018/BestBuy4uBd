@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTracking } from "@/hooks/useTracking";
-import { Search, X, ChevronRight, SlidersHorizontal, RotateCcw, Star, CheckCircle2 } from "lucide-react";
+import { Search, X, ChevronRight, SlidersHorizontal, RotateCcw, CheckCircle2 } from "lucide-react";
 import { Slider } from "@heroui/react";
 
 interface FilterSidebarProps {
@@ -10,6 +10,7 @@ interface FilterSidebarProps {
     minPrice: number;
     maxPrice: number;
     search: string;
+    sort: string;
     stockStatus?: string;
     rating?: number;
   };
@@ -29,6 +30,8 @@ const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) 
 
   // Debounce search
   useEffect(() => {
+    if (localSearch === filters.search) return;
+
     const timer = setTimeout(() => {
       setFilters((prev: any) => ({ ...prev, search: localSearch, page: 1 }));
       if (localSearch) {
@@ -36,7 +39,7 @@ const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) 
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [localSearch, setFilters, trackSearch]);
+  }, [localSearch, filters.search, setFilters, trackSearch]);
 
   const handlePriceChange = () => {
     trackFilterApply("price_range", `${priceRange.min}-${priceRange.max}`);
@@ -88,7 +91,7 @@ const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) 
           placeholder="Search products..."
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 bg-bg-base border-none rounded-component text-text-primary focus:ring-2 focus:ring-secondary/50 transition-all placeholder:text-text-muted font-medium"
+          className="w-full pl-11 pr-4 py-3 bg-bg-base border-none rounded-xl text-text-primary focus:ring-2 focus:ring-secondary/50 transition-all placeholder:text-text-muted font-medium"
         />
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-secondary transition-colors" />
         {localSearch && (
@@ -101,13 +104,33 @@ const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) 
         )}
       </div>
 
+      {/* Sort By - Moved from Top Bar */}
+      <div className="space-y-4">
+        <h3 className="h6 uppercase tracking-widest pl-1 text-[10px] font-bold text-text-muted">Sort By</h3>
+        <div className="relative group">
+          <select
+            value={filters.sort}
+            onChange={(e) => setFilters((prev: any) => ({ ...prev, sort: e.target.value, page: 1 }))}
+            className="w-full appearance-none bg-bg-base border-none rounded-xl px-5 py-3 text-sm font-semibold text-text-primary focus:ring-2 focus:ring-secondary/50 cursor-pointer transition-all outline-none"
+          >
+            <option value="-createdAt">Latest Arrivals</option>
+            <option value="createdAt">Oldest First</option>
+            <option value="price.regular">Price: Low to High</option>
+            <option value="-price.regular">Price: High to Low</option>
+            <option value="-sold">Most Sales</option>
+            <option value="-price.savingsPercentage">Best Discount</option>
+          </select>
+          <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none rotate-90" />
+        </div>
+      </div>
+
       {/* Categories */}
       <div className="space-y-4">
-        <h3 className="h6 uppercase tracking-widest pl-1">Categories</h3>
-        <div className="flex flex-col gap-1 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+        <h3 className="h6 uppercase tracking-widest pl-1 text-[10px] font-bold text-text-muted">Categories</h3>
+        <div className="flex flex-col gap-1 pr-2">
           <button
             onClick={() => setFilters((prev: any) => ({ ...prev, category: "", page: 1 }))}
-            className={`flex items-center justify-between px-4 py-2.5 rounded-component transition-all duration-300 font-medium ${filters.category === ""
+            className={`flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-300 font-medium ${filters.category === ""
               ? "bg-secondary text-white shadow-lg shadow-secondary/20"
               : "text-text-secondary hover:bg-bg-base"
               }`}
@@ -122,7 +145,7 @@ const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) 
                 if (filters.category !== cat.name) trackFilterApply("category", cat.name);
                 setFilters((prev: any) => ({ ...prev, category: cat.name, page: 1 }))
               }}
-              className={`flex items-center justify-between px-4 py-2.5 rounded-component transition-all duration-300 font-medium ${filters.category === cat.name
+              className={`flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-300 font-medium ${filters.category === cat.name
                 ? "bg-secondary text-white shadow-lg shadow-secondary/20 scale-[1.02]"
                 : "text-text-secondary hover:bg-bg-base hover:translate-x-1"
                 }`}
@@ -138,7 +161,7 @@ const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) 
       {/* Price Range */}
       <div className="space-y-6">
         <div className="flex items-center justify-between pl-1">
-          <h3 className="h6 uppercase tracking-widest">Price Range</h3>
+          <h3 className="h6 uppercase tracking-widest text-[10px] font-bold text-text-muted">Price Range</h3>
           <span className="text-[10px] font-bold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
             ৳{priceRange.min} - ৳{priceRange.max}
           </span>
@@ -149,7 +172,7 @@ const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) 
             label="Price"
             step={100}
             minValue={0}
-            maxValue={100000}
+            maxValue={20000}
             defaultValue={[filters.minPrice, filters.maxPrice]}
             value={[priceRange.min, priceRange.max]}
             onChange={(value: any) => setPriceRange({ min: value[0], max: value[1] })}
@@ -170,51 +193,25 @@ const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) 
 
         <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="space-y-1.5">
-            <label className="tag text-text-muted ml-1">Min</label>
+            <label className="tag text-text-muted ml-1 text-[10px]">Min</label>
             <input
               type="number"
               value={priceRange.min}
               onChange={(e) => setPriceRange({ ...priceRange, min: Number(e.target.value) })}
               onBlur={handlePriceChange}
-              className="w-full px-3 py-2 bg-bg-base border-none rounded-component text-text-primary text-xs font-semibold focus:ring-1 focus:ring-secondary/50"
+              className="w-full px-3 py-2 bg-bg-base border-none rounded-xl text-text-primary text-xs font-semibold focus:ring-1 focus:ring-secondary/50"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="tag text-text-muted ml-1">Max</label>
+            <label className="tag text-text-muted ml-1 text-[10px]">Max</label>
             <input
               type="number"
               value={priceRange.max}
               onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
               onBlur={handlePriceChange}
-              className="w-full px-3 py-2 bg-bg-base border-none rounded-component text-text-primary text-xs font-semibold focus:ring-1 focus:ring-secondary/50"
+              className="w-full px-3 py-2 bg-bg-base border-none rounded-xl text-text-primary text-xs font-semibold focus:ring-1 focus:ring-secondary/50"
             />
           </div>
-        </div>
-      </div>
-
-      {/* Rating */}
-      <div className="space-y-4">
-        <h3 className="h6 uppercase tracking-widest pl-1">By Rating</h3>
-        <div className="flex flex-col gap-2">
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <button
-              key={rating}
-              onClick={() => {
-                const newVal = filters.rating === rating ? 0 : rating;
-                if (newVal) trackFilterApply("rating", newVal.toString());
-                setFilters((prev: any) => ({ ...prev, rating: newVal, page: 1 }))
-              }}
-              className="flex items-center gap-3 group"
-            >
-              <div className={`w-4 h-4 rounded-inner border-2 transition-all ${filters.rating === rating ? "bg-secondary border-secondary" : "border-border-main group-hover:border-secondary"}`} />
-              <div className="flex text-accent">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={`w-3.5 h-3.5 ${i < rating ? "fill-current" : "text-text-muted/20"}`} />
-                ))}
-              </div>
-              <span className="text-xs text-text-muted font-medium">({rating}.0 & Up)</span>
-            </button>
-          ))}
         </div>
       </div>
 
@@ -234,7 +231,7 @@ const FilterSidebar = ({ categories, filters, setFilters }: FilterSidebarProps) 
                 if (newVal) trackFilterApply("stock_status", newVal);
                 setFilters((prev: any) => ({ ...prev, stockStatus: newVal, page: 1 }));
               }}
-              className={`flex items-center justify-between px-4 py-3 rounded-component border transition-all duration-300 ${
+              className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all duration-300 ${
                 filters.stockStatus === tag.value
                   ? "border-secondary bg-secondary/5 shadow-sm"
                   : "border-border-main hover:border-text-secondary bg-transparent"
