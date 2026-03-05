@@ -90,9 +90,9 @@ const NewArrival: React.FC = () => {
     <section className="pb-20 bg-white">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div className="flex items-baseline gap-2">
-            <h2 className="text-3xl font-bold text-brand-700 mb-0">
+            <h2 className="text-2xl font-semibold text-brand-700 mb-0">
               New Arrival
             </h2>
           </div>
@@ -106,11 +106,11 @@ const NewArrival: React.FC = () => {
         </div>
 
         {/* Pattern Grid: Repeating rows of 1 Large + 3 Small */}
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-6">
           {[0, 4].map((rowStart) => (
             <div
               key={rowStart}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6"
             >
               {/* Large Card (Featured) */}
               <div className="lg:col-span-5">
@@ -127,7 +127,7 @@ const NewArrival: React.FC = () => {
 
               {/* Small Cards Grid */}
               <div className="lg:col-span-7">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 h-full">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 h-full">
                   {products
                     .slice(rowStart + 1, rowStart + 4)
                     .map((product: ProgressProduct, idx: number) => (

@@ -145,7 +145,7 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation Menu */}
-            <NavItems className="hidden lg:block text-xs uppercase tracking-widest font-semibold" />
+            <NavItems className="hidden lg:block text-xs uppercase tracking-widest font-bold text-slate-600" />
 
             {/* Right Actions */}
             <div className="flex items-center gap-4">

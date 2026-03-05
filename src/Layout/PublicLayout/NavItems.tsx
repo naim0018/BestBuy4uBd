@@ -73,14 +73,14 @@ const NavItems = ({
                   <Link
                     to={item.path}
                     onClick={onItemClick}
-                    className={`px-5 py-2 text-slate-600 font-semibold inline-block no-underline flex-1 ${
+                    className={`px-5 py-2  font-semibold inline-block no-underline flex-1 ${
                       parentActive ? "border-b-2" : ""
                     } ${classNameNC}`}
                   >
                     {item.label}
                   </Link>
                 ) : (
-                  <span className="px-5 py-2 text-slate-600 font-semibold inline-block cursor-default flex-1">
+                  <span className="px-5 py-2  font-semibold inline-block cursor-default flex-1">
                     {item.label}
                   </span>
                 )}

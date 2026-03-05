@@ -109,7 +109,7 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
       {/* Content */}
       <div className="flex-1 flex flex-col">
         <h3
-          className="h6 text-[#0F172A] mb-1 line-clamp-2 min-h-[40px] group-hover:text-[#0F172A] transition-colors"
+          className="text-sm text-[#0F172A] mb-1 line-clamp-2 min-h-[40px] group-hover:text-[#0F172A] transition-colors"
           title={product.title}
         >
           {product.title}
@@ -140,7 +140,7 @@ const ProductCard = ({ product, onOpen }: ProductCardProps) => {
               </span>
             )}
           
-            <div className="text-lg font-bold text-text-primary">
+            <div className="text-sm font-bold text-text-primary">
               ৳
               {product.price.toLocaleString(undefined, {
                 minimumFractionDigits: 2,

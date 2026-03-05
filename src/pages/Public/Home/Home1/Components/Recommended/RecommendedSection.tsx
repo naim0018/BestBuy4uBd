@@ -9,7 +9,7 @@ import { useGetAllCategoriesQuery } from "../../../../../../store/Api/Categories
 import { useGetAllProductsQuery } from "../../../../../../store/Api/ProductApi";
 
 const FETCH_LIMIT = 12;
-const ITEMS_PER_VIEW = 4;
+const ITEMS_PER_VIEW = 6;
 
 const mapProductData = (item: any): ProductData => ({
   id: item._id,
@@ -81,8 +81,8 @@ const CategorySection = ({
     <section className=" relative overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-brand-700 mb-2">{label}</h2>
+        <div className="text-center mb-5">
+          <h2 className="text-2xl font-bold text-brand-700 mb-2">{label}</h2>
         </div>
 
         {/* Carousel Content */}
@@ -111,10 +111,10 @@ const CategorySection = ({
           </div>
 
           {/* Product Grid */}
-          <div className="flex-1 overflow-hidden min-h-[420px]">
+          <div className="flex-1 overflow-hidden min-h-[360px]">
             <AnimatePresence mode="wait">
               {isLoading || isFetching ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 h-full">
                   {Array.from({ length: ITEMS_PER_VIEW }).map((_, i) => (
                     <div
                       key={i}
@@ -137,7 +137,7 @@ const CategorySection = ({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.4 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 h-full"
                 >
                   {currentProducts.map((product) => (
                     <ProductCard
@@ -256,7 +256,7 @@ const RecommendedSection = () => {
   }
 
   return (
-    <div className="pt-10">
+    <div className="">
       {categories.map((category: any) => (
         <CategorySection
           key={category.id}

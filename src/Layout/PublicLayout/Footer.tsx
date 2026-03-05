@@ -18,19 +18,23 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* About Section */}
           <div className="space-y-4">
-            <h3 className="h6 text-white uppercase tracking-widest">About Us</h3>
+            <h3 className="h6 text-white uppercase tracking-widest">
+              About Us
+            </h3>
             <p className="text-sm opacity-70 leading-relaxed">
               We are a team of passionate developers building amazing web
-              applications with modern technologies. BestBuy4uBd is your one-stop
-              shop for premium products.
+              applications with modern technologies. BestBuy4uBd is your
+              one-stop shop for premium products.
             </p>
           </div>
           {/* Quick Links Section */}
           <div className="space-y-4">
-            <h3 className="h6 text-white uppercase tracking-widest">Quick Links</h3>
+            <h3 className="h6 text-white uppercase tracking-widest">
+              Quick Links
+            </h3>
             <NavItems
               isFooter={true}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start justify-start gap-4"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start justify-start gap-4 text-white"
               classNameC="px-0!"
               classNameNC="px-0!"
             />
@@ -38,7 +42,9 @@ const Footer: React.FC = () => {
 
           {/* Social Media Section */}
           <div className="space-y-4">
-            <h3 className="h6 text-white uppercase tracking-widest">Follow Us</h3>
+            <h3 className="h6 text-white uppercase tracking-widest">
+              Follow Us
+            </h3>
             <div className="flex space-x-4">
               <a
                 href="https://facebook.com"
@@ -81,7 +87,9 @@ const Footer: React.FC = () => {
 
           {/* Newsletter Section */}
           <div className="space-y-4">
-            <h3 className="h6 text-white uppercase tracking-widest">Newsletter</h3>
+            <h3 className="h6 text-white uppercase tracking-widest">
+              Newsletter
+            </h3>
             <p className="text-sm opacity-70">
               Subscribe to our newsletter to get the latest updates.
             </p>

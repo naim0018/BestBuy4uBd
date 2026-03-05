@@ -28,8 +28,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
   const isWishlisted = wishlistItems.some((item) => item._id === product._id);
 
-  const { basicInfo, price, images, stockStatus } =
-    product;
+  const { basicInfo, price, images, stockStatus } = product;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -105,7 +104,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="group relative card-container p-4 h-full flex flex-col hover:border-primary/20 rounded-xl"
+        className="group relative card-container p-2 h-full flex flex-col hover:border-primary/20 rounded-xl"
       >
         {/* Badges */}
         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
@@ -180,7 +179,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
 
           <h3
-            className="text-[#0F172A] mb-2 line-clamp-2 min-h-[48px] text-lg leading-tight group-hover:text-secondary transition-colors duration-300"
+            className="text-[#0F172A] mb-2 line-clamp-2 text-sm leading-tight group-hover:text-secondary transition-colors duration-300 "
             title={basicInfo.title}
           >
             {basicInfo.title}
@@ -206,7 +205,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div> */}
 
           <div className="mt-auto pt-4 flex items-center justify-between">
-            <div className="flex flex-col">
+            <div className="flex items-center gap-2">
               {price.discounted ? (
                 <>
                   <span className="text-xs text-text-muted line-through font-medium">
@@ -225,7 +224,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
             <div className="text-right">
               <div
-                className={`tag p-1.5 text-xs ${
+                className={`tag p-1.5 text-xs rounded-sm ${
                   stockStatus === "In Stock"
                     ? "bg-secondary/10 text-secondary"
                     : stockStatus === "Pre-order"
@@ -235,9 +234,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
               >
                 {stockStatus}
               </div>
-              <span className="text-[10px] text-text-muted font-medium mt-1 block">
+              {/* <span className="text-[10px] text-text-muted font-medium mt-1 block">
                 {product.sold || 0} Sold
-              </span>
+              </span> */}
             </div>
           </div>
         </div>

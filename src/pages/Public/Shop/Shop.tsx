@@ -196,7 +196,7 @@ const Shop = () => {
             </div> */}
 
             {/* Top Pagination Row */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 px-2 h-24">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 px-2 h-18">
               <div className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.2em]">
                 PAGES{" "}
                 <span className="text-secondary mx-2 font-semibold">
@@ -218,7 +218,7 @@ const Shop = () => {
               } transition-all duration-500`}
             >
               {isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                   {Array.from({ length: 9 }).map((_, i) => (
                     <div
                       key={i}
@@ -227,7 +227,7 @@ const Shop = () => {
                   ))}
                 </div>
               ) : productsData?.data && productsData.data.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                   {productsData.data.map((product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}

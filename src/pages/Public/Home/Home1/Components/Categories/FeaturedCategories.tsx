@@ -101,7 +101,7 @@ const FeaturedCategories = () => {
   }
 
   return (
-    <section className="py-20">
+    <section className="py-10">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <motion.div
@@ -111,7 +111,7 @@ const FeaturedCategories = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl font-bold text-brand-700 mb-4 text-center">
+          <h2 className="text-2xl font-semibold text-brand-700 mb-4 text-center">
             Shop by Category
           </h2>
           <p className="text-text-muted max-w-2xl mx-auto uppercase tracking-widest text-xs font-medium">
@@ -140,7 +140,7 @@ const FeaturedCategories = () => {
           {/* Scrolling Area */}
           <div
             ref={scrollRef}
-            className="overflow-x-auto no-scrollbar relative pause-on-hover py-4 scroll-smooth"
+            className="overflow-x-auto no-scrollbar relative pause-on-hover scroll-smooth"
             style={{
               maskImage:
                 "linear-gradient(to right, transparent, black 1%, black 99%, transparent)",
@@ -177,10 +177,10 @@ const FeaturedCategories = () => {
                               `/shop?category=${encodeURIComponent(category.name)}`,
                             )
                           }
-                          className="group cursor-pointer w-[180px] flex-shrink-0"
+                          className="group cursor-pointer w-[180px] flex-shrink-0 rounded-lg overflow-hidden"
                         >
                           {/* Simple Brand Card */}
-                          <div className="relative bg-white  rounded-lg border border-gray-100 shadow-sm transition-all duration-300 flex flex-col items-center justify-center">
+                          <div className="relative bg-white rounded-lg border border-gray-100 shadow-sm transition-all duration-300 flex flex-col items-center justify-center">
                             {/* Image/Icon Container */}
                             <div className="w-full aspect-square flex items-center justify-center">
                               {category.image ? (
@@ -201,8 +201,8 @@ const FeaturedCategories = () => {
 
                             {/* Pill Label at Bottom */}
                             <div className="absolute bottom-3 left-3 right-3">
-                              <div className="bg-gray-100/80 group-hover:bg-gray-200/80 transition-colors py-1.5 px-2 rounded flex items-center justify-center">
-                                <h3 className="text-[11px] font-bold text-gray-800 uppercase tracking-tight text-center truncate">
+                              <div className="bg-brand-500 group-hover:bg-brand-600/80 transition-colors py-1.5 px-2 rounded flex items-center justify-center">
+                                <h3 className="text-[11px] font-medium text-white uppercase tracking-wider text-center truncate">
                                   {category.name}
                                 </h3>
                               </div>
