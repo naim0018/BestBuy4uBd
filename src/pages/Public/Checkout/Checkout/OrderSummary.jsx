@@ -18,11 +18,14 @@ const OrderSummary = () => {
       ));
     }
 
-    return Object.entries(variants).map(([group, variant]) => (
-      <span key={group} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-        {variant.value}
-      </span>
-    ));
+    return Object.entries(variants).map(([group, selection]) => {
+      const items = Array.isArray(selection) ? selection : [selection];
+      return items.map((item, idx) => (
+        <span key={`${group}-${idx}`} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+          {item.value}
+        </span>
+      ));
+    });
   };
 
   return (

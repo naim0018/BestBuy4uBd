@@ -53,16 +53,32 @@ const CheckoutForm = () => {
             itemKey: item.itemKey,
             price: item.price,
             selectedVariants: Array.isArray(item.selectedVariants)
-              ? item.selectedVariants.reduce(
-                  (obj, variant) => ({
-                    ...obj,
-                    [variant.group]: {
-                      value: variant.value,
-                      price: variant.price || 0,
-                    },
-                  }),
-                  {}
-                )
+              ? item.selectedVariants.reduce((obj, group) => {
+                  if (group.items && Array.isArray(group.items)) {
+                    return {
+                      ...obj,
+                      [group.group]: group.items.map((v) => ({
+                        value: v.value,
+                        price: v.price || 0,
+                        quantity: v.quantity || item.quantity,
+                        image: v.image || "",
+                      })),
+                    };
+                  } else if (group.value) {
+                    return {
+                      ...obj,
+                      [group.group]: [
+                        {
+                          value: group.value,
+                          price: group.price || 0,
+                          quantity: group.quantity || item.quantity,
+                          image: group.image || "",
+                        },
+                      ],
+                    };
+                  }
+                  return obj;
+                }, {})
               : item.selectedVariants || {},
           })),
           totalAmount: calculateTotalAmount(),
