@@ -28,39 +28,43 @@ type Props = {
 // ============================================
 // 🎨 Collapsible Section Component (Memoized)
 // ============================================
-const CollapsibleSection = memo(({
-  title,
-  children,
-  defaultOpen = true,
-}: {
-  title: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+const CollapsibleSection = memo(
+  ({
+    title,
+    children,
+    defaultOpen = true,
+  }: {
+    title: string;
+    children: React.ReactNode;
+    defaultOpen?: boolean;
+  }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
 
-  const toggleOpen = useCallback(() => {
-    setIsOpen(prev => !prev);
-  }, []);
+    const toggleOpen = useCallback(() => {
+      setIsOpen((prev) => !prev);
+    }, []);
 
-  return (
-    <div className="border border-border rounded-xl overflow-hidden bg-white shadow-sm">
-      <button
-        type="button"
-        onClick={toggleOpen}
-        className="w-full px-4 md:px-6 py-3 md:py-4 flex items-center justify-between bg-gradient-to-r from-primary-blue/5 to-transparent hover:from-primary-blue/10 transition-colors"
-      >
-        <h2 className="text-base md:text-xl font-bold text-gray-800">{title}</h2>
-        {isOpen ? (
-          <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
-        ) : (
-          <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
-        )}
-      </button>
-      {isOpen && <div className="p-3 md:p-6">{children}</div>}
-    </div>
-  );
-});
+    return (
+      <div className="border border-border rounded-xl overflow-hidden bg-white shadow-sm">
+        <button
+          type="button"
+          onClick={toggleOpen}
+          className="w-full px-4 md:px-6 py-3 md:py-4 flex items-center justify-between bg-gradient-to-r from-primary-blue/5 to-transparent hover:from-primary-blue/10 transition-colors"
+        >
+          <h2 className="text-base md:text-xl font-bold text-gray-800">
+            {title}
+          </h2>
+          {isOpen ? (
+            <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
+          ) : (
+            <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
+          )}
+        </button>
+        {isOpen && <div className="p-3 md:p-6">{children}</div>}
+      </div>
+    );
+  },
+);
 
 CollapsibleSection.displayName = "CollapsibleSection";
 
@@ -280,8 +284,8 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(ProductFormSchema),
     defaultValues: defaultValues ?? {
-      basicInfo: { 
-        keyFeatures: [], 
+      basicInfo: {
+        keyFeatures: [],
         addDeliveryCharge: false,
         deliveryChargeInsideDhaka: 0,
         deliveryChargeOutsideDhaka: 0,
@@ -289,7 +293,7 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       price: {},
       stockStatus: "In Stock",
       sold: 0,
-      images: [{ url: "", alt: "" }],
+      images: [{ url: "", alt: "", file: undefined }],
       videos: [],
       variants: [],
       specifications: [],
@@ -316,9 +320,71 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
     reset,
   } = form;
 
-          
-      // Populate form when defaultValues arrive (e.g., when editing)
-      // Note: We don't populate deprecated bulkPricing if it exists in old data
+  const [isUploading, setIsUploading] = useState(false);
+
+  const uploadToCloudinary = async (
+    file: File,
+    resourceType: "image" | "video" = "image",
+  ) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    // Replace these or set them in your .env file
+    formData.append(
+      "upload_preset",
+      import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "preset_here",
+    );
+    const cloudName =
+      import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "cloud_name";
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+    if (!res.ok) throw new Error(`${resourceType} upload failed`);
+    const data = await res.json();
+    return data.secure_url;
+  };
+
+  const handleFormSubmit = async (data: ProductFormValues) => {
+    try {
+      setIsUploading(true);
+
+      const processedImages = await Promise.all(
+        data.images.map(async (img: any) => {
+          if (img.file && img.file.length > 0) {
+            const url = await uploadToCloudinary(img.file[0], "image");
+            return { url, alt: img.alt };
+          }
+          return { url: img.url || "", alt: img.alt };
+        }),
+      );
+
+      const processedVideos = await Promise.all(
+        (data.videos || []).map(async (vid: any) => {
+          if (vid.file && vid.file.length > 0) {
+            const url = await uploadToCloudinary(vid.file[0], "video");
+            return { ...vid, url };
+          }
+          return { ...vid, url: vid.url || "" };
+        }),
+      );
+
+      onSubmit({ ...data, images: processedImages, videos: processedVideos });
+    } catch (error) {
+      console.error("Cloudinary Upload Error:", error);
+      alert(
+        "Failed to upload images. Please check your Cloudinary configuration.",
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Populate form when defaultValues arrive (e.g., when editing)
+  // Note: We don't populate deprecated bulkPricing if it exists in old data
   useEffect(() => {
     if (defaultValues) {
       reset(defaultValues);
@@ -332,36 +398,39 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
   const shippingFieldsSlice2 = useMemo(() => shippingFields.slice(4), []);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full mx-auto p-2 md:p-6 space-y-4 md:space-y-6">
+    <form
+      onSubmit={handleSubmit(handleFormSubmit)}
+      className="w-full mx-auto p-2 md:p-6 space-y-4 md:space-y-6"
+    >
       {/* Basic Information */}
       <CollapsibleSection title="📋 Basic Information" defaultOpen={true}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {basicInfoFieldsSlice1.map((field) => (
-            <FieldRenderer 
+            <FieldRenderer
               key={field.name}
-              field={field} 
-              register={register} 
-              errors={errors} 
-              watch={watch} 
+              field={field}
+              register={register}
+              errors={errors}
+              watch={watch}
             />
           ))}
         </div>
         <div className="mt-4">
-          <FieldRenderer 
-            field={basicInfoFields[6]} 
-            register={register} 
-            errors={errors} 
-            watch={watch} 
+          <FieldRenderer
+            field={basicInfoFields[6]}
+            register={register}
+            errors={errors}
+            watch={watch}
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           {basicInfoFieldsSlice2.map((field) => (
-            <FieldRenderer 
+            <FieldRenderer
               key={field.name}
-              field={field} 
-              register={register} 
-              errors={errors} 
-              watch={watch} 
+              field={field}
+              register={register}
+              errors={errors}
+              watch={watch}
             />
           ))}
         </div>
@@ -375,7 +444,11 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
         <div className="space-y-8">
           <ImagesField control={control} register={register} errors={errors} />
           <div className="border-t border-border pt-8">
-            <VideosField control={control} register={register} errors={errors} />
+            <VideosField
+              control={control}
+              register={register}
+              errors={errors}
+            />
           </div>
         </div>
       </CollapsibleSection>
@@ -384,22 +457,22 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       <CollapsibleSection title="💰 Price & Inventory" defaultOpen={true}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {priceStockFields.map((field) => (
-            <FieldRenderer 
+            <FieldRenderer
               key={field.name}
-              field={field} 
-              register={register} 
-              errors={errors} 
-              watch={watch} 
+              field={field}
+              register={register}
+              errors={errors}
+              watch={watch}
             />
           ))}
         </div>
 
         <div className="mt-8 border-t border-border pt-8">
-          <ComboPricingField 
-            control={control} 
-            register={register} 
-            errors={errors} 
-            watch={watch} 
+          <ComboPricingField
+            control={control}
+            register={register}
+            errors={errors}
+            watch={watch}
           />
         </div>
       </CollapsibleSection>
@@ -422,23 +495,23 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       <CollapsibleSection title="📦 Shipping Details" defaultOpen={true}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {shippingFieldsSlice1.map((field) => (
-            <FieldRenderer 
+            <FieldRenderer
               key={field.name}
-              field={field} 
-              register={register} 
-              errors={errors} 
-              watch={watch} 
+              field={field}
+              register={register}
+              errors={errors}
+              watch={watch}
             />
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           {shippingFieldsSlice2.map((field) => (
-            <FieldRenderer 
+            <FieldRenderer
               key={field.name}
-              field={field} 
-              register={register} 
-              errors={errors} 
-              watch={watch} 
+              field={field}
+              register={register}
+              errors={errors}
+              watch={watch}
             />
           ))}
         </div>
@@ -448,12 +521,12 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       <CollapsibleSection title="ℹ️ Additional Information" defaultOpen={false}>
         <div className="space-y-4">
           {additionalInfoFields.map((field) => (
-            <FieldRenderer 
+            <FieldRenderer
               key={field.name}
-              field={field} 
-              register={register} 
-              errors={errors} 
-              watch={watch} 
+              field={field}
+              register={register}
+              errors={errors}
+              watch={watch}
             />
           ))}
         </div>
@@ -463,12 +536,12 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       <CollapsibleSection title="🔍 SEO Settings" defaultOpen={false}>
         <div className="space-y-4">
           {seoFields.map((field) => (
-            <FieldRenderer 
+            <FieldRenderer
               key={field.name}
-              field={field} 
-              register={register} 
-              errors={errors} 
-              watch={watch} 
+              field={field}
+              register={register}
+              errors={errors}
+              watch={watch}
             />
           ))}
         </div>
@@ -478,12 +551,12 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
       <CollapsibleSection title="🏷️ Tags" defaultOpen={false}>
         <div className="space-y-4">
           {tagsField.map((field) => (
-            <FieldRenderer 
+            <FieldRenderer
               key={field.name}
-              field={field} 
-              register={register} 
-              errors={errors} 
-              watch={watch} 
+              field={field}
+              register={register}
+              errors={errors}
+              watch={watch}
             />
           ))}
         </div>
@@ -501,10 +574,10 @@ export default function ProductFormNew({ defaultValues, onSubmit }: Props) {
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isUploading}
             className="px-4 md:px-8 py-2 md:py-3 bg-gradient-to-r from-primary-blue to-blue-600 text-white text-sm md:text-base font-medium rounded-lg md:rounded-xl hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
-            {isSubmitting ? "Saving..." : "Save Product"}
+            {isSubmitting || isUploading ? "Saving..." : "Save Product"}
           </button>
         </div>
       </div>

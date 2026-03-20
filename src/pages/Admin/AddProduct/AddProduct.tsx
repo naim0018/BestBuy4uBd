@@ -10,7 +10,6 @@ import {
   useGetProductByIdQuery,
 } from "@/store/Api/ProductApi";
 
-
 export default function ProductAdminPage() {
   const { id } = useParams<{ id: string }>();
   const isAdd = !id || id === "new";
@@ -22,9 +21,12 @@ export default function ProductAdminPage() {
   >(undefined);
 
   // Fetch existing product (only if updating)
-  const { data: existing, isLoading } = useGetProductByIdQuery({ id: id! }, {
-    skip: isAdd,
-  });
+  const { data: existing, isLoading } = useGetProductByIdQuery(
+    { id: id! },
+    {
+      skip: isAdd,
+    },
+  );
 
   // RTK Mutation for create/update
   const [addProduct, { isLoading: isAdding }] = useAddProductMutation();
@@ -33,7 +35,8 @@ export default function ProductAdminPage() {
 
   // When existing product loads, set it as default values
   useEffect(() => {
-    if (existing) setDefaultValues(existing.data as unknown as ProductFormValues);
+    if (existing)
+      setDefaultValues(existing.data as unknown as ProductFormValues);
   }, [existing]);
 
   const handleSubmit = (values: ProductFormValues) => {
@@ -55,7 +58,7 @@ export default function ProductAdminPage() {
           description: draft.basicInfo.description,
           keyFeatures:
             draft.basicInfo.keyFeatures?.filter(
-              (feature) => feature.trim() !== ""
+              (feature) => feature.trim() !== "",
             ) || [],
           addDeliveryCharge: draft.basicInfo.addDeliveryCharge || false,
           deliveryChargeInsideDhaka: draft.basicInfo.deliveryChargeInsideDhaka
@@ -82,8 +85,13 @@ export default function ProductAdminPage() {
         stockStatus: draft.stockStatus,
         stockQuantity: draft.stockQuantity ? Number(draft.stockQuantity) : 0,
         sold: draft.sold ? Number(draft.sold) : 0,
-        images: draft.images.filter((image) => image.url.trim() !== ""),
-        videos: draft.videos?.filter((video) => video.url.trim() !== "") || [],
+        images: draft.images
+          .filter((image) => image.url && image.url.trim() !== "")
+          .map((image) => ({ url: image.url!, alt: image.alt })),
+        videos:
+          draft.videos
+            ?.filter((video) => video.url && video.url.trim() !== "")
+            .map((video) => ({ ...video, url: video.url! })) || [],
         variants:
           draft.variants
             ?.filter((variant) => variant.group.trim() !== "")
@@ -118,7 +126,7 @@ export default function ProductAdminPage() {
               group: spec.group,
               items: spec.items
                 .filter(
-                  (item) => item.name.trim() !== "" && item.value.trim() !== ""
+                  (item) => item.name.trim() !== "" && item.value.trim() !== "",
                 )
                 .map((item) => ({
                   name: item.name,

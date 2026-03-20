@@ -173,11 +173,24 @@ const Checkout = () => {
             // Convert selectedVariants array to object format
             const selectedVariantsObj =
               item.selectedVariants && item.selectedVariants.length > 0
-                ? item.selectedVariants.reduce((acc: any, variant: any) => {
-                  acc[variant.group] = {
-                    value: variant.value,
-                    price: variant.price || 0,
-                  };
+                ? item.selectedVariants.reduce((acc: any, group: any) => {
+                  // Handle modern group-with-items structure
+                  if (group.items && Array.isArray(group.items)) {
+                    acc[group.group] = group.items.map((v: any) => ({
+                      value: v.value,
+                      price: v.price || 0,
+                      quantity: v.quantity || item.quantity,
+                      image: v.image || ""
+                    }));
+                  } else if (group.value) {
+                    // Fallback for potential flat structure
+                    acc[group.group] = [{
+                      value: group.value,
+                      price: group.price || 0,
+                      quantity: group.quantity || item.quantity,
+                      image: group.image || ""
+                    }];
+                  }
                   return acc;
                 }, {})
                 : {};

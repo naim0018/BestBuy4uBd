@@ -8,17 +8,29 @@ import { z } from "zod";
 // --------------------------------------------------
 // leaf schemas
 // --------------------------------------------------
-const ProductImageSchema = z.object({
-  url: z.string().url("Invalid image URL"),
-  alt: z.string().min(1, "Alt text is required"),
-});
+const ProductImageSchema = z
+  .object({
+    url: z.string().optional(),
+    alt: z.string().min(1, "Alt text is required"),
+    file: z.any().optional(),
+  })
+  .refine((data) => data.url || data.file, {
+    message: "Either URL or file is required",
+    path: ["url"],
+  });
 
-const ProductVideoSchema = z.object({
-  url: z.string().url("Invalid video URL"),
-  title: z.string().min(1, "Video title is required"),
-  thumbnail: z.string().url().optional().or(z.literal("")),
-  platform: z.enum(["youtube", "vimeo", "direct"]).optional(),
-});
+const ProductVideoSchema = z
+  .object({
+    url: z.string().optional(),
+    title: z.string().min(1, "Video title is required"),
+    thumbnail: z.string().url().optional().or(z.literal("")),
+    platform: z.enum(["youtube", "vimeo", "direct"]).optional(),
+    file: z.any().optional(),
+  })
+  .refine((data) => data.url || data.file, {
+    message: "Either URL or file is required",
+    path: ["url"],
+  });
 
 const ProductVariantItemSchema = z.object({
   value: z.string().min(1, "Value is required"),
