@@ -21,7 +21,6 @@ import {
   Crown,
   ShieldCheck,
   Mail,
-  Check,
 } from "lucide-react";
 import { Button } from "@/common/Components/Button";
 import { toast } from "sonner";

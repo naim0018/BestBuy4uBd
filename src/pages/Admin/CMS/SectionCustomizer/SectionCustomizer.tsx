@@ -19,8 +19,6 @@ import {
   ArrowLeft,
   Code,
   Terminal,
-  FileCode,
-  Play,
 } from "lucide-react";
 import { Button } from "@/common/Components/Button";
 import { toast } from "sonner";
