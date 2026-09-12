@@ -1,30 +1,27 @@
 import React from "react";
 import {
-  Sparkles,
   Zap,
   ShoppingBag,
-  Grid,
-  Tag,
-  Award,
   Truck,
   ShieldCheck,
-  RotateCcw,
   Headphones,
-  Mail,
   ChevronRight,
   ChevronLeft,
-  Star,
-  Clock,
-  ArrowRight,
-  ShoppingBag as BagIcon,
-  Crown,
   Heart,
-  Code,
 } from "lucide-react";
 
 export interface SectionBlockConfig {
   id: string;
   type:
+    | "hero_slider"
+    | "flash_deals"
+    | "category_grid"
+    | "product_grid"
+    | "banner_row"
+    | "tabbed_showcase"
+    | "brand_spotlight"
+    | "features_bar"
+    | "newsletter_bar"
     | "hero_split_banner"
     | "category_cards_row"
     | "new_arrival_showcase"
@@ -78,7 +75,7 @@ export const CustomCodeSection: React.FC<{ config: SectionBlockConfig }> = ({ co
 // PREMADE SECTION 1: HERO SPLIT BANNER (Exact Image 1 Top Banners)
 // Left: Dark Flash Sale Banner | Right: Orange Pressure Cooker Banner
 // =========================================================================
-export const HeroSplitBannerSection: React.FC<{ config: SectionBlockConfig }> = ({ config }) => {
+export const HeroSplitBannerSection: React.FC<{ config: SectionBlockConfig }> = ({ config: _config }) => {
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4">
       {/* Left Large Dark Flash Sale Banner */}
@@ -137,7 +134,7 @@ export const HeroSplitBannerSection: React.FC<{ config: SectionBlockConfig }> = 
 // PREMADE SECTION 2: CATEGORY CARD BUBBLES ROW (Exact Image 1)
 // Home Appliance, Kitchen Appliance, Gifts, Motorcycle, Beauty, Uncommon
 // =========================================================================
-export const CategoryCardsRowSection: React.FC<{ config: SectionBlockConfig }> = ({ config }) => {
+export const CategoryCardsRowSection: React.FC<{ config: SectionBlockConfig }> = ({ config: _config }) => {
   const categoryCards = [
     {
       title: "Home Appliance",
@@ -532,7 +529,7 @@ export const ElectronicsGridSection: React.FC<{ config: SectionBlockConfig }> = 
 // =========================================================================
 // PREMADE SECTION 8: STOREFRONT TRUST GUARANTEES BAR
 // =========================================================================
-export const StorefrontTrustBarSection: React.FC<{ config: SectionBlockConfig }> = ({ config }) => {
+export const StorefrontTrustBarSection: React.FC<{ config: SectionBlockConfig }> = ({ config: _config }) => {
   const items = [
     { title: "100+", desc: "Happy Customers", icon: ShoppingBag, color: "text-indigo-600 bg-indigo-50" },
     { title: "500+", desc: "Genuine Products", icon: Truck, color: "text-blue-600 bg-blue-50" },
