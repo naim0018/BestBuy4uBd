@@ -3,9 +3,6 @@ import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
 
 export default tseslint.config(
   { ignores: ["dist"] },
@@ -29,4 +26,4 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
-)
+);
