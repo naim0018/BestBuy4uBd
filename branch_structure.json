@@ -1,0 +1,39 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "azizul",
+    "chat",
+    "datalayer",
+    "dev",
+    "home-refactor",
+    "main",
+    "multitanent-test",
+    "naim",
+    "order-feature",
+    "origin"
+  ],
+  "parent": {
+    "azizul": "main",
+    "chat": "main",
+    "datalayer": "main",
+    "dev": "main",
+    "home-refactor": "main",
+    "main": null,
+    "multitanent-test": "main",
+    "naim": "main",
+    "order-feature": "main",
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "azizul",
+    "chat",
+    "datalayer",
+    "dev",
+    "home-refactor",
+    "multitanent-test",
+    "naim",
+    "order-feature",
+    "origin"
+  ]
+}
