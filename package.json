@@ -7,8 +7,8 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build && node postbuild.js",
+    "dev": "node api.js && vite",
+    "build": "node api.js && tsc -b && vite build && node postbuild.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
