@@ -1,0 +1,33 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "chat",
+    "datalayer",
+    "dev",
+    "home-refactor",
+    "main",
+    "multitanent-test",
+    "naim",
+    "order-feature"
+  ],
+  "parent": {
+    "chat": "main",
+    "datalayer": "main",
+    "dev": "main",
+    "home-refactor": "main",
+    "main": null,
+    "multitanent-test": "main",
+    "naim": "main",
+    "order-feature": "main"
+  },
+  "order": [
+    "main",
+    "chat",
+    "datalayer",
+    "dev",
+    "home-refactor",
+    "multitanent-test",
+    "naim",
+    "order-feature"
+  ]
+}
