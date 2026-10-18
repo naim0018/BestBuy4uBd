@@ -5,7 +5,6 @@ import {
   User,
   Facebook,
   MessageSquare,
-  Sparkles,
 } from "lucide-react";
 import { Conversation } from "../types";
 
