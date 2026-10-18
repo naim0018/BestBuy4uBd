@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Breadcrumbs from "./Breadcrumbs";
@@ -7,9 +7,18 @@ import { adminRoutes } from "@/routes/AdminRoutes";
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  const isFullHeightPage = location.pathname.startsWith("/admin/messages");
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 print:bg-white overflow-x-clip">
+    <div
+      className={`flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 print:bg-white ${
+        isFullHeightPage
+          ? "h-screen overflow-hidden"
+          : "min-h-screen overflow-x-clip"
+      }`}
+    >
       {/* 1. Sidebar Container */}
       <div 
         className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out bg-gray-700 lg:relative lg:translate-x-0 print:hidden ${
@@ -28,20 +37,38 @@ const DashboardLayout = () => {
       )}
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <div className="print:hidden sticky top-0 z-999">
+      <div
+        className={`flex-1 flex flex-col min-w-0 ${
+          isFullHeightPage ? "h-full overflow-hidden" : ""
+        }`}
+      >
+        <div className="print:hidden sticky top-0 z-30 shrink-0">
           <Header onMenuClick={() => setSidebarOpen(true)} />
         </div>
 
-        <main className="p-2 md:p-6 overflow-y-auto print:p-0 print:overflow-visible flex-1">
-          {/* Breadcrumbs (Optional) */}
-          <div className="print:hidden mb-4">
-            <div className="flex items-center gap-2">
-              <Breadcrumbs config={adminRoutes} basePath="/admin" />
+        {isFullHeightPage ? (
+          <main className="p-2 md:p-3 overflow-hidden print:p-0 print:overflow-visible flex-1 flex flex-col min-h-0">
+            {/* Breadcrumbs */}
+            <div className="print:hidden mb-1.5 shrink-0">
+              <div className="flex items-center gap-2">
+                <Breadcrumbs config={adminRoutes} basePath="/admin" />
+              </div>
             </div>
-          </div>
-          <Outlet />
-        </main>
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <Outlet />
+            </div>
+          </main>
+        ) : (
+          <main className="p-2 md:p-6 overflow-y-auto print:p-0 print:overflow-visible flex-1">
+            {/* Breadcrumbs */}
+            <div className="print:hidden mb-4">
+              <div className="flex items-center gap-2">
+                <Breadcrumbs config={adminRoutes} basePath="/admin" />
+              </div>
+            </div>
+            <Outlet />
+          </main>
+        )}
       </div>
     </div>
   );

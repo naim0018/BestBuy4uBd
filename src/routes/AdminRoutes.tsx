@@ -13,6 +13,7 @@ import OrderDetails from "@/pages/Admin/Order/OrderDetails";
 import { Navigate } from "react-router-dom";
 import InvoiceContainer from "@/pages/Admin/Order/Invoice/InvoiceContainer";
 import AnalyticsDashboard from "@/pages/Admin/AnalyticsDashboard/AnalyticsDashboard";
+import MessagesPage from "@/pages/Admin/Messages/MessagesPage";
 import {
   LayoutDashboard,
   Users,
@@ -24,7 +25,8 @@ import {
   Briefcase,
   Truck,
   LayoutGrid,
-  BarChart3
+  BarChart3,
+  MessageSquare,
 } from "lucide-react";
 
 export const adminRoutes = [
@@ -36,6 +38,12 @@ export const adminRoutes = [
         icon: <LayoutDashboard />,
         path: "dashboard",
         element: <Dashboard />,
+      },
+      {
+        label: "Messages",
+        icon: <MessageSquare />,
+        path: "messages",
+        element: <MessagesPage />,
       },
       {
         label: "Visitors",
