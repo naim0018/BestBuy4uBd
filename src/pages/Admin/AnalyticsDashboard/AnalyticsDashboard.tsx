@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardBody } from "@heroui/react";
 import {
@@ -15,29 +15,35 @@ import {
 } from "recharts";
 import {
   Users,
-  Eye,
-  MousePointerClick,
-  AlertTriangle,
-  Settings,
-  Activity,
-  DollarSign,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Globe,
-  FileText,
   Search,
   ShoppingCart,
   Trash2,
   Download,
   Layers,
+  DollarSign,
+  Activity,
+  Globe,
+  Monitor,
+  Smartphone,
+  Tablet,
   BarChart3,
+  Eye,
+  MousePointerClick,
+  AlertTriangle,
+  Settings,
+  FileText,
 } from "lucide-react";
-import { useGetAnalyticsDashboardQuery } from "@/store/Api/TrackingApi";
+import {
+  useGetAnalyticsDashboardQuery,
+  useGetInteractionEventsQuery,
+  useClearInteractionEventsMutation,
+} from "@/store/Api/TrackingApi";
 import { useGetVisitorStatsQuery } from "@/store/Api/VisitorApi";
-import { websiteTrackingService, TrackedEvent } from "@/utils/websiteTrackingService";
+import { TrackedEvent } from "@/utils/websiteTrackingService";
 import { Button } from "@/common/Components/Button";
 import { motion } from "framer-motion";
+import Pagination from "@/pages/Public/Shop/Components/Pagination";
+import { toast } from "sonner";
 
 type Mode = "website" | "google";
 
@@ -72,70 +78,41 @@ export default function AnalyticsDashboard() {
   const { data: visitorStatsRes } = useGetVisitorStatsQuery(undefined);
   const totalVisitors = visitorStatsRes?.data?.totalVisitors || visitorStatsRes?.data?.seen24h || 0;
 
-  // Internal Website Track state
-  const [events, setEvents] = useState<TrackedEvent[]>(() => websiteTrackingService.getEvents());
+  // Pagination & filter state for database-backed interaction events
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [eventCategoryFilter, setEventCategoryFilter] = useState("all");
+
+  const { data: eventsDataRes, isLoading: isEventsLoading } = useGetInteractionEventsQuery({
+    page: currentPage,
+    limit: 15,
+    search: searchTerm,
+    category: eventCategoryFilter,
+  });
+
+  const [clearEventsTrigger] = useClearInteractionEventsMutation();
+
+  const events = eventsDataRes?.data?.events || [];
+  const pagination = eventsDataRes?.data?.pagination || { page: 1, limit: 15, total: 0, totalPages: 1 };
+  const metrics = eventsDataRes?.data?.metrics || {
+    totalEvents: 0,
+    totalPurchases: 0,
+    totalRevenue: 0,
+    totalCarts: 0,
+    totalSearches: 0,
+  };
 
   // Fetch GA4 Analytics Data
   const { data: analyticsRes, isLoading: isGaLoading } = useGetAnalyticsDashboardQuery({});
 
-  // Listen for real-time internal website events
-  useEffect(() => {
-    const handleEventLogged = () => {
-      setEvents(websiteTrackingService.getEvents());
-    };
-    window.addEventListener("website_event_logged", handleEventLogged);
-    return () => {
-      window.removeEventListener("website_event_logged", handleEventLogged);
-    };
-  }, []);
-
-  // Filter internal events
-  const filteredEvents = useMemo(() => {
-    return events.filter((evt) => {
-      const matchesCategory =
-        eventCategoryFilter === "all" ||
-        (eventCategoryFilter === "purchases" && evt.event === "purchase") ||
-        (eventCategoryFilter === "cart" && (evt.event.includes("cart") || evt.event.includes("checkout"))) ||
-        (eventCategoryFilter === "views" && (evt.event.includes("view") || evt.event.includes("select"))) ||
-        (eventCategoryFilter === "search" && evt.event === "search") ||
-        (eventCategoryFilter === "auth" && (evt.event === "login" || evt.event === "sign_up"));
-
-      const term = searchTerm.toLowerCase();
-      const matchesSearch =
-        !term ||
-        evt.event.toLowerCase().includes(term) ||
-        evt.path.toLowerCase().includes(term) ||
-        evt.device.toLowerCase().includes(term) ||
-        JSON.stringify(evt.payload).toLowerCase().includes(term) ||
-        evt.user?.email?.toLowerCase().includes(term);
-
-      return matchesCategory && matchesSearch;
-    });
-  }, [events, eventCategoryFilter, searchTerm]);
-
-  // Aggregate internal metrics
-  const internalMetrics = useMemo(() => {
-    const totalInteractions = events.length;
-    const purchases = events.filter((e) => e.event === "purchase");
-    const totalRevenue = purchases.reduce((acc, p) => acc + (p.payload?.ecommerce?.value || p.payload?.value || 0), 0);
-    const addToCarts = events.filter((e) => e.event === "add_to_cart").length;
-    const searches = events.filter((e) => e.event === "search").length;
-
-    return {
-      totalInteractions,
-      purchasesCount: purchases.length,
-      totalRevenue,
-      addToCarts,
-      searches,
-    };
-  }, [events]);
-
-  const handleClearLogs = () => {
-    if (window.confirm("Are you sure you want to clear all recorded internal website tracking logs?")) {
-      websiteTrackingService.clearEvents();
-      setEvents([]);
+  const handleClearLogs = async () => {
+    if (window.confirm("Are you sure you want to clear all recorded internal website tracking logs for this store?")) {
+      try {
+        await clearEventsTrigger({}).unwrap();
+        toast.success("Interaction logs cleared successfully");
+      } catch {
+        toast.error("Failed to clear logs");
+      }
     }
   };
 
@@ -301,21 +278,21 @@ export default function AnalyticsDashboard() {
             />
             <MetricCard
               title="Tracked Interactions"
-              value={internalMetrics.totalInteractions.toLocaleString()}
+              value={metrics.totalEvents.toLocaleString()}
               subtitle="Captured user event logs"
               icon={Layers}
               colorClass="bg-blue-500/10 text-blue-600 dark:text-blue-400"
             />
             <MetricCard
               title="Tracked Purchases"
-              value={internalMetrics.purchasesCount.toLocaleString()}
-              subtitle={`Total Revenue: ৳${internalMetrics.totalRevenue.toLocaleString()}`}
+              value={metrics.totalPurchases.toLocaleString()}
+              subtitle={`Total Revenue: ৳${metrics.totalRevenue.toLocaleString()}`}
               icon={DollarSign}
               colorClass="bg-purple-500/10 text-purple-600 dark:text-purple-400"
             />
             <MetricCard
               title="Cart & Searches"
-              value={`${internalMetrics.addToCarts} carts / ${internalMetrics.searches} searches`}
+              value={`${metrics.totalCarts} carts / ${metrics.totalSearches} searches`}
               subtitle="High intent user actions"
               icon={ShoppingCart}
               colorClass="bg-amber-500/10 text-amber-600 dark:text-amber-400"
@@ -333,7 +310,7 @@ export default function AnalyticsDashboard() {
                     Website Interaction Logs
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
-                    Detailed real-time log of actions performed by visitors on your website
+                    Real-time log of customer actions stored in your store's private database
                   </p>
                 </div>
 
@@ -343,15 +320,18 @@ export default function AnalyticsDashboard() {
                   <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800/70 rounded-lg text-xs">
                     {[
                       { id: "all", label: "All" },
-                      { id: "purchases", label: "Purchases" },
-                      { id: "cart", label: "Cart" },
-                      { id: "search", label: "Search" },
-                      { id: "auth", label: "Auth" },
+                      { id: "Purchases", label: "Purchases" },
+                      { id: "Cart", label: "Cart" },
+                      { id: "Search", label: "Search" },
+                      { id: "Auth", label: "Auth" },
                     ].map((cat) => (
                       <button
                         key={cat.id}
                         type="button"
-                        onClick={() => setEventCategoryFilter(cat.id)}
+                        onClick={() => {
+                          setEventCategoryFilter(cat.id);
+                          setCurrentPage(1);
+                        }}
                         className={`px-2.5 py-1 rounded-md font-medium transition-all ${
                           eventCategoryFilter === cat.id
                             ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs"
@@ -368,9 +348,12 @@ export default function AnalyticsDashboard() {
                     <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
-                      placeholder="Search logs..."
+                      placeholder="Search IP, path, event..."
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1);
+                      }}
                       className="pl-8 pr-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-slate-50 dark:bg-slate-950 focus:outline-none focus:border-blue-500 font-normal"
                     />
                   </div>
@@ -392,24 +375,34 @@ export default function AnalyticsDashboard() {
                     <tr>
                       <th className="px-5 py-3 font-medium">Event Type</th>
                       <th className="px-5 py-3 font-medium">Details / Payload</th>
+                      <th className="px-5 py-3 font-medium">IP Address</th>
                       <th className="px-5 py-3 font-medium">Page Path</th>
                       <th className="px-5 py-3 font-medium">Device</th>
                       <th className="px-5 py-3 font-medium">Timestamp</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-normal text-slate-700 dark:text-slate-300">
-                    {filteredEvents.length > 0 ? (
-                      filteredEvents.map((evt) => {
+                    {isEventsLoading ? (
+                      <tr>
+                        <td colSpan={6} className="px-5 py-12 text-center text-slate-400 font-normal">
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            Loading store interaction logs...
+                          </div>
+                        </td>
+                      </tr>
+                    ) : events.length > 0 ? (
+                      events.map((evt: any) => {
                         const badge = formatEventBadge(evt.event);
-                        const timeStr = new Date(evt.timestamp).toLocaleTimeString("en-US", {
+                        const timeStr = new Date(evt.timestamp || evt.createdAt).toLocaleTimeString("en-US", {
                           hour: "2-digit",
                           minute: "2-digit",
                           second: "2-digit",
                         });
-                        const dateStr = new Date(evt.timestamp).toLocaleDateString();
+                        const dateStr = new Date(evt.timestamp || evt.createdAt).toLocaleDateString();
 
                         return (
-                          <tr key={evt.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                          <tr key={evt._id || evt.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                             {/* Event Badge */}
                             <td className="px-5 py-3.5 whitespace-nowrap">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${badge.bg}`}>
@@ -420,6 +413,13 @@ export default function AnalyticsDashboard() {
                             {/* Payload Details */}
                             <td className="px-5 py-3.5 max-w-sm">
                               {renderPayloadDetails(evt)}
+                            </td>
+
+                            {/* IP Address */}
+                            <td className="px-5 py-3.5 whitespace-nowrap">
+                              <span className="font-mono text-[11px] text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                {evt.ip || "127.0.0.1"}
+                              </span>
                             </td>
 
                             {/* Page Path */}
@@ -447,14 +447,28 @@ export default function AnalyticsDashboard() {
                       })
                     ) : (
                       <tr>
-                        <td colSpan={5} className="px-5 py-12 text-center text-slate-400 font-normal">
-                          No internal website interaction logs recorded yet. Interact with the store (Add to Cart, Search, Login) to generate live logs.
+                        <td colSpan={6} className="px-5 py-12 text-center text-slate-400 font-normal">
+                          No store interaction logs recorded yet. When customers browse products, add to cart, or purchase, their actions will appear here in real time.
                         </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
+
+              {/* Server-side Pagination Controls */}
+              {pagination.totalPages > 1 && (
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                    Showing {events.length} of {pagination.total} events (Page {pagination.page} of {pagination.totalPages})
+                  </span>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPage={pagination.totalPages}
+                    onPageChange={(p) => setCurrentPage(p)}
+                  />
+                </div>
+              )}
             </CardBody>
           </Card>
         </motion.div>

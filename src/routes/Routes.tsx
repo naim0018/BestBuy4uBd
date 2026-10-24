@@ -11,6 +11,8 @@ import { userRoutes } from "./UserRoutes";
 import ProtectedRoute from "./ProtectedRoute";
 import SharedLayout from "@/components/common/SharedLayout";
 
+import { Template1Skeleton } from "@/pages/LandingPage/Components/LandingPageExactSkeleton";
+
 const Login = lazy(() => import("@/pages/Auth/Login"));
 const Signup = lazy(() => import("@/pages/Auth/Signup"));
 const LandingPageContainer = lazy(() => import("@/pages/LandingPage/LandingPageContainer"));
@@ -92,9 +94,9 @@ const routes = createBrowserRouter([
       {
         path: "/:id",
         element: (
-          <RouteSuspense>
+          <Suspense fallback={<Template1Skeleton />}>
             <LandingPageContainer />
-          </RouteSuspense>
+          </Suspense>
         ),
       },
       {

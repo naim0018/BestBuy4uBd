@@ -24,6 +24,7 @@ import VariantSelector from "../Components/VariantSelector";
 import PriceBreakdown from "../../../components/PriceBreakdown";
 import ComboPricingDisplay from "../../../components/ComboPricingDisplay";
 import { useTracking } from "@/hooks/useTracking";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 const LandingPage = ({ product }: { product: Product }) => {
   const navigate = useNavigate();
@@ -198,6 +199,7 @@ const LandingPage = ({ product }: { product: Product }) => {
           courierCharge: formData.courierCharge,
           cuponCode: appliedCoupon.code || "",
           discount: appliedCoupon.discount || 0,
+          idempotencyKey: `ord_${product._id}_${(formData.phone || "").replace(/\D/g, "")}_${Date.now()}`,
         },
       };
 
@@ -250,8 +252,12 @@ const LandingPage = ({ product }: { product: Product }) => {
           },
         },
       });
-    } catch {
-      toast.error("দুঃখিত! অর্ডার সম্পন্ন করা যায়নি।");
+    } catch (err: any) {
+      const errorMsg =
+        err?.data?.message ||
+        err?.message ||
+        "দুঃখিত! অর্ডার সম্পন্ন করা যায়নি। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।";
+      toast.error(errorMsg, { duration: 5000 });
     }
   };
 
@@ -308,11 +314,15 @@ const LandingPage = ({ product }: { product: Product }) => {
           <AnimatedContainer direction="right" className="space-y-4">
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group  max-h-[70vh]">
               <img
-                src={
+                src={optimizeCloudinaryUrl(
                   images?.[selectedImage]?.url ||
-                  "https://placehold.co/600x600?text=No+Image"
-                }
+                  "https://placehold.co/600x600?text=No+Image",
+                  { width: 600, quality: "auto" }
+                )}
                 alt={basicInfo?.title}
+                fetchPriority="high"
+                loading="eager"
+                decoding="async"
                 className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
               />
               {additionalInfo && (
@@ -340,8 +350,10 @@ const LandingPage = ({ product }: { product: Product }) => {
                   }`}
                 >
                   <img
-                    src={img.url}
+                    src={optimizeCloudinaryUrl(img.url, { width: 150, quality: "auto" })}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </button>

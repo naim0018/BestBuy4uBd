@@ -59,10 +59,20 @@ if (!$settings) {
     }
 }
 
-// Extract variables with safe, brand-appropriate fallbacks
-$site_title = (isset($settings['siteName']) && !empty($settings['siteName'])) ? $settings['siteName'] : 'BestBuy4uBd';
-$site_description = (isset($settings['information']) && !empty($settings['information'])) ? $settings['information'] : 'Best Buy for You in Bangladesh - Your trusted online shopping destination.';
-$site_image = (isset($settings['logo']) && !empty($settings['logo'])) ? $settings['logo'] : 'https://bestbuy4ubd.com/logo.png';
+// Determine clean brand title from host name if settings siteName is missing
+$clean_host_name = 'Online Shop';
+if (!empty($host)) {
+    $host_without_www = preg_replace('/^www\\./i', '', $host);
+    $host_parts = explode('.', $host_without_www);
+    if (!empty($host_parts[0])) {
+        $clean_host_name = ucwords(str_replace(['-', '_'], ' ', $host_parts[0]));
+    }
+}
+
+// Extract variables with safe, domain-adaptive fallbacks
+$site_title = (isset($settings['siteName']) && !empty($settings['siteName'])) ? $settings['siteName'] : $clean_host_name;
+$site_description = (isset($settings['information']) && !empty($settings['information'])) ? $settings['information'] : ('Welcome to ' . $clean_host_name . ' - Your trusted online shopping destination.');
+$site_image = (isset($settings['logo']) && !empty($settings['logo'])) ? $settings['logo'] : '/logo.png';
 ?>
 `;
 

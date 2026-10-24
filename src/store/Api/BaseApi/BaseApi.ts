@@ -36,7 +36,12 @@ const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
-  if (result.error && result.error.status === 401) {
+  
+  const isAuthError = 
+    result.error && 
+    (result.error.status === 401 || (result.error.data as any)?.message === "jwt expired");
+
+  if (isAuthError) {
     const state = api.getState() as any;
     const refreshToken = state.auth.user?.refreshToken;
     if (!refreshToken) {
@@ -45,17 +50,21 @@ const baseQueryWithReauth: BaseQueryFn<
     }
     const refreshResult = await baseQuery(
       {
-        url: "user/refreshToken",
+        url: "auth/refresh-token",
         method: "POST",
         body: {
+          refreshToken: refreshToken,
           authorization: refreshToken,
         },
       },
       api,
       extraOptions
     );
-    if (refreshResult.data) {
-      api.dispatch(setUser(refreshResult.data as any));
+    if (refreshResult.data && (refreshResult.data as any).data?.accessToken) {
+      api.dispatch(setUser({
+        accessToken: (refreshResult.data as any).data.accessToken,
+        refreshToken: refreshToken,
+      }));
       result = await baseQuery(args, api, extraOptions);
     } else {
       api.dispatch(logOut());

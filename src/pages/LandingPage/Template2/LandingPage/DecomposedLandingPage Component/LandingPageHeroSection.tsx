@@ -10,6 +10,7 @@ import AnimatedContainer from "@/common/Components/AnimatedContainer";
 import VariantSelector from "@/pages/LandingPage/Components/VariantSelector";
 import PriceBreakdown from "../../../../../components/PriceBreakdown";
 import ComboPricingDisplay from "../../../../../components/ComboPricingDisplay";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface LandingPageHeroSectionProps {
   product: Product;
@@ -62,11 +63,15 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
               <div className="relative group">
                 <div className="aspect-square rounded-2xl overflow-hidden bg-white shadow-2xl border border-gray-100">
                   <img
-                    src={
+                    src={optimizeCloudinaryUrl(
                       currentImage?.url ||
-                      "https://placehold.co/600x600?text=No+Image"
-                    }
+                      "https://placehold.co/600x600?text=No+Image",
+                      { width: 700, quality: "auto" }
+                    )}
                     alt={currentImage?.alt || title}
+                    fetchPriority="high"
+                    loading="eager"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement;
@@ -124,9 +129,11 @@ const LandingPageHeroSection: React.FC<LandingPageHeroSectionProps> = ({
                   >
                     <img
                       src={
-                        img.url || "https://placehold.co/100x100?text=No+Image"
+                        optimizeCloudinaryUrl(img.url, { width: 150, quality: "auto" }) || "https://placehold.co/100x100?text=No+Image"
                       }
                       alt={img.alt}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.currentTarget as HTMLImageElement;
