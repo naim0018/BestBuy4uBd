@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Play, Sparkles, ArrowRight, Star } from "lucide-react";
 import { Product } from "@/types/Product/Product";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface HeroProps {
   product: Product;
@@ -159,8 +160,11 @@ export default function Hero({ product, scrollToCheckout }: HeroProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/50 to-transparent rounded-2xl z-10" />
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 transform hover:scale-105 transition-transform duration-500">
               <img
-                src={product?.images[0]?.url}
+                src={optimizeCloudinaryUrl(product?.images[0]?.url, { width: 900, quality: "auto" })}
                 alt={product?.images[0]?.alt || product?.basicInfo?.title}
+                fetchPriority="high"
+                loading="eager"
+                decoding="async"
                 className="w-full h-auto"
               />
               {/* Play button overlay for video products */}

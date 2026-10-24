@@ -8,7 +8,7 @@ const getBaseUrl = () => {
       return "http://localhost:5000/api/v1";
     }
   }
-  return "https://spark-tech-server.vercel.app/api/v1";
+  return "https://api.bestbuy4ubd.com/api/v1";
 };
 
 export default function VisitorTracker() {

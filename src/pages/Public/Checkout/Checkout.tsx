@@ -210,6 +210,7 @@ const Checkout = () => {
           courierCharge: formData.courierCharge,
           cuponCode: appliedCoupon.code || "",
           discount: appliedCoupon.discount || 0,
+          idempotencyKey: `ord_cart_${(formData.phone || "").replace(/\D/g, "")}_${Date.now()}`,
         },
       };
 

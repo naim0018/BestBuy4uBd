@@ -3,6 +3,7 @@ import { useGetAllProductsQuery } from "@/store/Api/ProductApi";
 import { Product } from "@/types/Product/Product";
 import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface RelatedProductsProps {
   category: string;
@@ -43,11 +44,14 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
           >
             <div className="aspect-square overflow-hidden bg-gray-50 relative">
               <img
-                src={
+                src={optimizeCloudinaryUrl(
                   product.images?.[0]?.url ||
-                  "https://placehold.co/400x400?text=No+Image"
-                }
+                  "https://placehold.co/400x400?text=No+Image",
+                  { width: 400, quality: "auto" }
+                )}
                 alt={product.basicInfo.title}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement;

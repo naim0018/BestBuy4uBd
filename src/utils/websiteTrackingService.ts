@@ -30,6 +30,16 @@ function getDeviceType(): "Mobile" | "Tablet" | "Desktop" {
   return "Desktop";
 }
 
+const getBaseApiUrl = () => {
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "http://localhost:5000/api/v1";
+    }
+  }
+  return "https://api.bestbuy4ubd.com/api/v1";
+};
+
 export const websiteTrackingService = {
   getEvents(): TrackedEvent[] {
     if (typeof window === "undefined") return [];
@@ -63,12 +73,15 @@ export const websiteTrackingService = {
         // ignore error
       }
 
+      const device = getDeviceType();
+      const path = window.location.pathname;
+
       const newEvent: TrackedEvent = {
         id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         event,
         timestamp: new Date().toISOString(),
-        path: window.location.pathname,
-        device: getDeviceType(),
+        path,
+        device,
         payload,
         user,
       };
@@ -80,6 +93,24 @@ export const websiteTrackingService = {
       window.dispatchEvent(
         new CustomEvent("website_event_logged", { detail: newEvent })
       );
+
+      // Asynchronously send to tenant backend database
+      fetch(`${getBaseApiUrl()}/analytics/store-activity`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          event,
+          path,
+          device,
+          payload,
+          user,
+          referrer: document.referrer || "",
+        }),
+      }).catch(() => {
+        // Silent fail for non-blocking telemetry
+      });
     } catch (e) {
       console.error("Failed to log website tracking event:", e);
     }

@@ -188,6 +188,7 @@ const LandingPage = ({ product }: { product: Product }) => {
           courierCharge: formData.courierCharge,
           cuponCode: appliedCoupon.code || "",
           discount: appliedCoupon.discount || 0,
+          idempotencyKey: `ord_${product._id}_${(formData.phone || "").replace(/\D/g, "")}_${Date.now()}`,
         },
       };
 
@@ -237,8 +238,12 @@ const LandingPage = ({ product }: { product: Product }) => {
       });
 
       setShowSuccessModal(true);
-    } catch {
-      toast.error("দুঃখিত! অর্ডার সম্পন্ন করা যায়নি।");
+    } catch (err: any) {
+      const errorMsg =
+        err?.data?.message ||
+        err?.message ||
+        "দুঃখিত! অর্ডার সম্পন্ন করা যায়নি। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।";
+      toast.error(errorMsg, { duration: 5000 });
     }
   };
 

@@ -1,11 +1,13 @@
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useGetProductByIdQuery } from "@/store/Api/ProductApi";
+import { useTracking } from "@/hooks/useTracking";
+import { Template1Skeleton } from "./Components/LandingPageExactSkeleton";
+
 import Template1LandingPage from "./Template1/LandingPage";
 import Template2LandingPage from "./Template2/LandingPage/LandingPage";
 import Template3LandingPage from "./Template3/LandingPage/LandingPage";
 import Template4LandingPage from "./Template4/LandingPage/LandingPage";
-import { useTracking } from "@/hooks/useTracking";
-import { useEffect } from "react";
 
 const LandingPageContainer = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +29,18 @@ const LandingPageContainer = () => {
 
   useEffect(() => {
     if (product) {
+      // Dynamically update document title to show product name and tenant store name
+      const storeName =
+        typeof window !== "undefined"
+          ? window.location.hostname
+              .replace(/^www\./i, "")
+              .split(".")[0]
+              .replace(/[-_]/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())
+          : "Shop";
+
+      document.title = `${product.basicInfo.title} | ${storeName}`;
+
       trackViewItem({
         id: product._id,
         name: product.basicInfo.title,
@@ -36,12 +50,9 @@ const LandingPageContainer = () => {
     }
   }, [product, trackViewItem]);
 
+  // Initial fetch loading (default to Template 1 layout before metadata is known)
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center bg-gray-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
-      </div>
-    );
+    return <Template1Skeleton />;
   }
 
   if (error || !product) {
@@ -70,11 +81,7 @@ const LandingPageContainer = () => {
     }
   };
 
-  return (
-    <>
-      {renderTemplate()}
-    </>
-  );
+  return renderTemplate();
 };
 
 export default LandingPageContainer;

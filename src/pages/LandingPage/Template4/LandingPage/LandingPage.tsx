@@ -163,6 +163,7 @@ const LandingPage = ({ product }: { product: Product }) => {
           courierCharge: formData.courierCharge,
           cuponCode: appliedCoupon.code,
           discount: appliedCoupon.discount,
+          idempotencyKey: `ord_${product._id}_${(formData.phone || "").replace(/\D/g, "")}_${Date.now()}`,
         },
       };
 

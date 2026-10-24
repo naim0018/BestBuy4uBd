@@ -23,7 +23,28 @@ export const TrackingApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    getInteractionEvents: builder.query({
+      query: (params?: { page?: number; limit?: number; search?: string; category?: string }) => ({
+        url: "/analytics/store-activity",
+        method: "GET",
+        params: params || {},
+      }),
+      providesTags: ["Tracking"],
+    }),
+    clearInteractionEvents: builder.mutation({
+      query: () => ({
+        url: "/analytics/store-activity",
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Tracking"],
+    }),
   }),
 });
 
-export const { useGetTrackingSettingsQuery, useUpdateTrackingSettingsMutation, useGetAnalyticsDashboardQuery } = TrackingApi;
+export const {
+  useGetTrackingSettingsQuery,
+  useUpdateTrackingSettingsMutation,
+  useGetAnalyticsDashboardQuery,
+  useGetInteractionEventsQuery,
+  useClearInteractionEventsMutation,
+} = TrackingApi;

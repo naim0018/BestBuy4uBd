@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@heroui/react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import AnimatedContainer from "@/common/Components/AnimatedContainer";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface DynamicBannerProps {
   title: string;
@@ -23,14 +24,18 @@ const DynamicBanner: React.FC<DynamicBannerProps> = ({
     ? Math.round(((regularPrice - discountedPrice) / regularPrice) * 100)
     : 0;
 
+  const optimizedBg = backgroundImage
+    ? optimizeCloudinaryUrl(backgroundImage, { width: 1200, quality: "auto" })
+    : undefined;
+
   return (
     <section className="relative h-[60vh] w-full overflow-hidden flex items-center">
       {/* Background with Overlays */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 hover:scale-105"
         style={{
-          backgroundImage: backgroundImage
-            ? `url(${backgroundImage})`
+          backgroundImage: optimizedBg
+            ? `url(${optimizedBg})`
             : "linear-gradient(135deg, #124e66 0%, #2e3944 100%)",
         }}
       >

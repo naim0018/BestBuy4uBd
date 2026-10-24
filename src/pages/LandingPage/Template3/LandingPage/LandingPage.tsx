@@ -16,6 +16,7 @@ import RelatedProducts from "@/pages/LandingPage/Components/RelatedProducts";
 import WhyBuyFromUs from "../Components/WhyBuyFromUs";
 import VideoGallery from "../Components/VideoGallery";
 import { useTracking } from "@/hooks/useTracking";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 
 const LandingPage = ({ product }: { product: Product }) => {
@@ -176,6 +177,7 @@ const LandingPage = ({ product }: { product: Product }) => {
           courierCharge: formData.courierCharge,
           cuponCode: appliedCoupon.code,
           discount: appliedCoupon.discount,
+          idempotencyKey: `ord_${product._id}_${(formData.phone || "").replace(/\D/g, "")}_${Date.now()}`,
         },
       };
 
@@ -276,11 +278,15 @@ const LandingPage = ({ product }: { product: Product }) => {
             <div className="relative group max-w-xl mx-auto mb-8">
               <div className="aspect-square rounded-[1.5rem] overflow-hidden border-6 border-brand-600 shadow-xl bg-white p-1.5">
                 <img
-                  src={
+                  src={optimizeCloudinaryUrl(
                     currentImage?.url ||
-                    "https://placehold.co/800x800?text=No+Image"
-                  }
+                    "https://placehold.co/800x800?text=No+Image",
+                    { width: 700, quality: "auto" }
+                  )}
                   alt={product?.basicInfo?.title || "Product image"}
+                  fetchPriority="high"
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-cover rounded-[1rem]"
                 />
               </div>
@@ -300,8 +306,10 @@ const LandingPage = ({ product }: { product: Product }) => {
                     }`}
                   >
                     <img
-                      src={img.url}
+                      src={optimizeCloudinaryUrl(img.url, { width: 150, quality: "auto" })}
                       alt={`${product?.basicInfo?.title || "Product"} thumb ${index + 1}`}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </button>
@@ -459,8 +467,10 @@ const LandingPage = ({ product }: { product: Product }) => {
                     className="hidden md:block w-full scale-120  transition-all duration-500 rounded-2xl overflow-hidden border border-gray-200 aspect-square bg-white shadow-sm cursor-pointer"
                   >
                     <img
-                      src={product.images[(activePromoImageIdx - 1 + product.images.length) % product.images.length].url}
+                      src={optimizeCloudinaryUrl(product.images[(activePromoImageIdx - 1 + product.images.length) % product.images.length].url, { width: 500, quality: "auto" })}
                       alt="Previous promo slide"
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </button>
@@ -471,8 +481,10 @@ const LandingPage = ({ product }: { product: Product }) => {
                 {/* Center Column (Active Slide) */}
                 <div className="w-full rounded-[1.5rem] overflow-hidden border-1 border-brand-600 shadow-xl bg-white aspect-square relative flex items-center justify-center z-40">
                   <img
-                    src={product.images[activePromoImageIdx].url}
+                    src={optimizeCloudinaryUrl(product.images[activePromoImageIdx].url, { width: 600, quality: "auto" })}
                     alt={`Promo Slide ${activePromoImageIdx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
 
@@ -544,8 +556,10 @@ const LandingPage = ({ product }: { product: Product }) => {
                     className="hidden md:block w-full scale-120 transition-all duration-500 rounded-2xl overflow-hidden border border-gray-200 aspect-square bg-white shadow-sm cursor-pointer"
                   >
                     <img
-                      src={product.images[(activePromoImageIdx + 1) % product.images.length].url}
+                      src={optimizeCloudinaryUrl(product.images[(activePromoImageIdx + 1) % product.images.length].url, { width: 500, quality: "auto" })}
                       alt="Next promo slide"
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </button>

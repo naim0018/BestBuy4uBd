@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Product } from "@/types/Product/Product";
 import VariantSelector from "../../Components/VariantSelector";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 import PriceBreakdown from "@/components/PriceBreakdown";
 
@@ -58,8 +59,10 @@ export default function ProductShowcase({
             {/* Main Image */}
             <div className="relative rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 group">
               <img
-                src={currentImage?.url || product.images[0]?.url}
+                src={optimizeCloudinaryUrl(currentImage?.url || product.images[0]?.url, { width: 700, quality: "auto" })}
                 alt={currentImage?.alt || product.images[0]?.alt}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-auto object-cover"
               />
 
@@ -94,8 +97,10 @@ export default function ProductShowcase({
                   }`}
                 >
                   <img
-                    src={image.url}
+                    src={optimizeCloudinaryUrl(image.url, { width: 150, quality: "auto" })}
                     alt={image.alt}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover aspect-square"
                   />
                 </button>
