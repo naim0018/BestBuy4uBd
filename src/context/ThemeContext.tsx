@@ -1,6 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { toast } from "sonner";
+import {
+  useGetSettingsQuery,
+  useAddThemeMutation,
+  useDeleteThemeMutation,
+  useSetSiteDefaultThemeMutation,
+} from "@/store/Api/SettingsApi";
 
 export interface Theme {
   id: string;
@@ -103,44 +108,31 @@ const ThemeContext = createContext<IThemeContext | undefined>(undefined);
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [themes, setThemes] = useState<Theme[]>(defaultThemes);
   const [currentThemeId, setCurrentThemeId] = useState<string>("default");
-  const [isLoading, setIsLoading] = useState(true);
 
-  // 1. Fetch site settings from backend (presets + custom themes)
+  // 1. Fetch site settings from RTK Query
+  const { data: settingsData, isLoading: isFetchingSettings } = useGetSettingsQuery(undefined);
+  const [addThemeTrigger, { isLoading: isAddingTheme }] = useAddThemeMutation();
+  const [deleteThemeTrigger, { isLoading: isDeletingTheme }] = useDeleteThemeMutation();
+  const [setDefaultTrigger, { isLoading: isSettingDefault }] = useSetSiteDefaultThemeMutation();
+
+  const isLoading = isFetchingSettings || isAddingTheme || isDeletingTheme || isSettingDefault;
+
+  // Sync settings themes when data changes
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        // Adjust URL based on your env
-        const { data } = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL || "http://localhost:5000"}/api/v1/settings`,
-        );
-        if (data?.success && data?.data) {
-          const backendThemes = data.data.themes || [];
-          // Merge or replace defaultThemes.
-          // If backend has themes, use them (assuming backend is source of truth after init)
-          if (backendThemes.length > 0) {
-            // Map backend theme structure to frontend if slightly different,
-            // but here we kept them identical in our implementation plan
-            // We need to ensure we map 'previewColor' -> 'color' if mismatch
-            const mappedThemes = backendThemes.map((t: any) => ({
-              id: t.id,
-              name: t.name,
-              color: t.previewColor || t.color,
-              class: t.className || "",
-              variables: t.variables,
-            }));
-            setThemes(mappedThemes);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch theme settings", error);
-        // Fallback to defaultThemes is implicit via useState initial value
-      } finally {
-        setIsLoading(false);
+    if (settingsData?.success && settingsData?.data) {
+      const backendThemes = settingsData.data.themes || [];
+      if (backendThemes.length > 0) {
+        const mappedThemes = backendThemes.map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          color: t.previewColor || t.color,
+          class: t.className || "",
+          variables: t.variables,
+        }));
+        setThemes(mappedThemes);
       }
-    };
-
-    fetchSettings();
-  }, []);
+    }
+  }, [settingsData]);
 
   // 2. Initialize active theme (User Preference > Site Default)
   useEffect(() => {
@@ -148,8 +140,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (savedThemeId && themes.find((t) => t.id === savedThemeId)) {
       setCurrentThemeId(savedThemeId);
     } else {
-      // Fallback to first theme or specific default
-      // In a real app, backend settings would say which ID is "default"
       setCurrentThemeId("default");
     }
   }, [themes]);
@@ -169,9 +159,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       document.body.classList.add(theme.class);
     }
 
-    // Always inject variables (for both presets AND custom themes if they carry overrides)
-    // For Tailwind v4 variables inside @theme block, we might need to set standard CSS vars on :root
-    // But since we are using CSS variables in our index.css config, rewriting them on root works
     if (theme.variables) {
       Object.entries(theme.variables).forEach(([key, value]) => {
         document.documentElement.style.setProperty(key, value as string);
@@ -183,26 +170,14 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   }, [currentThemeId, themes]);
 
   const changeTheme = async (themeId: string) => {
-    // If Admin/logged in, we might want to save this to backend as "site default"
-    // But for now, user preference is local, Admin preference is via separate "save as default" action?
-    // User request: "admin can... set his sites theme color".
-    // This implies creating a theme puts it in the list, and "setting" it makes it active for EVERYONE (Site Default).
-    // So distinct actions: "Preview/Select Local" (changeTheme) vs "Set Site Default".
-
-    // For now, let's keep changeTheme as local preview/selection.
     setCurrentThemeId(themeId);
   };
 
   const addCustomTheme = async (theme: Omit<Theme, "id">) => {
     try {
-      setIsLoading(true);
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL || "http://localhost:5000"}/api/v1/settings/theme`,
-        theme,
-      );
-      if (data?.success && data?.data) {
-        // actually backend returns full settings, we should re-map all
-        const backendThemes = data.data.themes || [];
+      const res = await addThemeTrigger(theme).unwrap();
+      if (res?.success && res?.data) {
+        const backendThemes = res.data.themes || [];
         const mappedThemes = backendThemes.map((t: any) => ({
           id: t.id,
           name: t.name,
@@ -213,59 +188,45 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         setThemes(mappedThemes);
         toast.success("Theme added successfully");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to add theme", error);
-      toast.error("Failed to add theme");
-    } finally {
-      setIsLoading(false);
+      toast.error(error?.data?.message || "Failed to add theme");
     }
   };
 
   const deleteCustomTheme = async (themeId: string) => {
     try {
-      setIsLoading(true);
-      const { data } = await axios.delete(
-        `${import.meta.env.VITE_SERVER_URL || "http://localhost:5000"}/api/v1/settings/theme/${themeId}`,
-      );
-      if (data?.success) {
-        const backendThemes = data.data.themes || [];
-        const mappedThemes = backendThemes.map((t: any) => ({
-          id: t.id,
-          name: t.name,
-          color: t.previewColor || t.color,
-          class: t.className || "",
-          variables: t.variables,
-        }));
-        setThemes(mappedThemes);
-        // if deleted was active, fallback
+      const res = await deleteThemeTrigger(themeId).unwrap();
+      if (res?.success) {
+        const backendThemes = res.data?.themes || [];
+        if (backendThemes.length > 0) {
+          const mappedThemes = backendThemes.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            color: t.previewColor || t.color,
+            class: t.className || "",
+            variables: t.variables,
+          }));
+          setThemes(mappedThemes);
+        }
         if (currentThemeId === themeId) setCurrentThemeId("default");
         toast.success("Theme deleted");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to delete theme", error);
-      toast.error("Failed to delete theme");
-    } finally {
-      setIsLoading(false);
+      toast.error(error?.data?.message || "Failed to delete theme");
     }
   };
 
   const setSiteDefault = async (themeId: string) => {
     try {
-      setIsLoading(true);
-      const { data } = await axios.patch(
-        `${import.meta.env.VITE_SERVER_URL || "http://localhost:5000"}/api/v1/settings/theme`,
-        { themeId },
-      );
-      if (data?.success) {
+      const res = await setDefaultTrigger(themeId).unwrap();
+      if (res?.success) {
         toast.success("Site default theme updated");
-        // Here we might want to update local state to reflect this is the new default?
-        // But local preference overrides default.
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to set default", error);
-      toast.error("Failed to set default");
-    } finally {
-      setIsLoading(false);
+      toast.error(error?.data?.message || "Failed to set default");
     }
   };
 

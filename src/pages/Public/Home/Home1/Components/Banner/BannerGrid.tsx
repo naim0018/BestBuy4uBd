@@ -66,20 +66,20 @@ const BannerGrid = () => {
 
   if (showSkeleton) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto px-4 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Hero Skeleton */}
-          <div className="lg:col-span-2 lg:row-span-2 h-[500px] bg-border-main/20 rounded-container animate-pulse" />
+          <div className="lg:col-span-2 h-[160px] sm:h-[350px] md:h-[450px] lg:h-[500px] bg-border-main/20 rounded-xl animate-pulse" />
 
           {/* Right Column Skeleton */}
-          <div className="space-y-6 h-[500px]">
-            <div className="h-full bg-border-main/20 rounded-component animate-pulse" />
+          <div className="lg:col-span-1 h-[160px] sm:h-[350px] md:h-[450px] lg:h-[500px]">
+            <div className="h-full bg-border-main/20 rounded-xl animate-pulse" />
           </div>
 
           {/* Bottom Row Skeleton */}
-          <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="h-[200px] bg-border-main/20 rounded-component animate-pulse" />
-            <div className="h-[200px] bg-border-main/20 rounded-component animate-pulse" />
+          <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="h-[140px] sm:h-[200px] bg-border-main/20 rounded-xl animate-pulse" />
+            <div className="h-[140px] sm:h-[200px] bg-border-main/20 rounded-xl animate-pulse" />
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { BannerData } from "./types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTracking } from "@/hooks/useTracking";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface HeroBannerProps {
   banners: BannerData[];
@@ -136,8 +137,11 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
             <div className="relative w-full h-full flex items-center justify-center ">
               {data.image ? (
                 <img
-                  src={data.image}
+                  src={optimizeCloudinaryUrl(data.image, { width: 1000, quality: "auto" })}
                   alt={data.title}
+                  fetchPriority={currentSlide === 0 ? "high" : "auto"}
+                  loading={currentSlide === 0 ? "eager" : "lazy"}
+                  decoding="async"
                   className="h-full w-full object-cover drop-shadow-2xl transition-transform duration-1000 group-hover:scale-105"
                 />
               ) : (

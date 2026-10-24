@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { BannerData } from "./types";
 import { ArrowRight } from "lucide-react";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface ProductCardProps {
   data: BannerData;
@@ -21,8 +22,10 @@ const ProductCard1 = ({ data, index }: ProductCardProps) => {
       {data.image ? (
         <div className="absolute inset-0 w-full h-full">
           <img
-            src={data.image}
+            src={optimizeCloudinaryUrl(data.image, { width: 600, quality: "auto" })}
             alt={data.title}
+            loading="eager"
+            decoding="async"
             className="w-full h-full object-cover"
           />
           {/* Gradient Overlay */}

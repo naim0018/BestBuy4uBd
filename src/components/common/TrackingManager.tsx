@@ -7,7 +7,7 @@ const TrackingManager = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Initialize dataLayer immediately
+    // 1. Initialize dataLayer globally immediately
     window.dataLayer = window.dataLayer || [];
 
     if (isLoading || !trackingData?.data) {
@@ -16,46 +16,39 @@ const TrackingManager = () => {
 
     const settings = trackingData.data;
 
+    // -------------------------------------------------------------
     // 0. Google Tag Manager (GTM)
+    // -------------------------------------------------------------
     const gtmId =
       settings.gtmId ||
       (settings.googleAnalyticsId?.startsWith("GTM-")
         ? settings.googleAnalyticsId
         : null);
 
-    // Google Tag (GT-) - specifically for newer tracking implementations
-    const googleTagId = settings.googleAnalyticsId?.startsWith("GT-")
-      ? settings.googleAnalyticsId
-      : null;
+    if (gtmId && !document.querySelector(`script[data-gtm-id="${gtmId}"]`)) {
+      window.dataLayer.push({
+        "gtm.start": new Date().getTime(),
+        event: "gtm.js",
+      });
+
+      const script = document.createElement("script");
+      script.async = true;
+      script.setAttribute("data-gtm-id", gtmId);
+      script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`;
+      document.head.appendChild(script);
+
+      const noscript = document.createElement("noscript");
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.googletagmanager.com/ns.html?id=${gtmId}`;
+      iframe.height = "0";
+      iframe.width = "0";
+      iframe.style.display = "none";
+      iframe.style.visibility = "hidden";
+      noscript.appendChild(iframe);
+      document.body.prepend(noscript);
+    }
 
     if (gtmId) {
-      if (
-        !document.querySelector(
-          `script[src*="googletagmanager.com/gtm.js?id=${gtmId}"]`,
-        )
-      ) {
-        const script = document.createElement("script");
-        script.innerHTML = `
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','${gtmId}');
-            `;
-        document.head.appendChild(script);
-
-        const noscript = document.createElement("noscript");
-        const iframe = document.createElement("iframe");
-        iframe.src = `https://www.googletagmanager.com/ns.html?id=${gtmId}`;
-        iframe.height = "0";
-        iframe.width = "0";
-        iframe.style.display = "none";
-        iframe.style.visibility = "hidden";
-        noscript.appendChild(iframe);
-        document.body.prepend(noscript);
-      }
-
-      // Track virtual pageview
       window.dataLayer.push({
         event: "pageview",
         page_path: location.pathname + location.search,
@@ -63,103 +56,177 @@ const TrackingManager = () => {
       });
     }
 
+    // -------------------------------------------------------------
     // 1. Google Analytics 4 (GA4) or Google Tag (GT-)
+    // -------------------------------------------------------------
+    const googleTagId = settings.googleAnalyticsId?.startsWith("GT-")
+      ? settings.googleAnalyticsId
+      : null;
+
     const gaId =
       (settings.googleAnalyticsId?.startsWith("G-")
         ? settings.googleAnalyticsId
         : null) || googleTagId;
 
     if (gaId) {
-      if (
-        !document.querySelector(
-          `script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`,
-        )
-      ) {
+      // Ensure window.gtag is available as a real function directly
+      if (!window.gtag) {
+        window.gtag = function () {
+          window.dataLayer.push(arguments);
+        };
+        window.gtag("js", new Date());
+      }
+
+      // Inject the external gtag script once
+      if (!document.querySelector(`script[data-ga-id="${gaId}"]`)) {
         const script = document.createElement("script");
         script.async = true;
+        script.setAttribute("data-ga-id", gaId);
         script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
         document.head.appendChild(script);
-
-        const configScript = document.createElement("script");
-        configScript.innerHTML = `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaId}');
-            `;
-        document.head.appendChild(configScript);
       }
 
-      if (window.gtag) {
-        window.gtag("config", gaId, {
-          page_path: location.pathname + location.search,
-        });
-      }
+      // Send the current pageview
+      window.gtag("config", gaId, {
+        page_path: location.pathname + location.search,
+        page_title: document.title,
+      });
     }
 
+    // -------------------------------------------------------------
     // 2. Facebook Pixel
+    // -------------------------------------------------------------
     if (settings.facebookPixelId) {
       const pixelId = settings.facebookPixelId;
       if (!document.querySelector(`script[data-pixel-id="${pixelId}"]`)) {
-        const fbScript = document.createElement("script");
-        fbScript.setAttribute("data-pixel-id", pixelId);
-        fbScript.innerHTML = `
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${pixelId}');
-           `;
-        document.head.appendChild(fbScript);
+        (function (f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
+          if (f.fbq) return;
+          n = f.fbq = function () {
+            n.callMethod
+              ? n.callMethod.apply(n, arguments)
+              : n.queue.push(arguments);
+          };
+          if (!f._fbq) f._fbq = n;
+          n.push = n;
+          n.loaded = !0;
+          n.version = "2.0";
+          n.queue = [];
+          t = b.createElement(e);
+          t.async = !0;
+          t.setAttribute("data-pixel-id", pixelId);
+          t.src = v;
+          s = b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t, s);
+        })(
+          window,
+          document,
+          "script",
+          "https://connect.facebook.net/en_US/fbevents.js",
+        );
+
+        if (window.fbq) {
+          window.fbq("init", pixelId);
+        }
       }
-      // Track PageView on route change (basic SPA tracking)
+
       if (window.fbq) {
         window.fbq("track", "PageView");
       }
     }
 
-    // 3. TikTok Pixel (Basic implementation)
+    // -------------------------------------------------------------
+    // 3. TikTok Pixel
+    // -------------------------------------------------------------
     if (settings.tiktokPixelId) {
       const tiktokId = settings.tiktokPixelId;
       if (!document.querySelector(`script[data-tiktok-id="${tiktokId}"]`)) {
-        const script = document.createElement("script");
-        script.setAttribute("data-tiktok-id", tiktokId);
-        script.innerHTML = `
-                !function (w, d, t) {
-                w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t.split(".").forEach(function(e){t=ttq,e.split(".").forEach(function(e){t=t[e]||(t[e]={})})}),t.methods.forEach(function(e){t[e]=function(){var n=Array.prototype.slice.call(arguments);t.queue.push([e,n])}})};ttq.setAndDefer(ttq,function(e){e=e||{};for(var n=0;n<ttq.methods.length;n++)ttq.setAndDefer(ttq,ttq.methods[n]);ttq.instance=function(e){var n=ttq._i[e]||[];return Object.keys(ttq).forEach(function(t){Object.defineProperty(n,t,{get:function(){return ttq[t]},set:function(e){ttq[t]=e}})}),n},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
-                ttq.load('${tiktokId}');
-                ttq.page();
-                }(window, document, 'ttq');
-             `;
-        document.head.appendChild(script);
+        (function (w: any, d: any, t: any) {
+          w.TiktokAnalyticsObject = t;
+          const ttq = (w[t] = w[t] || []);
+          ttq.methods = [
+            "page",
+            "track",
+            "identify",
+            "instances",
+            "debug",
+            "on",
+            "off",
+            "once",
+            "ready",
+            "alias",
+            "group",
+            "enableCookie",
+            "disableCookie",
+          ];
+          ttq.setAndDefer = function (target: any) {
+            target.methods.forEach(function (method: any) {
+              target[method] = function () {
+                const args = Array.prototype.slice.call(arguments);
+                target.queue = target.queue || [];
+                target.queue.push([method, args]);
+              };
+            });
+          };
+          ttq.setAndDefer(ttq);
+          ttq.load = function (e: any, n?: any) {
+            const i = "https://analytics.tiktok.com/i18n/pixel/events.js";
+            ttq._i = ttq._i || {};
+            ttq._i[e] = [];
+            ttq._i[e]._u = i;
+            ttq._t = ttq._t || {};
+            ttq._t[e] = +new Date();
+            ttq._o = ttq._o || {};
+            ttq._o[e] = n || {};
+            const script = d.createElement("script");
+            script.type = "text/javascript";
+            script.async = true;
+            script.setAttribute("data-tiktok-id", tiktokId);
+            script.src = i + "?sdkid=" + e + "&lib=" + t;
+            const first = d.getElementsByTagName("script")[0];
+            if (first && first.parentNode) {
+              first.parentNode.insertBefore(script, first);
+            } else {
+              d.head.appendChild(script);
+            }
+          };
+          ttq.load(tiktokId);
+        })(window, document, "ttq");
       }
-      if (window.ttq) {
-        window.ttq.page();
+
+      if (window.ttq && typeof window.ttq.page === "function") {
+        try {
+          window.ttq.page();
+        } catch (e) {
+          console.error("TikTok pixel page error:", e);
+        }
       }
     }
 
+    // -------------------------------------------------------------
     // 4. Microsoft Clarity
+    // -------------------------------------------------------------
     if (settings.clarityId) {
       const clarityId = settings.clarityId;
       if (!document.querySelector(`script[data-clarity-id="${clarityId}"]`)) {
-        const script = document.createElement("script");
-        script.setAttribute("data-clarity-id", clarityId);
-        script.innerHTML = `
-                (function(c,l,a,r,i,t,y){
-                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-                })(window, document, "clarity", "script", "${clarityId}");
-            `;
-        document.head.appendChild(script);
+        (function (c: any, l: any, a: any, r: any, i: any) {
+          c[a] =
+            c[a] ||
+            function () {
+              (c[a].q = c[a].q || []).push(arguments);
+            };
+          const t = l.createElement(r);
+          t.async = 1;
+          t.setAttribute("data-clarity-id", clarityId);
+          t.src = "https://www.clarity.ms/tag/" + i;
+          const y = l.getElementsByTagName(r)[0];
+          y.parentNode.insertBefore(t, y);
+        })(window, document, "clarity", "script", clarityId);
       }
     }
 
+    // -------------------------------------------------------------
     // 5. Google Search Console Verification
+    // -------------------------------------------------------------
     if (settings.searchConsoleVerificationCode) {
       if (!document.querySelector('meta[name="google-site-verification"]')) {
         const meta = document.createElement("meta");
@@ -173,11 +240,12 @@ const TrackingManager = () => {
   return null;
 };
 
-// Add typescript global declarations for window
+// Global declarations for window
 declare global {
   interface Window {
     fbq: any;
     ttq: any;
+    clarity: any;
     dataLayer: any[];
     gtag: (...args: any[]) => void;
   }

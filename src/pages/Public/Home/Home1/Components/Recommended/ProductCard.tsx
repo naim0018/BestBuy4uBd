@@ -7,6 +7,7 @@ import { openWishlist } from "@/store/Slices/UISlice";
 import { RootState } from "@/store/store";
 import { Link, useNavigate } from "react-router-dom";
 import { addToCart } from "@/store/Slices/CartSlice";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface ProductCardProps {
   product: ProductData;
@@ -92,8 +93,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 </span>
               )}
           <motion.img
-            src={product.image}
+            src={optimizeCloudinaryUrl(product.image, { width: 350, quality: "auto" })}
             alt={product.title}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-xl"
           />
         </div>

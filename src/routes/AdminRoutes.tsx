@@ -1,19 +1,5 @@
-import Settings from "@/pages/Admin/Settings/Settings";
-import Dashboard from "@/pages/Admin/Dashboard/Dashboard";
-import Visitors from "@/pages/Admin/Visitors/Visitors";
-import Category from "@/pages/Admin/Category/Category";
-import AddProduct from "@/pages/Admin/AddProduct/AddProduct";
-import Product from "@/pages/Admin/Product/Product";
-import CMS from "@/pages/Admin/CMS/CMS";
-import Services from "@/pages/Admin/Services/Services";
-import ServiceGuide from "@/pages/Admin/Services/ServiceGuide";
-import SteadfastManager from "@/pages/Admin/Steadfast/SteadfastManager";
-import AllOrders from "@/pages/Admin/Order/AllOrders";
-import OrderDetails from "@/pages/Admin/Order/OrderDetails";
+import { lazy, Suspense } from "react";
 import { Navigate } from "react-router-dom";
-import InvoiceContainer from "@/pages/Admin/Order/Invoice/InvoiceContainer";
-import AnalyticsDashboard from "@/pages/Admin/AnalyticsDashboard/AnalyticsDashboard";
-import MessagesPage from "@/pages/Admin/Messages/MessagesPage";
 import {
   LayoutDashboard,
   Users,
@@ -29,6 +15,35 @@ import {
   MessageSquare,
 } from "lucide-react";
 
+// Lazy-loaded Admin Pages
+const Settings = lazy(() => import("@/pages/Admin/Settings/Settings"));
+const Dashboard = lazy(() => import("@/pages/Admin/Dashboard/Dashboard"));
+const Visitors = lazy(() => import("@/pages/Admin/Visitors/Visitors"));
+const Category = lazy(() => import("@/pages/Admin/Category/Category"));
+const AddProduct = lazy(() => import("@/pages/Admin/AddProduct/AddProduct"));
+const Product = lazy(() => import("@/pages/Admin/Product/Product"));
+const CMS = lazy(() => import("@/pages/Admin/CMS/CMS"));
+const Services = lazy(() => import("@/pages/Admin/Services/Services"));
+const ServiceGuide = lazy(() => import("@/pages/Admin/Services/ServiceGuide"));
+const SteadfastManager = lazy(() => import("@/pages/Admin/Steadfast/SteadfastManager"));
+const AllOrders = lazy(() => import("@/pages/Admin/Order/AllOrders"));
+const OrderDetails = lazy(() => import("@/pages/Admin/Order/OrderDetails"));
+const InvoiceContainer = lazy(() => import("@/pages/Admin/Order/Invoice/InvoiceContainer"));
+const AnalyticsDashboard = lazy(() => import("@/pages/Admin/AnalyticsDashboard/AnalyticsDashboard"));
+const MessagesPage = lazy(() => import("@/pages/Admin/Messages/MessagesPage"));
+
+const AdminLoadingFallback = () => (
+  <div className="flex h-[400px] w-full items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+  </div>
+);
+
+const withSuspense = (Component: React.ComponentType) => (
+  <Suspense fallback={<AdminLoadingFallback />}>
+    <Component />
+  </Suspense>
+);
+
 export const adminRoutes = [
   {
     group: "Overview",
@@ -37,25 +52,25 @@ export const adminRoutes = [
         label: "Dashboard",
         icon: <LayoutDashboard />,
         path: "dashboard",
-        element: <Dashboard />,
+        element: withSuspense(Dashboard),
       },
       {
         label: "Messages",
         icon: <MessageSquare />,
         path: "messages",
-        element: <MessagesPage />,
+        element: withSuspense(MessagesPage),
       },
       {
         label: "Visitors",
         icon: <Users />,
         path: "visitors",
-        element: <Visitors />,
+        element: withSuspense(Visitors),
       },
       {
         label: "Analytics",
         icon: <BarChart3 />,
         path: "analytics",
-        element: <AnalyticsDashboard />,
+        element: withSuspense(AnalyticsDashboard),
       },
     ]
   },
@@ -66,15 +81,15 @@ export const adminRoutes = [
         label: "All Orders",
         icon: <ShoppingCart />,
         path: "orders",
-        element: <AllOrders />,
+        element: withSuspense(AllOrders),
       },
       {
         path: "orders/:id",
-        element: <OrderDetails />,
+        element: withSuspense(OrderDetails),
       },
       {
         path: "orders/invoice/:id",
-        element: <InvoiceContainer />,
+        element: withSuspense(InvoiceContainer),
       },
     ]
   },
@@ -85,23 +100,23 @@ export const adminRoutes = [
         label: "Products",
         icon: <Package2 />,
         path: "products",
-        element: <Product />,
+        element: withSuspense(Product),
       },
       {
         label: "Add Product",
         icon: <PackageSearch />,
         path: "add-product",
-        element: <AddProduct />,
+        element: withSuspense(AddProduct),
       },
       {
         label: "Categories",
         icon: <LayoutGrid />,
         path: "categories",
-        element: <Category />,
+        element: withSuspense(Category),
       },
       {
         path: "update-product/:id",
-        element: <AddProduct />,
+        element: withSuspense(AddProduct),
       },
     ]
   },
@@ -112,17 +127,17 @@ export const adminRoutes = [
         label: "CMS",
         icon: <LayoutTemplate />,
         path: "cms",
-        element: <CMS />,
+        element: withSuspense(CMS),
       },
       {
         path: "cms/:section",
-        element: <CMS />,
+        element: withSuspense(CMS),
       },
       {
         label: "Services",
         icon: <Briefcase />,
         path: "services",
-        element: <Services />,
+        element: withSuspense(Services),
       },
       {
         path: "services/:serviceId",
@@ -130,19 +145,19 @@ export const adminRoutes = [
       },
       {
         path: "services/:serviceId/guide",
-        element: <ServiceGuide />,
+        element: withSuspense(ServiceGuide),
       },
       {
         label: "Steadfast Courier",
         icon: <Truck />,
         path: "courier",
-        element: <SteadfastManager />,
+        element: withSuspense(SteadfastManager),
       },
       {
         label: "Settings",
         icon: <SettingsIcon />,
         path: "settings",
-        element: <Settings />,
+        element: withSuspense(Settings),
       },
     ]
   }

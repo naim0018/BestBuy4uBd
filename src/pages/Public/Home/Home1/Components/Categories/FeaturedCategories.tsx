@@ -17,6 +17,7 @@ import {
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetAllCategoriesQuery } from "../../../../../../store/Api/CategoriesApi";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 // Mapping for category icons and colors based on name keywords
 const categoryConfig: Record<string, { icon: any; color: string }> = {
@@ -180,8 +181,10 @@ const FeaturedCategories = () => {
                           <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
                              {category.image ? (
                                <img
-                                 src={category.image}
+                                 src={optimizeCloudinaryUrl(category.image, { width: 300, quality: "auto" })}
                                  alt={category.name}
+                                 loading="lazy"
+                                 decoding="async"
                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                />
                              ) : (

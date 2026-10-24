@@ -14,7 +14,36 @@ export const settingsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Settings"],
     }),
+    addTheme: builder.mutation({
+      query: (theme) => ({
+        url: "/settings/theme",
+        method: "POST",
+        body: theme,
+      }),
+      invalidatesTags: ["Settings"],
+    }),
+    deleteTheme: builder.mutation({
+      query: (themeId: string) => ({
+        url: `/settings/theme/${themeId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Settings"],
+    }),
+    setSiteDefaultTheme: builder.mutation({
+      query: (themeId: string) => ({
+        url: "/settings/theme",
+        method: "PATCH",
+        body: { themeId },
+      }),
+      invalidatesTags: ["Settings"],
+    }),
   }),
 });
 
-export const { useGetSettingsQuery, useUpdateAdminInfoMutation } = settingsApi;
+export const {
+  useGetSettingsQuery,
+  useUpdateAdminInfoMutation,
+  useAddThemeMutation,
+  useDeleteThemeMutation,
+  useSetSiteDefaultThemeMutation,
+} = settingsApi;

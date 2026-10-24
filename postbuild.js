@@ -33,7 +33,7 @@ if (file_exists($cache_file) && (time() - filemtime($cache_file) < $cache_durati
 
 // Fetch settings from API if cache is empty or expired
 if (!$settings) {
-    $api_url = 'https://spark-tech-server.vercel.app/api/v1/settings';
+    $api_url = 'https://api.bestbuy4ubd.com/api/v1/settings';
     
     // Pass the dynamic Origin/Referer headers so that the backend tenantResolver knows which DB/tenant settings to retrieve
     $options = [
@@ -83,10 +83,6 @@ function processHtmlToPhp() {
     // Write index.php file
     fs.writeFileSync(phpFilePath, phpHeader + htmlContent, "utf8");
     console.log("Successfully created dist/index.php with server-side dynamic meta tags!");
-
-    // Clean up dist/index.html so that the server serves index.php
-    fs.unlinkSync(htmlFilePath);
-    console.log("Removed dist/index.html.");
 
   } catch (error) {
     console.error("An error occurred during postbuild processing:", error);

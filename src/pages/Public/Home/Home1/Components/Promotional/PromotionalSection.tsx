@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useGetAllBannersQuery } from "@/store/Api/BannerApi";
 import { useMemo } from "react";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 const getPositionClasses = (position: string = "center") => {
   switch (position) {
@@ -54,8 +55,10 @@ const PromotionalSection = () => {
       <div className="relative w-full aspect-[3/2] sm:aspect-[16/6] min-h-[220px] sm:min-h-0 rounded-container overflow-hidden group rounded-xl">
         {/* Background Image */}
         <img
-          src={promoBanner.image}
+          src={optimizeCloudinaryUrl(promoBanner.image, { width: 1200, quality: "auto" })}
           alt={promoBanner.title || "Promotion"}
+          loading="lazy"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
 

@@ -9,6 +9,7 @@ import { openWishlist } from "@/store/Slices/UISlice";
 import { RootState } from "@/store/store";
 import { Card, CardBody, Chip } from "@heroui/react";
 import { addToCart } from "@/store/Slices/CartSlice";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface ProductCardProps {
   id: string;
@@ -98,8 +99,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     ))}
                   </div>
                   <img
-                    src={image}
+                    src={optimizeCloudinaryUrl(image, { width: 300, quality: "auto" })}
                     alt={title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -220,8 +223,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
               <Link to={`/product/${id}`} className="block mb-2 sm:mb-4 w-full">
                 <div className="bg-gray-50/50 dark:bg-slate-800/30 rounded-lg flex items-center justify-center p-0">
                   <img
-                    src={image}
+                    src={optimizeCloudinaryUrl(image, { width: 350, quality: "auto" })}
                     alt={title}
+                    loading="lazy"
+                    decoding="async"
                     className="aspect-square rounded-lg group-hover:scale-102 transition-transform duration-500 w-full object-cover"
                   />
                 </div>

@@ -1,19 +1,31 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App";
-import Login from "@/pages/Auth/Login";
-import Signup from "@/pages/Auth/Signup";
 import Form from "@/pages/Form";
 import { adminRoutes } from "./AdminRoutes";
 import { publicRoutes } from "./PublicRoutes";
 import NotFound from "@/pages/NotFound";
 import { routesGenerator } from "@/utils/Generator/RoutesGenerator";
 import DashboardLayout from "@/Layout/DashboardLayout/DashboardLayout";
-import LandingPageContainer from "@/pages/LandingPage/LandingPageContainer";
 import { userRoutes } from "./UserRoutes";
-
 import ProtectedRoute from "./ProtectedRoute";
-
 import SharedLayout from "@/components/common/SharedLayout";
+
+const Login = lazy(() => import("@/pages/Auth/Login"));
+const Signup = lazy(() => import("@/pages/Auth/Signup"));
+const LandingPageContainer = lazy(() => import("@/pages/LandingPage/LandingPageContainer"));
+
+const RouteSuspense = ({ children }: { children: React.ReactNode }) => (
+  <Suspense
+    fallback={
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    }
+  >
+    {children}
+  </Suspense>
+);
 
 const routes = createBrowserRouter([
   {
@@ -33,11 +45,19 @@ const routes = createBrowserRouter([
       },
       {
         path: "/login",
-        element: <Login />,
+        element: (
+          <RouteSuspense>
+            <Login />
+          </RouteSuspense>
+        ),
       },
       {
         path: "/signup",
-        element: <Signup />,
+        element: (
+          <RouteSuspense>
+            <Signup />
+          </RouteSuspense>
+        ),
       },
       {
         path: "/admin",
@@ -71,7 +91,11 @@ const routes = createBrowserRouter([
       },
       {
         path: "/:id",
-        element: <LandingPageContainer />,
+        element: (
+          <RouteSuspense>
+            <LandingPageContainer />
+          </RouteSuspense>
+        ),
       },
       {
         path: "*",

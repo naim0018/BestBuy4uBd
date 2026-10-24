@@ -37,3 +37,29 @@ export const uploadToCloudinary = async (
   const data = await res.json();
   return data.secure_url;
 };
+
+/**
+ * Transforms Cloudinary URLs to serve modern WebP/AVIF formats with automated compression
+ * and scaled dimension parameters.
+ */
+export const optimizeCloudinaryUrl = (
+  url?: string,
+  options?: { width?: number; height?: number; quality?: string | number }
+): string => {
+  if (!url || typeof url !== "string") return url || "";
+  
+  // If not Cloudinary, return unmodified
+  if (!url.includes("res.cloudinary.com") || url.includes("/f_auto,q_auto")) {
+    return url;
+  }
+
+  const { width, height, quality = "auto" } = options || {};
+  const transformations: string[] = [`f_auto`, `q_${quality}`];
+
+  if (width) transformations.push(`w_${width}`);
+  if (height) transformations.push(`h_${height}`);
+  transformations.push("c_limit"); // Don't upscale, keep aspect ratio
+
+  const transformString = transformations.join(",");
+  return url.replace("/upload/", `/upload/${transformString}/`);
+};
