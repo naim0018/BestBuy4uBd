@@ -19,7 +19,9 @@ export default defineConfig({
         manualChunks: {
           "vendor-react": ["react", "react-dom", "react-router-dom"],
           "vendor-redux": ["@reduxjs/toolkit", "react-redux", "redux-persist"],
-          "vendor-ui": ["@heroui/react", "lucide-react", "framer-motion"],
+          "vendor-motion": ["framer-motion"],
+          "vendor-heroui": ["@heroui/react"],
+          "vendor-icons": ["lucide-react", "react-icons"],
           "vendor-charts": ["recharts"],
           "vendor-map": ["leaflet"],
         },

@@ -6,10 +6,11 @@ import { adminRoutes } from "./AdminRoutes";
 import { publicRoutes } from "./PublicRoutes";
 import NotFound from "@/pages/NotFound";
 import { routesGenerator } from "@/utils/Generator/RoutesGenerator";
-import DashboardLayout from "@/Layout/DashboardLayout/DashboardLayout";
 import { userRoutes } from "./UserRoutes";
 import ProtectedRoute from "./ProtectedRoute";
 import SharedLayout from "@/components/common/SharedLayout";
+
+const DashboardLayout = lazy(() => import("@/Layout/DashboardLayout/DashboardLayout"));
 
 import { Template1Skeleton } from "@/pages/LandingPage/Components/LandingPageExactSkeleton";
 
@@ -65,7 +66,9 @@ const routes = createBrowserRouter([
         path: "/admin",
         element: (
           <ProtectedRoute allowedRoles={['admin']}>
-            <DashboardLayout />
+            <RouteSuspense>
+              <DashboardLayout />
+            </RouteSuspense>
           </ProtectedRoute>
         ),
         children: [
@@ -80,7 +83,9 @@ const routes = createBrowserRouter([
         path: "/user",
         element: (
           <ProtectedRoute allowedRoles={['user', 'admin']}>
-            <DashboardLayout />
+            <RouteSuspense>
+              <DashboardLayout />
+            </RouteSuspense>
           </ProtectedRoute>
         ),
         children: [

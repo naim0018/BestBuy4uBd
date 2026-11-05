@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useGetProductByIdQuery } from "@/store/Api/ProductApi";
 import { useTracking } from "@/hooks/useTracking";
@@ -26,6 +26,7 @@ const LandingPageContainer = () => {
 
   const product = response?.data;
   const template = product?.additionalInfo?.landingPageTemplate || "template1";
+  const trackedProductIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (product) {
@@ -41,12 +42,16 @@ const LandingPageContainer = () => {
 
       document.title = `${product.basicInfo.title} | ${storeName}`;
 
-      trackViewItem({
-        id: product._id,
-        name: product.basicInfo.title,
-        price: product.price.discounted || product.price.regular,
-        category: product.basicInfo.category,
-      });
+      // Only track view once per product load, prevent repeated firings on state recalculations
+      if (trackedProductIdRef.current !== product._id) {
+        trackedProductIdRef.current = product._id;
+        trackViewItem({
+          id: product._id,
+          name: product.basicInfo.title,
+          price: product.price.discounted || product.price.regular,
+          category: product.basicInfo.category,
+        });
+      }
     }
   }, [product, trackViewItem]);
 

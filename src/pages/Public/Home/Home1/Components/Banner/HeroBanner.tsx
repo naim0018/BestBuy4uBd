@@ -137,8 +137,16 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
             <div className="relative w-full h-full flex items-center justify-center ">
               {data.image ? (
                 <img
-                  src={optimizeCloudinaryUrl(data.image, { width: 1000, quality: "auto" })}
+                  src={optimizeCloudinaryUrl(data.image, { width: 800, quality: "auto" })}
+                  srcSet={`
+                    ${optimizeCloudinaryUrl(data.image, { width: 480, quality: "auto" })} 480w,
+                    ${optimizeCloudinaryUrl(data.image, { width: 800, quality: "auto" })} 800w,
+                    ${optimizeCloudinaryUrl(data.image, { width: 1200, quality: "auto" })} 1200w
+                  `}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 800px"
                   alt={data.title}
+                  width={1000}
+                  height={500}
                   fetchPriority={currentSlide === 0 ? "high" : "auto"}
                   loading={currentSlide === 0 ? "eager" : "lazy"}
                   decoding="async"

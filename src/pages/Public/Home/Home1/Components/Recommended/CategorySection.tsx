@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ProductCard from "./ProductCard";
 import VerticalPagination from "./VerticalPagination";
@@ -45,15 +45,39 @@ const CategorySection = ({
   label: string;
 }) => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [inView, setInView] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (inView) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "250px" }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [inView]);
 
   const {
     data: productsData,
     isLoading,
     isFetching,
-  } = useGetAllProductsQuery({
-    category,
-    limit: FETCH_LIMIT,
-  });
+  } = useGetAllProductsQuery(
+    {
+      category,
+      limit: FETCH_LIMIT,
+    },
+    { skip: !inView }
+  );
 
   const products: ProductData[] = useMemo(() => {
     if (!productsData?.data) return [];
@@ -74,7 +98,7 @@ const CategorySection = ({
     setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
 
   return (
-    <section className=" relative overflow-hidden">
+    <section ref={sectionRef} className=" relative overflow-hidden min-h-[420px]">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-5 sm:mb-10">

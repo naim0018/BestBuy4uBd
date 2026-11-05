@@ -1,11 +1,11 @@
+import { lazy, Suspense } from "react";
 import { BannerGrid } from "./Components/Banner";
 import FeaturedCategories from "./Components/Categories/FeaturedCategories";
-// import DealsSection from "./Components/Deals/DealsSection";
 import NewArrival from "./Components/NewArrival/NewArrival";
 
-import RecommendedSection from "./Components/Recommended/RecommendedSection";
-import PromotionalSection from "./Components/Promotional/PromotionalSection";
-import StatsBanner from "./Components/StatsBanner";
+const RecommendedSection = lazy(() => import("./Components/Recommended/RecommendedSection"));
+const PromotionalSection = lazy(() => import("./Components/Promotional/PromotionalSection"));
+const StatsBanner = lazy(() => import("./Components/StatsBanner"));
 
 const Home = () => {
   return (
@@ -21,14 +21,20 @@ const Home = () => {
           <NewArrival />
 
           {/* Recommended Section */}
-          <RecommendedSection />
+          <Suspense fallback={<div className="h-64 animate-pulse bg-slate-100 dark:bg-slate-800/30 rounded-xl" />}>
+            <RecommendedSection />
+          </Suspense>
 
           {/* Promotional Section */}
-          <PromotionalSection />
+          <Suspense fallback={<div className="h-48 animate-pulse bg-slate-100 dark:bg-slate-800/30 rounded-xl" />}>
+            <PromotionalSection />
+          </Suspense>
 
           {/* Stats Banner */}
           <div className="container mx-auto px-4">
-            <StatsBanner />
+            <Suspense fallback={null}>
+              <StatsBanner />
+            </Suspense>
           </div>
 
           {/* Today's Hot Deals */}

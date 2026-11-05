@@ -80,8 +80,19 @@ export default function Services() {
   };
 
   const onSubmit = async (data: any) => {
-    try { await updateTracking(data).unwrap(); toast.success("Settings saved"); setIsOpen(false); }
-    catch { toast.error("Failed to update settings"); }
+    try {
+      const sanitizedData = { ...data };
+      Object.keys(sanitizedData).forEach((k) => {
+        if (typeof sanitizedData[k] === "string") {
+          sanitizedData[k] = sanitizedData[k].trim();
+        }
+      });
+      await updateTracking(sanitizedData).unwrap();
+      toast.success("Settings saved");
+      setIsOpen(false);
+    } catch {
+      toast.error("Failed to update settings");
+    }
   };
 
   const toggleVisibility = (key: string) => setShowKey((prev) => ({ ...prev, [key]: !prev[key] }));

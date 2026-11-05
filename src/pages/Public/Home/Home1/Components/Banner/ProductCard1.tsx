@@ -22,9 +22,11 @@ const ProductCard1 = ({ data, index }: ProductCardProps) => {
       {data.image ? (
         <div className="absolute inset-0 w-full h-full">
           <img
-            src={optimizeCloudinaryUrl(data.image, { width: 600, quality: "auto" })}
+            src={optimizeCloudinaryUrl(data.image, { width: 500, quality: "auto" })}
             alt={data.title}
-            loading="eager"
+            width={500}
+            height={400}
+            loading="lazy"
             decoding="async"
             className="w-full h-full object-cover"
           />

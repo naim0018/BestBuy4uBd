@@ -37,6 +37,18 @@ const baseQueryWithReauth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
   
+  // Intercept 403 IP block error to display friendly Access Denied modal
+  if (
+    result.error &&
+    result.error.status === 403 &&
+    (result.error.data as any)?.blockedIp &&
+    typeof window !== "undefined"
+  ) {
+    window.dispatchEvent(
+      new CustomEvent("store_ip_blocked", { detail: result.error.data })
+    );
+  }
+
   const isAuthError = 
     result.error && 
     (result.error.status === 401 || (result.error.data as any)?.message === "jwt expired");
@@ -88,6 +100,7 @@ const baseApi = createApi({
     "Tracking",
     "Steadfast",
     "Settings",
+    "BlockedIps",
   ],
 });
 export default baseApi;

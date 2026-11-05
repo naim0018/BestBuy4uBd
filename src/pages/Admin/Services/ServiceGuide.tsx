@@ -5,18 +5,8 @@ import remarkGfm from 'remark-gfm';
 import { ArrowLeft } from 'lucide-react';
 import { getGuideData } from './guides';
 
-export const serviceNames: Record<string, string> = {
-  gtmId: "Google Tag Manager",
-  googleAnalyticsId: "Google Analytics 4",
-  facebook: "Facebook Pixel & CAPI",
-  facebookChat: "Facebook Messenger",
-  whatsappNumber: "WhatsApp Chat",
-  tiktokPixelId: "TikTok Pixel",
-  clarityId: "Microsoft Clarity",
-  searchConsoleVerificationCode: "Search Console",
-  lookerStudioEmbedUrl: "Looker Studio",
-  steadfast: "Steadfast Courier",
-};
+import { serviceNames } from './serviceNames';
+export { serviceNames };
 
 const ServiceGuide: React.FC = () => {
   const { serviceId } = useParams<{ serviceId: string }>();

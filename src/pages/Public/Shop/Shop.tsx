@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useGetAllProductsQuery } from "@/store/Api/ProductApi";
 import { useTracking } from "@/hooks/useTracking";
@@ -58,18 +58,23 @@ const Shop = () => {
   const { data: categoriesData } = useGetAllCategoriesQuery(undefined);
   const { trackViewItemList } = useTracking();
 
+  const trackedProductsKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (productsData?.data) {
-      trackViewItemList(
-        productsData.data.map((product) => ({
-          id: product._id,
-          name: product.basicInfo.title,
-          price: product.price.discounted || product.price.regular,
-          category: product.basicInfo.category,
-          list_name: "Shop Page",
-          list_id: "shop_page",
-        })),
-      );
+    if (productsData?.data && productsData.data.length > 0) {
+      const currentKey = productsData.data.map(p => p._id).join(",");
+      if (trackedProductsKeyRef.current !== currentKey) {
+        trackedProductsKeyRef.current = currentKey;
+        trackViewItemList(
+          productsData.data.map((product) => ({
+            id: product._id,
+            name: product.basicInfo.title,
+            price: product.price.discounted || product.price.regular,
+            category: product.basicInfo.category,
+            list_name: "Shop Page",
+            list_id: "shop_page",
+          })),
+        );
+      }
     }
   }, [productsData, trackViewItemList]);
 

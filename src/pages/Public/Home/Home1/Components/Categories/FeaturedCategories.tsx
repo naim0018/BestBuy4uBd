@@ -183,6 +183,8 @@ const FeaturedCategories = () => {
                                <img
                                  src={optimizeCloudinaryUrl(category.image, { width: 300, quality: "auto" })}
                                  alt={category.name}
+                                 width={240}
+                                 height={260}
                                  loading="lazy"
                                  decoding="async"
                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"

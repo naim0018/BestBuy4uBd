@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
 import { flattenRoutes } from "@/utils/Generator/BreadcrumbsGenerator";
 import { RouteGroup } from "@/utils/Generator/MenuGenerator";
-import { serviceNames } from "@/pages/Admin/Services/ServiceGuide";
+import { serviceNames } from "@/pages/Admin/Services/serviceNames";
 interface BreadcrumbProps {
   config: RouteGroup[];
   basePath: string;

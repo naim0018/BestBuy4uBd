@@ -101,6 +101,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   <img
                     src={optimizeCloudinaryUrl(image, { width: 300, quality: "auto" })}
                     alt={title}
+                    width={300}
+                    height={300}
                     loading="lazy"
                     decoding="async"
                     className="w-full h-full object-contain"
@@ -225,6 +227,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   <img
                     src={optimizeCloudinaryUrl(image, { width: 350, quality: "auto" })}
                     alt={title}
+                    width={350}
+                    height={350}
                     loading="lazy"
                     decoding="async"
                     className="aspect-square rounded-lg group-hover:scale-102 transition-transform duration-500 w-full object-cover"

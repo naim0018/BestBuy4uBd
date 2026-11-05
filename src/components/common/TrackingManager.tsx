@@ -19,11 +19,14 @@ const TrackingManager = () => {
     // -------------------------------------------------------------
     // 0. Google Tag Manager (GTM)
     // -------------------------------------------------------------
-    const gtmId =
+    const rawGtm =
       settings.gtmId ||
       (settings.googleAnalyticsId?.startsWith("GTM-")
         ? settings.googleAnalyticsId
         : null);
+
+    const gtmMatch = rawGtm ? String(rawGtm).match(/GTM-[A-Z0-9]+/i) : null;
+    const gtmId = gtmMatch ? gtmMatch[0].toUpperCase() : rawGtm?.trim() || null;
 
     if (gtmId && !document.querySelector(`script[data-gtm-id="${gtmId}"]`)) {
       window.dataLayer.push({
@@ -35,7 +38,13 @@ const TrackingManager = () => {
       script.async = true;
       script.setAttribute("data-gtm-id", gtmId);
       script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`;
-      document.head.appendChild(script);
+
+      const firstScript = document.getElementsByTagName("script")[0];
+      if (firstScript && firstScript.parentNode) {
+        firstScript.parentNode.insertBefore(script, firstScript);
+      } else {
+        document.head.appendChild(script);
+      }
 
       const noscript = document.createElement("noscript");
       const iframe = document.createElement("iframe");
@@ -49,24 +58,27 @@ const TrackingManager = () => {
     }
 
     if (gtmId) {
+      const pagePath = location.pathname + location.search;
+      const pageTitle = document.title;
+      // Push both GA4 standard "page_view" and GTM custom "pageview"
+      window.dataLayer.push({
+        event: "page_view",
+        page_path: pagePath,
+        page_title: pageTitle,
+      });
       window.dataLayer.push({
         event: "pageview",
-        page_path: location.pathname + location.search,
-        page_title: document.title,
+        page_path: pagePath,
+        page_title: pageTitle,
       });
     }
 
     // -------------------------------------------------------------
     // 1. Google Analytics 4 (GA4) or Google Tag (GT-)
     // -------------------------------------------------------------
-    const googleTagId = settings.googleAnalyticsId?.startsWith("GT-")
-      ? settings.googleAnalyticsId
-      : null;
-
-    const gaId =
-      (settings.googleAnalyticsId?.startsWith("G-")
-        ? settings.googleAnalyticsId
-        : null) || googleTagId;
+    const rawGa = settings.googleAnalyticsId ? String(settings.googleAnalyticsId).trim() : null;
+    const googleTagId = rawGa?.startsWith("GT-") ? rawGa : null;
+    const gaId = (rawGa?.startsWith("G-") ? rawGa : null) || googleTagId;
 
     if (gaId) {
       // Ensure window.gtag is available as a real function directly
@@ -96,8 +108,8 @@ const TrackingManager = () => {
     // -------------------------------------------------------------
     // 2. Facebook Pixel
     // -------------------------------------------------------------
-    if (settings.facebookPixelId) {
-      const pixelId = settings.facebookPixelId;
+    const pixelId = settings.facebookPixelId ? String(settings.facebookPixelId).trim() : null;
+    if (pixelId) {
       if (!document.querySelector(`script[data-pixel-id="${pixelId}"]`)) {
         (function (f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
           if (f.fbq) return;
@@ -137,8 +149,8 @@ const TrackingManager = () => {
     // -------------------------------------------------------------
     // 3. TikTok Pixel
     // -------------------------------------------------------------
-    if (settings.tiktokPixelId) {
-      const tiktokId = settings.tiktokPixelId;
+    const tiktokId = settings.tiktokPixelId ? String(settings.tiktokPixelId).trim() : null;
+    if (tiktokId) {
       if (!document.querySelector(`script[data-tiktok-id="${tiktokId}"]`)) {
         (function (w: any, d: any, t: any) {
           w.TiktokAnalyticsObject = t;
@@ -205,8 +217,8 @@ const TrackingManager = () => {
     // -------------------------------------------------------------
     // 4. Microsoft Clarity
     // -------------------------------------------------------------
-    if (settings.clarityId) {
-      const clarityId = settings.clarityId;
+    const clarityId = settings.clarityId ? String(settings.clarityId).trim() : null;
+    if (clarityId) {
       if (!document.querySelector(`script[data-clarity-id="${clarityId}"]`)) {
         (function (c: any, l: any, a: any, r: any, i: any) {
           c[a] =
@@ -227,11 +239,12 @@ const TrackingManager = () => {
     // -------------------------------------------------------------
     // 5. Google Search Console Verification
     // -------------------------------------------------------------
-    if (settings.searchConsoleVerificationCode) {
+    const searchConsoleCode = settings.searchConsoleVerificationCode ? String(settings.searchConsoleVerificationCode).trim() : null;
+    if (searchConsoleCode) {
       if (!document.querySelector('meta[name="google-site-verification"]')) {
         const meta = document.createElement("meta");
         meta.name = "google-site-verification";
-        meta.content = settings.searchConsoleVerificationCode;
+        meta.content = searchConsoleCode;
         document.head.appendChild(meta);
       }
     }

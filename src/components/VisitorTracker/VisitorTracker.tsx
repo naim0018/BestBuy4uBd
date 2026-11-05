@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { websiteTrackingService } from "@/utils/websiteTrackingService";
 
 const getBaseUrl = () => {
   if (typeof window !== "undefined") {
@@ -59,6 +60,16 @@ export default function VisitorTracker() {
 
     // Trigger heartbeat immediately on route change
     sendHeartbeat();
+
+    // Log page_view interaction event on route transition (e.g. Home '/', '/shop', etc.)
+    // Avoid double firing if page is landing page /:id which logs view_item
+    const isLandingPage = /^\/[a-f0-9]{24}$/i.test(path);
+    if (!isLandingPage) {
+      websiteTrackingService.logEvent("page_view", {
+        page_path: path,
+        page_title: document.title || (path === "/" ? "Home Page" : path),
+      });
+    }
 
     // Setup interval to keep reporting active status (every 15 seconds)
     const intervalId = setInterval(sendHeartbeat, 15000);

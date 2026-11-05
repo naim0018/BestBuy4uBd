@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { websiteTrackingService } from "@/utils/websiteTrackingService";
 
 /**
@@ -5,22 +6,34 @@ import { websiteTrackingService } from "@/utils/websiteTrackingService";
  * Follows GA4 Ecommerce schema + captures internal website interaction logs
  */
 export const useTracking = () => {
-  const pushToDataLayer = (eventData: any) => {
-    if (typeof window !== "undefined" && window.dataLayer) {
+  const pushToDataLayer = useCallback((eventData: any) => {
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      if (eventData?.ecommerce) {
+        window.dataLayer.push({ ecommerce: null });
+      }
       window.dataLayer.push(eventData);
     }
     if (eventData && eventData.event) {
       const { event, ...payload } = eventData;
       websiteTrackingService.logEvent(event, payload);
     }
-  };
+  }, []);
 
-  const trackEvent = (event: string, params: Record<string, any> = {}) => {
+  const trackEvent = useCallback((event: string, params: Record<string, any> = {}) => {
     pushToDataLayer({
       event,
       ...params,
     });
-  };
+  }, [pushToDataLayer]);
+
+  const trackPageView = useCallback((pagePath: string, pageTitle?: string) => {
+    pushToDataLayer({
+      event: "page_view",
+      page_path: pagePath,
+      page_title: pageTitle || (typeof document !== "undefined" ? document.title : ""),
+    });
+  }, [pushToDataLayer]);
 
   const trackAddToCart = (product: {
     id: string;
@@ -95,7 +108,7 @@ export const useTracking = () => {
     });
   };
 
-  const trackViewItem = (product: {
+  const trackViewItem = useCallback((product: {
     id: string;
     name: string;
     price: number;
@@ -116,7 +129,7 @@ export const useTracking = () => {
         ],
       },
     });
-  };
+  }, [pushToDataLayer]);
 
   const trackBeginCheckout = (
     items: {
@@ -556,6 +569,7 @@ export const useTracking = () => {
 
   return {
     trackEvent,
+    trackPageView,
     trackAddToCart,
     trackPurchase,
     trackViewItem,

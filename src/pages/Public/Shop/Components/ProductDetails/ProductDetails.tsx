@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -153,8 +153,10 @@ const ProductDetails = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const trackedDetailsIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (product) {
+    if (product && trackedDetailsIdRef.current !== product._id) {
+      trackedDetailsIdRef.current = product._id;
       trackViewItem({
         id: product._id,
         name: product.basicInfo.title,

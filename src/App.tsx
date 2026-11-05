@@ -2,6 +2,7 @@ import Layout from "./Layout/PublicLayout/Layout";
 import { useEffect } from "react";
 import { useGetHost } from "./utils/useGetHost";
 import VisitorTracker from "./components/VisitorTracker/VisitorTracker";
+import BlockedIpScreen from "./components/BlockedIpScreen/BlockedIpScreen";
 
 function App() {
   const brand = useGetHost();
@@ -18,6 +19,7 @@ function App() {
   }, [brand]);
   return (
     <>
+      <BlockedIpScreen />
       <VisitorTracker />
       <Layout />
     </>

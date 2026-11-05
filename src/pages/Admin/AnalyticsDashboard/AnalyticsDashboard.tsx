@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardBody } from "@heroui/react";
 import {
@@ -32,12 +32,21 @@ import {
   AlertTriangle,
   Settings,
   FileText,
+  ShieldAlert,
+  ShieldCheck,
+  Ban,
+  Lock,
 } from "lucide-react";
 import {
   useGetAnalyticsDashboardQuery,
   useGetInteractionEventsQuery,
   useClearInteractionEventsMutation,
 } from "@/store/Api/TrackingApi";
+import {
+  useGetBlockedIpsQuery,
+  useBlockIpMutation,
+  useUnblockIpMutation,
+} from "@/store/Api/BlockedIpApi";
 import { useGetVisitorStatsQuery } from "@/store/Api/VisitorApi";
 import { TrackedEvent } from "@/utils/websiteTrackingService";
 import { Button } from "@/common/Components/Button";
@@ -45,7 +54,7 @@ import { motion } from "framer-motion";
 import Pagination from "@/pages/Public/Shop/Components/Pagination";
 import { toast } from "sonner";
 
-type Mode = "website" | "google";
+type Mode = "website" | "google" | "security";
 
 const MetricCard = ({ title, value, icon: Icon, colorClass, subtitle }: any) => (
   <Card className="shadow-none border border-slate-200 dark:border-slate-800/60 rounded-2xl bg-white dark:bg-slate-900/60 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
@@ -116,6 +125,89 @@ export default function AnalyticsDashboard() {
     }
   };
 
+  // Blocked IPs data & state
+  const [blockedIpPage, setBlockedIpPage] = useState(1);
+  const [blockedIpSearchInput, setBlockedIpSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Debounce search query by 300ms to avoid unnecessary API requests on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(blockedIpSearchInput.trim());
+      setBlockedIpPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [blockedIpSearchInput]);
+
+  const { data: blockedIpsRes, isLoading: isBlockedIpsLoading } = useGetBlockedIpsQuery({
+    page: blockedIpPage,
+    limit: 20,
+    search: debouncedSearch,
+  });
+  const [blockIpMutation, { isLoading: isBlocking }] = useBlockIpMutation();
+  const [unblockIpMutation, { isLoading: isUnblocking }] = useUnblockIpMutation();
+
+  const [newBlockIp, setNewBlockIp] = useState("");
+  const [newBlockReason, setNewBlockReason] = useState("");
+  const [newBlockScope, setNewBlockScope] = useState<"all" | "checkout">("all");
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+
+  const handleQuickBlock = (ip: string) => {
+    const clean = (ip || "").trim().replace(/^::ffff:/, "");
+    setNewBlockIp(clean || "127.0.0.1");
+    setNewBlockReason("Suspicious / duplicate actions");
+    setNewBlockScope("all");
+    setIsBlockModalOpen(true);
+  };
+
+  const handleSaveBlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanIp = newBlockIp.trim().replace(/^::ffff:/, "");
+    if (!cleanIp) {
+      toast.error("Please enter a valid IP address");
+      return;
+    }
+
+    // Client-side IP format validation
+    const ipv4Regex = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+    const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+
+    if (!ipv4Regex.test(cleanIp) && !ipv6Regex.test(cleanIp)) {
+      toast.error("Please enter a valid IPv4 or IPv6 address (e.g. 103.145.74.12)");
+      return;
+    }
+
+    if (cleanIp === "127.0.0.1" || cleanIp === "::1" || cleanIp === "localhost") {
+      toast.error("Cannot block local development loopback address.");
+      return;
+    }
+
+    try {
+      await blockIpMutation({
+        ip: cleanIp,
+        reason: newBlockReason.trim() || "Suspicious or abusive activity",
+        scope: newBlockScope,
+      }).unwrap();
+      toast.success(`IP ${cleanIp} blocked successfully (${newBlockScope === "checkout" ? "Checkout Only" : "Entire Site"})`);
+      setIsBlockModalOpen(false);
+      setNewBlockIp("");
+      setNewBlockReason("");
+    } catch (err: any) {
+      toast.error(err?.data?.message || err?.message || "Failed to block IP");
+    }
+  };
+
+  const handleUnblock = async (id: string, ip: string) => {
+    if (window.confirm(`Are you sure you want to unblock IP ${ip}?`)) {
+      try {
+        await unblockIpMutation(id).unwrap();
+        toast.success(`IP ${ip} unblocked successfully`);
+      } catch (err: any) {
+        toast.error(err?.data?.message || "Failed to unblock IP");
+      }
+    }
+  };
+
   const handleExportLogs = () => {
     const jsonStr = JSON.stringify(events, null, 2);
     const blob = new Blob([jsonStr], { type: "application/json" });
@@ -143,6 +235,8 @@ export default function AnalyticsDashboard() {
         return { label: "Create Account", bg: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20" };
       case "view_item":
         return { label: "View Product", bg: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700" };
+      case "page_view":
+        return { label: "Page View", bg: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20" };
       default:
         return { label: eventName.replace(/_/g, " "), bg: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700" };
     }
@@ -176,6 +270,19 @@ export default function AnalyticsDashboard() {
           <span className="font-medium text-slate-700 dark:text-slate-200">{item.item_name || item.name}</span>
           {item.price ? <span className="text-blue-600 dark:text-blue-400 font-mono ml-2 font-medium">৳{item.price}</span> : null}
           {item.item_category ? <span className="text-slate-400 text-[10px] ml-2">({item.item_category})</span> : null}
+        </div>
+      );
+    }
+
+    if (evt.event === "page_view") {
+      return (
+        <div className="text-xs font-normal">
+          <span className="font-medium text-slate-700 dark:text-slate-200">
+            {p.page_title || "Visited Page"}
+          </span>
+          <span className="text-slate-400 text-[10px] font-mono ml-2">
+            ({p.page_path || evt.path})
+          </span>
         </div>
       );
     }
@@ -254,6 +361,24 @@ export default function AnalyticsDashboard() {
             <Activity className="w-3.5 h-3.5" />
             <span>Google Analytics (GA4)</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("security")}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              activeTab === "security"
+                ? "bg-white dark:bg-slate-900 text-red-600 dark:text-red-400 shadow-xs border border-slate-200 dark:border-slate-700"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+            }`}
+          >
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span>IP Security & Blocking</span>
+            {blockedIpsRes?.meta?.total ? (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-mono font-medium">
+                {blockedIpsRes.meta.total}
+              </span>
+            ) : null}
+          </button>
         </div>
       </div>
 
@@ -322,6 +447,7 @@ export default function AnalyticsDashboard() {
                       { id: "all", label: "All" },
                       { id: "Purchases", label: "Purchases" },
                       { id: "Cart", label: "Cart" },
+                      { id: "Pages", label: "Pages" },
                       { id: "Search", label: "Search" },
                       { id: "Auth", label: "Auth" },
                     ].map((cat) => (
@@ -375,10 +501,11 @@ export default function AnalyticsDashboard() {
                     <tr>
                       <th className="px-5 py-3 font-medium">Event Type</th>
                       <th className="px-5 py-3 font-medium">Details / Payload</th>
-                      <th className="px-5 py-3 font-medium">IP Address</th>
+                      <th className="px-5 py-3 font-medium">IP & Location</th>
                       <th className="px-5 py-3 font-medium">Page Path</th>
                       <th className="px-5 py-3 font-medium">Device</th>
                       <th className="px-5 py-3 font-medium">Timestamp</th>
+                      <th className="px-5 py-3 font-medium text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-normal text-slate-700 dark:text-slate-300">
@@ -415,11 +542,21 @@ export default function AnalyticsDashboard() {
                               {renderPayloadDetails(evt)}
                             </td>
 
-                            {/* IP Address */}
+                            {/* IP & Location */}
                             <td className="px-5 py-3.5 whitespace-nowrap">
-                              <span className="font-mono text-[11px] text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                                {evt.ip || "127.0.0.1"}
-                              </span>
+                              <div>
+                                <span className="font-mono text-[11px] text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                  {evt.ip || "127.0.0.1"}
+                                </span>
+                                {evt.location?.city || evt.location?.country ? (
+                                  <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                                    <Globe className="w-2.5 h-2.5 text-blue-500 shrink-0" />
+                                    <span>
+                                      {[evt.location.city, evt.location.country].filter(Boolean).join(", ")}
+                                    </span>
+                                  </div>
+                                ) : null}
+                              </div>
                             </td>
 
                             {/* Page Path */}
@@ -442,12 +579,25 @@ export default function AnalyticsDashboard() {
                                 <p className="text-[10px] text-slate-400">{dateStr}</p>
                               </div>
                             </td>
+
+                            {/* Action: Quick Block */}
+                            <td className="px-5 py-3.5 whitespace-nowrap text-right">
+                              <button
+                                type="button"
+                                onClick={() => handleQuickBlock(evt.ip || "127.0.0.1")}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg border border-rose-200 dark:border-rose-900 transition-colors"
+                                title="Block this IP address"
+                              >
+                                <Ban className="w-3 h-3" />
+                                Block IP
+                              </button>
+                            </td>
                           </tr>
                         );
                       })
                     ) : (
                       <tr>
-                        <td colSpan={6} className="px-5 py-12 text-center text-slate-400 font-normal">
+                        <td colSpan={7} className="px-5 py-12 text-center text-slate-400 font-normal">
                           No store interaction logs recorded yet. When customers browse products, add to cart, or purchase, their actions will appear here in real time.
                         </td>
                       </tr>
@@ -638,6 +788,279 @@ export default function AnalyticsDashboard() {
             </>
           )}
         </motion.div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODE 3: IP SECURITY & BLOCKING                                 */}
+      {/* ============================================================== */}
+      {activeTab === "security" && (
+        <motion.div
+          key="security-mode"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-6"
+        >
+          {/* Security Banner Card */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-500/10 via-rose-500/5 to-transparent border border-red-200 dark:border-red-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                  Store IP Defense & Fraud Prevention
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Manage blocked IP addresses. Restrict abusive visitors from checkout only or block entire site access.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => {
+                setNewBlockIp("");
+                setNewBlockReason("");
+                setNewBlockScope("all");
+                setIsBlockModalOpen(true);
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white text-xs font-medium h-9 px-4 rounded-xl shadow-xs"
+            >
+              <Ban className="w-3.5 h-3.5 mr-1.5 inline" />
+              Block New IP Address
+            </Button>
+          </div>
+
+          {/* Blocked IPs Table Card */}
+          <Card className="shadow-none border border-slate-200 dark:border-slate-800/60 rounded-2xl bg-white dark:bg-slate-900/60">
+            <CardBody className="p-0">
+              <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    Restricted IP List ({blockedIpsRes?.meta?.total || 0})
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Real-time list of all IP addresses currently blocked for this store.
+                  </p>
+                </div>
+
+                <div className="w-full sm:w-64 relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by IP, reason, admin..."
+                    value={blockedIpSearchInput}
+                    onChange={(e) => {
+                      setBlockedIpSearchInput(e.target.value);
+                    }}
+                    className="w-full pl-8 pr-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-slate-50 dark:bg-slate-950 focus:outline-none focus:border-red-500 font-normal"
+                  />
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50/80 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="px-5 py-3 font-medium">IP Address</th>
+                      <th className="px-5 py-3 font-medium">Block Scope</th>
+                      <th className="px-5 py-3 font-medium">Reason / Note</th>
+                      <th className="px-5 py-3 font-medium">Blocked By</th>
+                      <th className="px-5 py-3 font-medium">Date Added</th>
+                      <th className="px-5 py-3 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-normal text-slate-700 dark:text-slate-300">
+                    {isBlockedIpsLoading ? (
+                      <tr>
+                        <td colSpan={6} className="px-5 py-12 text-center text-slate-400 font-normal">
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                            Loading blocked IP list...
+                          </div>
+                        </td>
+                      </tr>
+                    ) : blockedIpsRes?.data && blockedIpsRes.data.length > 0 ? (
+                      blockedIpsRes.data.map((item: any) => (
+                        <tr key={item._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="px-5 py-3.5 whitespace-nowrap">
+                            <span className="font-mono font-medium text-slate-800 dark:text-slate-100 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-md border border-red-200/50 dark:border-red-900/50">
+                              {item.ip}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 whitespace-nowrap">
+                            {item.scope === "all" ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                                <Lock className="w-3 h-3" /> Entire Site (403)
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                                <ShoppingCart className="w-3 h-3" /> Checkout Only
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5 max-w-xs text-slate-600 dark:text-slate-300">
+                            {item.reason || "Suspicious or abusive activity"}
+                          </td>
+                          <td className="px-5 py-3.5 whitespace-nowrap text-slate-500 font-normal">
+                            {item.blockedBy || "Admin"}
+                          </td>
+                          <td className="px-5 py-3.5 whitespace-nowrap text-slate-500 font-normal">
+                            {new Date(item.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-5 py-3.5 whitespace-nowrap text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleUnblock(item._id, item.ip)}
+                              disabled={isUnblocking}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-900 transition-colors"
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                              Unblock
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-5 py-12 text-center text-slate-400 font-normal">
+                          No IP addresses are currently blocked. Click "Block New IP Address" above or block an IP directly from the Website Track interaction logs table.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {blockedIpsRes?.meta?.totalPage && blockedIpsRes.meta.totalPage > 1 && (
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                    Showing {blockedIpsRes.data?.length || 0} of {blockedIpsRes.meta?.total || 0} blocked IPs
+                  </span>
+                  <Pagination
+                    currentPage={blockedIpPage}
+                    totalPage={blockedIpsRes.meta.totalPage}
+                    onPageChange={(p) => setBlockedIpPage(p)}
+                  />
+                </div>
+              )}
+            </CardBody>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Block IP Modal */}
+      {isBlockModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-semibold text-sm">
+                <Ban className="w-4 h-4" />
+                <span>Block IP Address</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBlockModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg leading-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveBlock} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  IP Address to Block *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. 103.145.74.12"
+                  value={newBlockIp}
+                  onChange={(e) => setNewBlockIp(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-mono bg-slate-50 dark:bg-slate-950 focus:outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Restriction Scope *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewBlockScope("all")}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      newBlockScope === "all"
+                        ? "border-red-500 bg-red-50/50 dark:bg-red-950/30 text-red-700 dark:text-red-300 font-medium"
+                        : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-semibold">
+                      <Lock className="w-3.5 h-3.5 text-red-500" />
+                      Entire Website
+                    </div>
+                    <p className="text-[10px] mt-1 text-slate-500">
+                      Block browsing, APIs, and access with 403 Forbidden
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewBlockScope("checkout")}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      newBlockScope === "checkout"
+                        ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 font-medium"
+                        : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-semibold">
+                      <ShoppingCart className="w-3.5 h-3.5 text-amber-500" />
+                      Checkout Only
+                    </div>
+                    <p className="text-[10px] mt-1 text-slate-500">
+                      Allow browsing items but reject new order creation
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Reason / Note
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Repeated fake COD orders or spamming cart"
+                  value={newBlockReason}
+                  onChange={(e) => setNewBlockReason(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-slate-50 dark:bg-slate-950 focus:outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsBlockModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isBlocking}
+                  className="bg-red-600 hover:bg-red-700 text-white font-medium"
+                >
+                  {isBlocking ? "Blocking..." : "Confirm Block"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
